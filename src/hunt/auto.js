@@ -20,7 +20,7 @@
     // 1.33 (pedido do André: conta nova não comprava nada): o "Guardar" da reposição era 5 mi, acima
     // do saldo de quem começa. Agora 0 — o piso é o do cofre (que, para a reposição, nunca passa de
     // 10% do saldo; ver piloto/cofre.js).
-    repor: { ligado: false, reservaOuro: 0, intervaloMin: 3, irAoCentro: true, alvos: {}, kitAuto: true },
+    repor: { ligado: false, reservaOuro: 0, intervaloMin: 3, irAoCentro: true, alvos: {}, kitAuto: true, bolaId: null },
   };
   const ler = () => {
     try {
@@ -686,7 +686,9 @@
     const porBola = orcamentoH / Math.max(1, lancamentosH);
     const daBolsa = bolas.filter((b) => b.priceGold <= porBola && cabe(b, 'bola'));
     const bola = daBolsa.length ? daBolsa.sort((a, b) => (Number(b.catchRate) || 0) - (Number(a.catchRate) || 0) || b.priceGold - a.priceGold)[0] : bolas[0];
-    return { bola, pocao, revive, hpMedio: Math.round(hpMedio), hpLuta: Math.round(hpLuta), porBola: Math.round(porBola), lancamentosH: Math.round(lancamentosH), limiar };
+    // a bola fixa que a pessoa escolheu manda; o que o módulo sugeriu fica em bolaSugerida (aparece no painel)
+    const fixa = cfg.repor.bolaId != null ? bolas.find((b) => Number(b.id) === Number(cfg.repor.bolaId)) : null;
+    return { bola: fixa || bola, bolaSugerida: bola, hpMedio: Math.round(hpMedio), hpLuta: Math.round(hpLuta), porBola: Math.round(porBola), lancamentosH: Math.round(lancamentosH), limiar };
   }
   async function conferirKit(forcar = false) {
     if (!cfg.repor.ligado || cfg.repor.kitAuto === false || !eu || !PIH.cofre?.liberado('hunt')) return null;
@@ -947,8 +949,18 @@
           ${K.fcampo('A cada (min)', K.numero('auto:repor.intervaloMin', p.intervaloMin, 1, 60, 1, trava))}
           ${K.mini('auto:repor.irAoCentro', p.irAoCentro, 'Ir ao Centro', 'Se o jogo só vender no Centro: vai, compra, cura e volta', trava)}
           ${K.mini('auto:repor.kitAuto', p.kitAuto !== false, 'Escolher os itens pela conta', 'Deixa marcado nas Automações do jogo uma bola, uma poção e um revive, troca conforme a conta sobe e compra pelo que a conta gasta', trava)}
+          ${p.kitAuto !== false ? K.fcampo('Bola', seletorBola(K, p), 'Automático: o módulo escolhe pela conta e mostra a sugestão. Ou fixe uma bola; o cofre continua limitando o gasto') : ''}
           ${K.acao('Conferir agora', 'data-acao="testar-repor"', 'repor', trava)}
           <div class="plt-f-largo">${tabela}</div>` : '' });
+  }
+
+  // Bola da Reposição: Automático (mostra o que o módulo sugere agora) ou uma bola fixa do catálogo
+  function seletorBola(K, p) {
+    let sug = null;
+    try { sug = escolherKit()?.bolaSugerida || null; } catch { /* sem sugestão ainda */ }
+    const bolas = (welcome?.catalogoBolas ?? []).filter((b) => b && b.compravel !== false && Number(b.priceGold) > 0 && !/beast|master/i.test(String(b.nome || ''))).sort((a, b) => a.priceGold - b.priceGold);
+    const opcoes = [['', `Automático${sug ? ` (sugere: ${K.esc(sug.nome)})` : ''}`], ...bolas.map((b) => [String(b.id), `${K.esc(b.nome)} · ${Number(b.priceGold).toLocaleString('pt-BR')} ouro`])];
+    return K.selecao('auto:repor.bolaId', p.bolaId == null ? '' : String(p.bolaId), opcoes);
   }
 
   // Mudança vinda do painel. "alvo.<chave>.<campo>" são os mínimos e alvos da reposição.
@@ -962,6 +974,7 @@
     }
     const [grupo, campo] = partes;
     if (!cfg[grupo] || !(campo in cfg[grupo])) return;
+    if (grupo === 'repor' && campo === 'bolaId') { v = v === '' || v == null || !Number.isFinite(Number(v)) ? null : Number(v); kitVisto = null; kitTrocadoEm = 0; }
     cfg[grupo][campo] = v;
     if (grupo === 'hunt' && campo === 'ligado' && v) { ultimaAnalise = 0; topAnterior = null; candidato = null; anotar('troca automática de hunt ligada'); PIH.metaCaca?.desligar?.('a Troca de hunt foi ligada'); PIH.cacadas?.desligar?.('a Troca de hunt foi ligada'); }
     if (grupo === 'repor' && campo === 'ligado' && v) { ultimaReposicao = 0; anotar('reposição ligada'); }

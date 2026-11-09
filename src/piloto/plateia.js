@@ -1,4 +1,4 @@
-// Plateia (1.29, pedido do André): liga o Piloto à outra extensão dele, a Plateia (Twitch e Kick).
+// Plateia (1.29, pedido do André; 2.0.6: o Plateia do Dreds passou a morar dentro desta extensão, em src/plateia/).
 //
 // O bônus de XP do PokeIdle por assistir lives (Twitch: o jogo te procura no chat dos canais
 // oficiais; Kick: pacote de recompensas por pontos do canal) só rende com as lives abertas. A Plateia
@@ -8,10 +8,10 @@
 //    Plateia das plataformas vinculadas na conta (o service worker abre numa janela à parte, sem
 //    roubar o foco). Opção "Abrir as salas ao entrar no jogo".
 // 2. Na janela do bônus da Twitch e da Kick do próprio jogo, uma faixa deixa explícito o que fazer:
-//    com a Plateia instalada, "Abrir a sala" (reaproveita a janela se já estiver aberta); sem ela,
-//    "Baixar a Plateia" (GitHub).
+//    "Abrir a sala" (reaproveita a janela se já estiver aberta).
 //
-// Como sabe que a Plateia está instalada: a ponte dela no pokeidle.io marca `window.__plateiaPonte`.
+// A Plateia agora faz parte desta extensão (não há o que detectar). Se a Plateia avulsa do Dreds
+// ainda estiver instalada, a ponte dela marca `window.__plateiaPonte` e o Piloto avisa da duplicada.
 // Nada é enviado ao jogo.
 (function (raiz) {
   'use strict';
@@ -25,14 +25,14 @@
     twitch: { url: 'https://www.twitch.tv/drops/inventory#plateia', janela: 'plateia', nome: 'Twitch' },
     kick: { url: 'https://kick.com/drops/claimed#plateia', janela: 'plateia-kick', nome: 'Kick' },
   };
-  const BAIXAR = 'https://github.com/DredsGG/plateia/releases/latest';
 
   const ler = () => { try { const c = JSON.parse(localStorage.getItem(CHAVE) || 'null') || {}; return { abrirAoEntrar: c.abrirAoEntrar !== false, reabrir: c.reabrir === true }; } catch { return { abrirAoEntrar: true, reabrir: false }; } };
   const cfg = ler();
   const gravar = () => { try { localStorage.setItem(CHAVE, JSON.stringify(cfg)); } catch { /* sem armazenamento */ } };
   const diario = (txt, tipo) => PIH.cofre?.diario?.(`plateia: ${txt}`, tipo);
 
-  const temPlateia = () => raiz.__plateiaPonte === true;
+  const temPlateia = () => true;
+  const duplicada = () => raiz.__plateiaPonte === true; // a Plateia avulsa também está instalada
   const naPaginaDoJogo = () => /^\/app\/?$/.test(location.pathname);
   let eu = null;
   const vinculadas = () => {
@@ -100,14 +100,10 @@
     const el = document.createElement('div');
     el.className = 'plt-plateia-faixa';
     el.dataset.plateia = p;
-    if (temPlateia()) {
-      el.innerHTML = `<div class="plt-plateia-txt"><b>Farme este bônus com a Plateia</b><span>${p === 'twitch'
-        ? 'A sala da Plateia fica no chat de todos os canais com bônus e toca as lives — o jogo te vê assistindo. Deixe a janela aberta.'
-        : 'A sala da Plateia toca os canais oficiais e resgata o pacote de XP sozinha. Deixe a janela aberta.'}</span></div><button type="button" class="plt-plateia-bt">Abrir a sala da ${s.nome}</button>`;
-      el.querySelector('button').addEventListener('click', (ev) => { ev.stopPropagation(); abrirSala(p); });
-    } else {
-      el.innerHTML = `<div class="plt-plateia-txt"><b>Quer farmar este bônus sem ficar com abas abertas na mão?</b><span>A Plateia (extensão do Dreds, grátis) assiste as lives com bônus por você, na Twitch e na Kick.</span></div><a class="plt-plateia-bt" href="${BAIXAR}" target="_blank" rel="noopener noreferrer">Baixar a Plateia</a>`;
-    }
+    el.innerHTML = `<div class="plt-plateia-txt"><b>Farme este bônus com a Plateia</b><span>${p === 'twitch'
+      ? 'A sala da Plateia fica no chat de todos os canais com bônus e toca as lives — o jogo te vê assistindo. Deixe a janela aberta.'
+      : 'A sala da Plateia toca os canais oficiais e resgata o pacote de XP sozinha. Deixe a janela aberta.'}</span></div><button type="button" class="plt-plateia-bt">Abrir a sala da ${s.nome}</button>`;
+    el.querySelector('button').addEventListener('click', (ev) => { ev.stopPropagation(); abrirSala(p); });
     return el;
   }
   function pintarFaixas() {
@@ -131,13 +127,13 @@
   // ---- a linha na aba Rotina ----------------------------------------------------------------
   function linha(modo) {
     const ps = vinculadas();
-    const status = !temPlateia() ? 'Plateia não instalada'
+    const status = duplicada() ? 'Plateia avulsa também instalada: remova uma das duas'
       : !ps.length ? 'nenhuma Twitch/Kick vinculada no jogo'
       : `${ps.map((p) => SALAS[p].nome).join(' e ')} · ${cfg.abrirAoEntrar ? 'abre ao entrar no jogo' : 'só no botão'}${cfg.reabrir ? ' · reabre se fechar' : ''}`;
-    const reabrir = temPlateia() ? K.mini('plateia:reabrir', cfg.reabrir, 'Reabrir se fechar', 'Se a janela da sala fechar ou for descartada da memória (IdleDeck e afins), reabre em até 1 min. Só com o Piloto ligado e o jogo aberto.', modo === 'desligado') : '';
+    const reabrir = K.mini('plateia:reabrir', cfg.reabrir, 'Reabrir se fechar', 'Se a janela da sala fechar ou for descartada da memória (IdleDeck e afins), reabre em até 1 min. Só com o Piloto ligado e o jogo aberto.', modo === 'desligado');
     return `${K.grupo('Bônus de live')}${K.linha({ id: 'plateia', icone: 'xp', nome: 'Plateia (Twitch e Kick)', alvo: 'plateia:abrirAoEntrar', on: cfg.abrirAoEntrar, trava: modo === 'desligado', status: esc(status),
-      dica: 'Liga o Piloto à Plateia, a outra extensão do Dreds que assiste as lives com bônus do PokeIdle. Ao abrir o jogo (uma vez por sessão do navegador), abre a sala da Twitch e/ou da Kick que estiverem vinculadas na sua conta, numa janela à parte. Na janela do bônus da Twitch/Kick do jogo aparece o botão "Abrir a sala". Sem a Plateia, aparece o link para baixar.',
-      ajustes: (modo === 'manual' ? (temPlateia() ? K.acao('Abrir as salas agora', 'data-acao="plateia-abrir"', 'xp', modo === 'desligado') : `<a class="cfg-escala-bt plt-acao on" href="${BAIXAR}" target="_blank" rel="noopener noreferrer">Baixar a Plateia</a>`) : '') + reabrir })}`;
+      dica: 'Liga o Piloto à Plateia (do Dreds, agora dentro desta extensão), que assiste as lives com bônus do PokeIdle. Ao abrir o jogo (uma vez por sessão do navegador), abre a sala da Twitch e/ou da Kick que estiverem vinculadas na sua conta, numa janela à parte. Na janela do bônus da Twitch/Kick do jogo aparece o botão "Abrir a sala".',
+      ajustes: (modo === 'manual' ? K.acao('Abrir as salas agora', 'data-acao="plateia-abrir"', 'xp', modo === 'desligado') : '') + reabrir })}`;
   }
   function definir(caminho, v) {
     if (caminho === 'reabrir') {

@@ -1,0 +1,50 @@
+// What's new in each version, in English: what changes for users, in short sentences.
+// Update on EVERY version (rule 12). Shown once per version in the "What's new in vX.Y.Z" box.
+(() => {
+  const P = window.PLATEIA;
+  if (!P) return;
+  P.CHANGELOG = P.CHANGELOG || {};
+  P.CHANGELOG.en = {
+    '0.9.4': [
+      "Twitch: Plateia now buys the PokeIdle bonus by itself with channel points. For each bonus, the 10 h reward, in this order: XP, Capture Boost and Secret Lure.",
+      "It only buys if the channel balance covers it, if the Twitch account linked in the game is the one open here, and if the bonus is about to run out (less than 1 h left). No pointless stacking of hours.",
+      "The PokeIdle tab of the Twitch room shows the active bonuses with their end time, the next purchase, each channel's balance and the latest redemptions. It has a Pause button and the \"Auto-redeem the bonus\" setting, on by default.",
+      "If anything goes wrong (button gone, different name or cost, balance did not drop), buying stops for 15 minutes and the tab shows why.",
+      "The game's list of bonus channels shows up on Twitch again (the game changed its format in November)."
+    ],
+    '0.9.3': [
+      'New Support ♥ button in the room footer, optional: Pix (Brazil) with a QR code made by Plateia itself, or GitHub Sponsors (other countries).',
+      'Nothing changes if you don\'t support: the box only opens when you click.'
+    ],
+    '0.9.2': [
+      'The Twitch and Kick rooms keep earning points with the window minimized or behind other windows.',
+      'Before, with the window hidden, the browser paused the muted room streams and they stopped counting.',
+      'If "Click the room to keep earning minimized" shows up, one click anywhere in the room fixes it.'
+    ],
+    '0.9.1': [
+      'Kick: automatic redemption of the PokeIdle bundle (XP + Capture + Lure) works again. Kick was rejecting Plateia\'s request.',
+      'If a redemption fails, the Channels tab summary shows the error and when it will try again.'
+    ],
+    '0.9.0': [
+      'Plateia checks for new versions by itself while Twitch or Kick is open: when it opens, every 30 minutes and when you come back to the tab.',
+      'When a new version is out, the notice shows up right away in the middle of the page, no reload needed.',
+      'The X on the notice only snoozes it: it comes back after 1 hour or the next time you open the browser.',
+      'Urgent version (for a serious bug): the notice has no X and Plateia pauses chests, claims and streams until you update.',
+      "If you skipped versions, what's new shows the changes in each one."
+    ],
+    '0.8.0': [
+      'Plateia now speaks Portuguese, English and Spanish. The first time, it uses your browser language.',
+      'Switch the language any time with the PT · EN · ES selector in the room footer.',
+      "The tutorial, what's new and the new version notice show up by themselves on the Twitch or Kick page, without opening the room.",
+      'The new version notice shows what changed and has an Update button. The X hides it until a newer version comes out.'
+    ],
+    '0.7.0': [
+      'New look in both rooms, in Twitch and Kick style.',
+      'The channel list is now split into "Earning now", "Live, waiting" and "Offline", with the rotation timer in the title.',
+      'The Twitch room has a Settings tab with on/off switches.',
+      'On Kick, a PokeIdle summary shows the active bonuses and how much is left for the next bundle, and warns if Kick isn\'t linked in the game.',
+      'Plateia now works on Chrome, Edge, Brave, Opera GX and Firefox.',
+      'First-run tutorial: reopen it any time from "? How to use" at the top of the room.'
+    ]
+  };
+})();

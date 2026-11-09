@@ -1,5 +1,19 @@
 {
   "versoes": {
+    "2.0.6": {
+      "pt": [
+        "A Plateia (Twitch e Kick, do Dreds) agora vem dentro desta extensão: não precisa instalar à parte. Se você ainda tem a Plateia avulsa, remova-a (o Piloto avisa). A extensão passa a pedir acesso a twitch.tv e kick.com.",
+        "Reposição: dá para escolher a bola (ou deixar no Automático, que mostra a bola que o módulo sugere)."
+      ],
+      "en": [
+        "Plateia (Twitch and Kick, by Dreds) now comes built into this extension: no separate install. If you still have the standalone Plateia, remove it (the Pilot warns you). The extension now asks for access to twitch.tv and kick.com.",
+        "Restock: you can pick the ball (or leave it on Automatic, which shows the ball the module suggests)."
+      ],
+      "es": [
+        "Plateia (Twitch y Kick, de Dreds) ahora viene dentro de esta extensión: no hace falta instalarla aparte. Si aún tienes la Plateia independiente, quítala (el Piloto avisa). La extensión ahora pide acceso a twitch.tv y kick.com.",
+        "Reposición: puedes elegir la bola (o dejarla en Automático, que muestra la bola que sugiere el módulo)."
+      ]
+    },
     "2.0.5": {
       "pt": [
         "Melhorar o time: quando acha um pokémon melhor, avisa com um cartão na tela (ou notificação do Chrome) e um som de captura. Dá para desligar no interruptor \"Avisar com som\".",

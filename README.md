@@ -2,7 +2,7 @@
 
 **Auxiliar não oficial para o [pokeidle.io](https://pokeidle.io)** (extensão para Chrome e navegadores baseados em Chromium). Não é afiliado ao jogo.
 
-Reúne numa extensão só: Radar do Mercado, onde caçar (/hunt), troca de hunt, rotina diária, XP Share, revenda e compra no Mercado em ouro, tudo com um cofre de orçamento. Nunca gasta Gema nem diamante.
+Reúne numa extensão só: Radar do Mercado, onde caçar (/hunt), troca de hunt, rotina diária, XP Share, revenda e compra no Mercado em ouro, tudo com um cofre de orçamento, e a **Plateia** (assiste as lives com bônus da Twitch e da Kick por você). Nunca gasta Gema nem diamante.
 
 ## Instalar (uma vez só)
 
@@ -38,6 +38,10 @@ Também dá para forçar pelo botão **Procurar atualização** no painel da ext
 
 1. Aumente `version` no `manifest.json` e adicione a entrada no `changelog.json`.
 2. `git push` na `main`: o workflow [release.yml](.github/workflows/release.yml) cria o Release `v<versão>`.
+
+## Plateia (Twitch e Kick) já vem junto
+
+O código da [Plateia](https://github.com/DredsGG/plateia) (v0.9.4, do **Dreds**, usado com a autorização dele) mora em `src/plateia/`. Não precisa instalar a Plateia separada: se você ainda tem ela instalada, **remova** (duas extensões pegando o mesmo baú e as mesmas lives em duplicidade). O Piloto avisa se achar as duas. Nesta versão a extensão passa a pedir acesso a `twitch.tv` e `kick.com`.
 
 ## Créditos
 

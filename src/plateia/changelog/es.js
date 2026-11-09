@@ -1,0 +1,50 @@
+// Novidades de cada versão, em espanhol: o que muda para quem usa, em frases curtas.
+// Atualizar em TODA versão (regra 12), junto com pt.js e en.js.
+(() => {
+  const P = window.PLATEIA;
+  if (!P) return;
+  P.CHANGELOG = P.CHANGELOG || {};
+  P.CHANGELOG.es = {
+    '0.9.4': [
+      "Twitch: Plateia ahora compra sola el bonus de PokeIdle con los puntos del canal. Para cada bonus, la recompensa de 10 h, en este orden: XP, Capture Boost y Secret Lure.",
+      "Solo compra si el saldo del canal alcanza, si la cuenta de Twitch vinculada en el juego es la que está abierta y si el bonus está por terminar (menos de 1 h). Nada de acumular horas sin sentido.",
+      "La pestaña PokeIdle de la sala de Twitch muestra los bonus activos con su hora de fin, la próxima compra, el saldo de cada canal y los últimos canjes. Tiene el botón Pausar y el ajuste \"Canje automático del bonus\", activado de fábrica.",
+      "Si algo sale mal (botón desaparecido, nombre o costo distintos, saldo que no bajó), la compra se detiene 15 minutos y la pestaña muestra el motivo.",
+      "La lista de canales con bonus del juego vuelve a aparecer en Twitch (el juego cambió el formato en noviembre)."
+    ],
+    '0.9.3': [
+      'Nuevo botón Apoyar ♥ en el pie de la sala, opcional: Pix (Brasil) con código QR hecho por la propia Plateia o GitHub Sponsors (otros países).',
+      'Nada cambia si no apoyas: el cuadro solo se abre si haces clic.'
+    ],
+    '0.9.2': [
+      'Las salas de Twitch y Kick siguen sumando puntos con la ventana minimizada o detrás de otras ventanas.',
+      'Antes, con la ventana oculta, el navegador pausaba los directos silenciados de la sala y dejaban de contar.',
+      'Si aparece "Haz clic en la sala para sumar minimizada", un clic en cualquier parte de la sala lo resuelve.'
+    ],
+    '0.9.1': [
+      'Kick: el canje automático del paquete de PokeIdle (XP + Capture + Lure) vuelve a funcionar. Kick rechazaba el pedido de Plateia.',
+      'Si un canje falla, el resumen de la pestaña Canales muestra el error y la hora del próximo intento.'
+    ],
+    '0.9.0': [
+      'Plateia busca versiones nuevas sola mientras Twitch o Kick están abiertos: al abrir, cada 30 minutos y cuando vuelves a la pestaña.',
+      'Cuando sale una versión nueva, el aviso aparece al instante en el medio de la página, sin recargar.',
+      'La X del aviso solo lo pospone: vuelve después de 1 hora o cuando abras el navegador de nuevo.',
+      'Versión urgente (para un bug grave): el aviso no tiene X y Plateia pausa los cofres, los reclamos y los directos hasta que actualices.',
+      'Si saltaste versiones, las novedades muestran lo que cambió en cada una.'
+    ],
+    '0.8.0': [
+      'Plateia ahora habla portugués, inglés y español. La primera vez usa el idioma del navegador.',
+      'Cambia el idioma cuando quieras con el selector PT · EN · ES, en el pie de la sala.',
+      'El tutorial, las novedades y el aviso de versión nueva aparecen solos en la página de Twitch o Kick, sin abrir la sala.',
+      'El aviso de versión nueva muestra qué cambió y tiene el botón Actualizar. La X lo oculta hasta que salga una versión más nueva.'
+    ],
+    '0.7.0': [
+      'Nuevo aspecto en las dos salas, al estilo de Twitch y Kick.',
+      'La lista de canales ahora se divide en "Sumando ahora", "En vivo, esperando" y "Offline", con el tiempo de la rotación en el título.',
+      'La sala de Twitch tiene la pestaña Ajustes, con interruptores para activar y desactivar.',
+      'En Kick, un resumen de PokeIdle muestra los bonus activos y cuánto falta para el próximo paquete, y avisa si Kick no está vinculada en el juego.',
+      'Plateia ahora funciona en Chrome, Edge, Brave, Opera GX y Firefox.',
+      'Tutorial de primer uso: ábrelo de nuevo cuando quieras en "? Cómo usar", arriba de la sala.'
+    ]
+  };
+})();

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Netrix PokeIdle Aux",
-  "version": "2.0.5",
+  "version": "2.0.6",
   "author": "DevTungs",
   "description": "Auxiliar não oficial para o pokeidle.io: Radar do Mercado + /hunt numa extensão só. Onde caçar, troca de hunt, rotina diária, XP Share, revenda e compra no Mercado em ouro, com cofre de orçamento. Nunca gasta Gema nem diamante.",
   "minimum_chrome_version": "121",
@@ -32,7 +32,11 @@
     "https://pokeidle.io/*",
     "https://api.github.com/*",
     "https://codeload.github.com/*",
-    "https://raw.githubusercontent.com/*"
+    "https://raw.githubusercontent.com/*",
+    "https://www.twitch.tv/*",
+    "https://kick.com/*",
+    "https://gql.twitch.tv/*",
+    "https://web.kick.com/*"
   ],
   "background": {
     "service_worker": "src/sw.js",
@@ -152,6 +156,77 @@
         "src/radar.js"
       ],
       "run_at": "document_start"
+    },
+    {
+      "matches": [
+        "https://www.twitch.tv/*"
+      ],
+      "js": [
+        "src/plateia/comum.js",
+        "src/plateia/i18n/en.js",
+        "src/plateia/i18n/es.js",
+        "src/plateia/changelog/pt.js",
+        "src/plateia/changelog/en.js",
+        "src/plateia/changelog/es.js",
+        "src/plateia/ui.js",
+        "src/plateia/twitch-resgate.js",
+        "src/plateia/pokeidle-painel.js",
+        "src/plateia/bau.js",
+        "src/plateia/sala.js"
+      ],
+      "all_frames": true,
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://kick.com/*"
+      ],
+      "js": [
+        "src/plateia/comum.js",
+        "src/plateia/i18n/en.js",
+        "src/plateia/i18n/es.js",
+        "src/plateia/changelog/pt.js",
+        "src/plateia/changelog/en.js",
+        "src/plateia/changelog/es.js",
+        "src/plateia/ui.js",
+        "src/plateia/twitch-resgate.js",
+        "src/plateia/pokeidle-painel.js",
+        "src/plateia/kick/kick.js"
+      ],
+      "all_frames": true,
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://pokeidle.io/*"
+      ],
+      "js": [
+        "src/plateia/pokeidle-ponte.js"
+      ],
+      "world": "MAIN",
+      "run_at": "document_start"
+    },
+    {
+      "matches": [
+        "https://pokeidle.io/*"
+      ],
+      "js": [
+        "src/plateia/comum.js",
+        "src/plateia/pokeidle-guarda.js"
+      ],
+      "run_at": "document_start"
+    },
+    {
+      "matches": [
+        "https://www.twitch.tv/*",
+        "https://kick.com/*"
+      ],
+      "js": [
+        "src/plateia/visivel.js"
+      ],
+      "world": "MAIN",
+      "run_at": "document_start",
+      "all_frames": true
     }
   ]
 }
