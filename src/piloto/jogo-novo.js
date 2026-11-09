@@ -78,7 +78,7 @@
     }
     if (!aVista() && notificada !== agora) {
       notificada = agora;
-      try { document.dispatchEvent(new CustomEvent('piloto:notificar', { detail: JSON.stringify({ titulo: `Netrix IdleAux · ${t3('O PokeIdle atualizou o jogo', 'PokeIdle updated the game', 'PokeIdle actualizó el juego')}`, mensagem: t3(`Versão ${antes} → ${agora}. Dê F5 na aba do jogo.`, `Version ${antes} → ${agora}. Press F5 on the game tab.`, `Versión ${antes} → ${agora}. Pulsa F5 en la pestaña del juego.`) }) })); } catch { /* sem ponte */ }
+      try { document.dispatchEvent(new CustomEvent('piloto:notificar', { detail: JSON.stringify({ titulo: `Netrix PokeIdle Aux · ${t3('O PokeIdle atualizou o jogo', 'PokeIdle updated the game', 'PokeIdle actualizó el juego')}`, mensagem: t3(`Versão ${antes} → ${agora}. Dê F5 na aba do jogo.`, `Version ${antes} → ${agora}. Press F5 on the game tab.`, `Versión ${antes} → ${agora}. Pulsa F5 en la pestaña del juego.`) }) })); } catch { /* sem ponte */ }
     }
     mostrar();
   });

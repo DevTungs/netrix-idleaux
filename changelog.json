@@ -1,5 +1,16 @@
 {
   "versoes": {
+    "2.0.2": {
+      "pt": [
+        "Novo nome: Netrix PokeIdle Aux (o nome muda por completo na próxima versão; o atualizador já aceita os dois)."
+      ],
+      "en": [
+        "New name: Netrix PokeIdle Aux (the name changes fully in the next version; the updater already accepts both)."
+      ],
+      "es": [
+        "Nuevo nombre: Netrix PokeIdle Aux (el nombre cambia por completo en la próxima versión; el actualizador ya acepta los dos)."
+      ]
+    },
     "2.0.1": {
       "pt": [
         "Instruções de instalação e de atualização automática reescritas no README (a extensão não está na Chrome Web Store).",

@@ -600,7 +600,7 @@
     if (nc) { const d = cof?.desligados?.length ?? 0; nc.hidden = !d; nc.textContent = d ? '!' : ''; }
     const v = document.documentElement.dataset.pilotoVersao;
     const campoV = painel.querySelector('[data-versao]');
-    if (v && campoV && !campoV.textContent) { campoV.textContent = `v${v}`; campoV.closest('a').title = `Netrix IdleAux v${v} · abrir o GitHub do DevTungs`; }
+    if (v && campoV && !campoV.textContent) { campoV.textContent = `v${v}`; campoV.closest('a').title = `Netrix PokeIdle Aux v${v} · abrir o GitHub do DevTungs`; }
   }
   function pintarCabecalho(aba) {
     const def = ABAS.find(([k]) => k === aba) ?? ABAS[0];

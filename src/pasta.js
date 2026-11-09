@@ -14,7 +14,7 @@ async function mostrar() {
 async function pastaCerta(h) {
   try {
     const f = await (await h.getFileHandle('manifest.json')).getFile();
-    return JSON.parse(await f.text()).name === NOME;
+    return NetrixAuto.NOMES.includes(JSON.parse(await f.text()).name);
   } catch { return false; }
 }
 

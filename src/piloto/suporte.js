@@ -165,7 +165,7 @@
     if (a === 'bug-gh') { window.open(urlDoRelato(oque), '_blank', 'noopener'); return; }
     if (a === 'bug-copiar') {
       const r = relatorio(oque, 200);
-      const texto = `Netrix IdleAux — relato de bug\n\n${r.oque || '-'}\n\n${r.diag}`;
+      const texto = `Netrix PokeIdle Aux — relato de bug\n\n${r.oque || '-'}\n\n${r.diag}`;
       let ok = false;
       try { await navigator.clipboard.writeText(texto); ok = true; } catch {
         const ta = document.createElement('textarea'); ta.value = texto; document.body.appendChild(ta); ta.select();

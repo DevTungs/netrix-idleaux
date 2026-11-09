@@ -1,4 +1,4 @@
-# Netrix IdleAux
+# Netrix PokeIdle Aux
 
 **Auxiliar não oficial para o [pokeidle.io](https://pokeidle.io)** (extensão para Chrome e navegadores baseados em Chromium). Não é afiliado ao jogo.
 
@@ -18,10 +18,10 @@ Dica: fixe a extensão na barra do navegador (ícone de quebra-cabeça) para ach
 
 ## Como a atualização automática funciona
 
-O Chrome não deixa uma extensão instalada por pasta trocar os próprios arquivos sem a sua permissão. Por isso o passo 5 existe: você autoriza **uma vez** que o Netrix IdleAux grave **só dentro da pasta dele**. Depois disso:
+O Chrome não deixa uma extensão instalada por pasta trocar os próprios arquivos sem a sua permissão. Por isso o passo 5 existe: você autoriza **uma vez** que o Netrix PokeIdle Aux grave **só dentro da pasta dele**. Depois disso:
 
 1. A cada 30 min (e ao abrir o navegador) a extensão consulta os [Releases](../../releases) deste repositório. Não envia nenhum dado seu.
-2. Se há versão nova, baixa o zip do Release, confere que é o Netrix IdleAux e que a versão é mais nova, e grava os arquivos por cima da pasta autorizada (o `manifest.json` por último; se algo falhar no meio, a versão antiga continua valendo).
+2. Se há versão nova, baixa o zip do Release, confere que é o Netrix PokeIdle Aux e que a versão é mais nova, e grava os arquivos por cima da pasta autorizada (o `manifest.json` por último; se algo falhar no meio, a versão antiga continua valendo).
 3. A extensão se recarrega sozinha e as abas do jogo recarregam junto.
 
 Também dá para forçar pelo botão **Procurar atualização** no painel da extensão.
@@ -30,7 +30,7 @@ Também dá para forçar pelo botão **Procurar atualização** no painel da ext
 
 - **Abriu a aba "Atualização automática":** o Chrome esqueceu a permissão da pasta (acontece às vezes depois de reiniciar o navegador). Clique em **Permitir de novo**.
 - **Mudou ou apagou a pasta:** a atualização para de funcionar. Mova de volta, ou instale de novo (passos acima) e escolha a nova pasta no passo 5.
-- **Escolheu a pasta errada:** a página avisa se não achar o `manifest.json` do Netrix IdleAux. Escolha a pasta onde você carregou a extensão.
+- **Escolheu a pasta errada:** a página avisa se não achar o `manifest.json` do Netrix PokeIdle Aux. Escolha a pasta onde você carregou a extensão.
 - **Prefere atualizar na mão:** baixe o zip do Release novo e extraia por cima da pasta, aceitando substituir os arquivos. A extensão percebe a troca em até 1 minuto e se recarrega. Se não recarregar, clique em ↻ no card dela em `chrome://extensions`.
 - **Só funciona em navegadores Chromium** (Chrome, Edge, Brave, Opera...), com o modo desenvolvedor ligado. Se o Chrome mostrar o aviso "Desative as extensões do modo de desenvolvedor" ao abrir, é só dispensar; não desative a extensão.
 

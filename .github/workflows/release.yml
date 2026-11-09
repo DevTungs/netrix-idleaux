@@ -18,4 +18,4 @@ jobs:
           VER=$(jq -r .version manifest.json)
           if gh release view "v$VER" >/dev/null 2>&1; then echo "v$VER já tem Release"; exit 0; fi
           jq -r --arg v "$VER" '.versoes[$v].pt // [] | map("- " + .) | join("\n")' changelog.json > notas.md
-          gh release create "v$VER" --target "$GITHUB_SHA" --title "Netrix IdleAux $VER" --notes-file notas.md
+          gh release create "v$VER" --target "$GITHUB_SHA" --title "Netrix PokeIdle Aux $VER" --notes-file notas.md

@@ -895,7 +895,7 @@
     [/^Hoje (.+) · 7 dias (.+) · desde o começo (.+) em (\d+) vendas$/u, 'Today $1 · 7 days $2 · all time $3 in $4 sales', 'Hoy $1 · 7 días $2 · desde el inicio $3 en $4 ventas'],
     [/^novo dia \(00:00 de Brasília\): gasto zerado(?:, ontem foram (.+))?$/u, (m) => `new day (00:00 Brasília): spending reset${m[1] ? `, yesterday ${m[1]}` : ''}`, (m) => `nuevo día (00:00 de Brasilia): gasto a cero${m[1] ? `, ayer fueron ${m[1]}` : ''}`],
     [/^comprando (.+)$/u, 'buying $1', 'comprando $1'],
-    [/^Netrix IdleAux (v[\d.]+) · abrir o GitHub do DevTungs$/u, 'Netrix IdleAux $1 · open DevTungs\'s GitHub', 'Netrix IdleAux $1 · abrir el GitHub de DevTungs'],
+    [/^Netrix PokeIdle Aux (v[\d.]+) · abrir o GitHub do DevTungs$/u, 'Netrix PokeIdle Aux $1 · open DevTungs\'s GitHub', 'Netrix PokeIdle Aux $1 · abrir el GitHub de DevTungs'],
     [/^Líquido (.+) \(já sem os 15%\) · lucro$/u, 'Net $1 (15% already taken) · profit', 'Neto $1 (ya sin el 15%) · ganancia'],
   ];
 

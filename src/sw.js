@@ -389,7 +389,7 @@ async function conferirPermissao() {
   try { semPermissao = !(await chrome.permissions.contains(ORIGENS)); } catch { semPermissao = false; }
   if (semPermissao && !avisouPermissao) {
     avisouPermissao = true;
-    try { await chrome.notifications.create('piloto-permissao', { type: 'basic', iconUrl: chrome.runtime.getURL('icons/icon-128.png'), title: 'Netrix IdleAux sem acesso ao jogo', message: 'O navegador tirou a permissão do Piloto no pokeidle.io. Clique no ícone do Piloto para permitir de novo.' }); } catch (e) { erro(e); }
+    try { await chrome.notifications.create('piloto-permissao', { type: 'basic', iconUrl: chrome.runtime.getURL('icons/icon-128.png'), title: 'Netrix PokeIdle Aux sem acesso ao jogo', message: 'O navegador tirou a permissão do Piloto no pokeidle.io. Clique no ícone do Piloto para permitir de novo.' }); } catch (e) { erro(e); }
   }
   if (!semPermissao) avisouPermissao = false;
   await atualizarSelo();
@@ -405,7 +405,7 @@ async function atualizarSelo() {
     if (semPermissao) {
       await chrome.action.setBadgeText({ text: '!' });
       await chrome.action.setBadgeBackgroundColor({ color: '#c62828' });
-      await chrome.action.setTitle({ title: 'Netrix IdleAux: sem permissão no pokeidle.io. Clique para permitir.' });
+      await chrome.action.setTitle({ title: 'Netrix PokeIdle Aux: sem permissão no pokeidle.io. Clique para permitir.' });
       return;
     }
     const s = await chrome.storage.local.get([CHAVE_GRAVANDO, CHAVE_NAO_VISTOS]);
@@ -807,7 +807,7 @@ if (chrome.commands && chrome.commands.onCommand) {
       const abas = await chrome.tabs.query({ url: 'https://pokeidle.io/*' });
       let avisadas = 0;
       for (const a of abas) { try { await chrome.tabs.sendMessage(a.id, { tipo: 'piloto:emergencia' }); avisadas++; } catch { /* aba sem a ponte */ } }
-      await chrome.notifications.create('piloto-emergencia', { type: 'basic', iconUrl: chrome.runtime.getURL('icons/icon-128.png'), title: 'Netrix IdleAux',
+      await chrome.notifications.create('piloto-emergencia', { type: 'basic', iconUrl: chrome.runtime.getURL('icons/icon-128.png'), title: 'Netrix PokeIdle Aux',
         message: avisadas ? 'Parada de emergência: o Piloto foi para Off.' : 'Parada de emergência: nenhuma aba do jogo aberta.' });
     } catch (e) { erro(e); }
   });

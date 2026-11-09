@@ -1,4 +1,4 @@
-// Netrix IdleAux: atualização automática de uma extensão instalada por pasta (modo desenvolvedor).
+// Netrix PokeIdle Aux: atualização automática de uma extensão instalada por pasta (modo desenvolvedor).
 // O Chrome não deixa a extensão trocar os próprios arquivos, a não ser que a pessoa autorize a
 // pasta uma vez (File System Access). Com a pasta autorizada, a extensão baixa o código do Release
 // do GitHub (zip), descompacta, grava por cima e se recarrega. Roda no service worker e na página
@@ -9,6 +9,8 @@
   const BD = 'netrix-idleaux-pasta';
   const LOJA = 'k';
   const CHAVE = 'pasta';
+  // nomes aceitos no manifest do zip: o antigo e o atual (renomeado em 2.1)
+  const NOMES = ['Netrix IdleAux', 'Netrix PokeIdle Aux'];
   const MAX_ZIP = 40 * 1024 * 1024;
   const MAX_ARQUIVO = 10 * 1024 * 1024;
 
@@ -121,7 +123,7 @@
     const man = arquivos.find((a) => a.caminho.length === 1 && a.caminho[0] === 'manifest.json');
     if (!man) return { ok: false, motivo: 'sem manifest.json no zip' };
     const m = JSON.parse(new TextDecoder().decode(man.conteudo));
-    if (m.name !== nome) return { ok: false, motivo: 'o zip não é desta extensão' };
+    if (!NOMES.includes(m.name)) return { ok: false, motivo: 'o zip não é desta extensão' };
     if (String(m.version) !== String(versao)) return { ok: false, motivo: `o zip é da versão ${m.version}, não da ${versao}` };
     if (!maior(m.version, versaoAtual)) return { ok: false, motivo: 'a versão do zip não é mais nova' };
     for (const a of arquivos) if (a !== man) await gravarArquivo(pasta, a.caminho, a.conteudo);
@@ -129,5 +131,5 @@
     return { ok: true, arquivos: arquivos.length, versao: m.version };
   }
 
-  raiz.NetrixAuto = { lerPasta, guardarPasta, permissao, aplicar, _interno: { lerZip, limparCaminhos } };
+  raiz.NetrixAuto = { NOMES, lerPasta, guardarPasta, permissao, aplicar, _interno: { lerZip, limparCaminhos } };
 })(globalThis);

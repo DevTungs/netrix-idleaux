@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "Netrix IdleAux",
-  "version": "2.0.1",
+  "name": "Netrix PokeIdle Aux",
+  "version": "2.0.2",
   "author": "DevTungs",
   "description": "Auxiliar não oficial para o pokeidle.io: Radar do Mercado + /hunt numa extensão só. Onde caçar, troca de hunt, rotina diária, XP Share, revenda e compra no Mercado em ouro, com cofre de orçamento. Nunca gasta Gema nem diamante.",
   "minimum_chrome_version": "121",
@@ -46,7 +46,7 @@
     ]
   },
   "action": {
-    "default_title": "Netrix IdleAux: abrir o jogo",
+    "default_title": "Netrix PokeIdle Aux: abrir o jogo",
     "default_icon": {
       "16": "icons/icon-16.png",
       "32": "icons/icon-32.png"
