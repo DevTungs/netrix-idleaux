@@ -1,5 +1,16 @@
 {
   "versoes": {
+    "2.0.3": {
+      "pt": [
+        "Corrigido: o botão Procurar atualização agora mostra o que aconteceu (Release não encontrado, pasta sem permissão, atualizando) em vez de sempre dar erro."
+      ],
+      "en": [
+        "Fixed: the Check for updates button now shows what happened (Release not found, folder without permission, updating) instead of always showing an error."
+      ],
+      "es": [
+        "Corregido: el botón Buscar actualización ahora muestra lo que pasó (Release no encontrado, carpeta sin permiso, actualizando) en vez de dar siempre error."
+      ]
+    },
     "2.0.2": {
       "pt": [
         "Novo nome: Netrix PokeIdle Aux (o nome muda por completo na próxima versão; o atualizador já aceita os dois)."

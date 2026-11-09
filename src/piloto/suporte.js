@@ -27,7 +27,7 @@
     let d = {};
     try { d = JSON.parse(ev.detail) || {}; } catch { return; }
     if (d.acao === 'checar') status = d.erro ? 'erro' : (d.r && d.r.erro ? 'erro' : (d.r && d.r.disponivel ? null : 'nenhuma'));
-    if (d.acao === 'aplicar') status = d.erro ? 'erro' : d.r && d.r.modo === 'firefox' ? 'firefox' : d.r && d.r.modo === 'firefox-temporario' ? 'firefox-temporario' : d.r && d.r.status === 'baixado' ? 'baixado' : d.r && d.r.modo === 'loja' ? (d.r.status === 'aplicando' ? 'aplicando' : 'loja') : 'erro';
+    if (d.acao === 'aplicar') status = d.erro ? 'erro' : d.r && d.r.modo === 'firefox' ? 'firefox' : d.r && d.r.modo === 'firefox-temporario' ? 'firefox-temporario' : d.r && d.r.status === 'baixado' ? 'baixado' : d.r && d.r.modo === 'pasta' ? (d.r.status === 'aplicando' || d.r.status === 'precisa-pasta' ? d.r.status : 'erro') : d.r && d.r.modo === 'loja' ? (d.r.status === 'aplicando' ? 'aplicando' : 'loja') : 'erro';
     pintar();
   });
   const pedir = (acao, extra = {}) => document.dispatchEvent(new CustomEvent('piloto:upd-pedir', { detail: JSON.stringify({ acao, ...extra }) }));
@@ -89,7 +89,7 @@
 
   function htmlBotoes() {
     const procurando = status === 'procurando';
-    const st = procurando ? 'procurando…' : upd.disponivel ? `v${upd.ultima} disponível` : status === 'nenhuma' ? 'você está na última versão' : status === 'erro' || (status && upd.erro) ? 'não deu para procurar agora' : '';
+    const st = procurando ? 'procurando…' : upd.disponivel ? `v${upd.ultima} disponível` : status === 'nenhuma' ? 'você está na última versão' : status === 'aplicando' ? 'atualizando… a extensão vai recarregar' : status === 'precisa-pasta' ? 'autorize a pasta na aba que abriu' : /HTTP 404/.test(upd.erro || '') ? 'não achei os Releases no GitHub (404)' : status === 'erro' || (status && upd.erro) ? (upd.autoErro ? 'não deu para atualizar: ' + upd.autoErro : 'não deu para procurar agora') : '';
     return `<div class="plt-sup-bts">
       <button type="button" class="plt-sup-bt" data-sup="bug" title="Relatar um bug para o DevTungs" aria-expanded="${bugAberto}">${ICO_BUG}<span>${esc(tr('Relatar bug'))}</span></button>
       <button type="button" class="plt-sup-bt${procurando ? ' gira' : ''}" data-sup="checar" title="Procurar versão nova no GitHub">${ICO_UPD}<span>${esc(tr('Procurar atualização'))}</span></button>
