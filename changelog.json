@@ -1,5 +1,19 @@
 {
   "versoes": {
+    "2.0.1": {
+      "pt": [
+        "Instruções de instalação e de atualização automática reescritas no README (a extensão não está na Chrome Web Store).",
+        "Autor no manifest: DevTungs."
+      ],
+      "en": [
+        "Install and auto-update instructions rewritten in the README (the extension is not on the Chrome Web Store).",
+        "Manifest author: DevTungs."
+      ],
+      "es": [
+        "Instrucciones de instalación y de actualización automática reescritas en el README (la extensión no está en la Chrome Web Store).",
+        "Autor en el manifest: DevTungs."
+      ]
+    },
     "2.0.0": {
       "pt": [
         "Nova marca: a extensão agora se chama Netrix IdleAux, com logo nova. A versão recomeça em 2.0.",
