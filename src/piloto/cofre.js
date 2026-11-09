@@ -1,0 +1,438 @@
+// O COFRE: o orçamento de ouro do piloto. Toda ação que gasta passa por aqui antes de sair.
+//
+// Roda no mundo da página (MAIN), carregado logo depois do hook. O hook chama `autorizar` para todo
+// comando do piloto e para toda compra AUTOMÁTICA do radar; o clique do jogador não passa por aqui
+// (é decisão dele), mas as listas de bloqueio do hook valem para ele também.
+//
+// As regras (decisão de 2026-10-19):
+// - Piloto desligado: nada automático sai.
+// - Disjuntor: 3 erros seguidos do servidor num módulo desligam aquele módulo até você religar.
+// - Reserva: nunca gastar abaixo de max(reserva mínima, 2 h de ouro/h medido).
+// - Teto do dia (00:00 de Brasília): 50% do ouro/h medido × 24 h, somando tudo. Sem medida ainda
+//   (menos de 5 min caçando), um teto baixo e fixo.
+// - Preço desconhecido = não compra.
+// - Diamante e Gema não existem aqui: o hook nem deixa esses comandos saírem.
+(function (root) {
+  'use strict';
+  const PIH = (root.__pokeidleHunt = root.__pokeidleHunt || {});
+  if (!PIH.on) return;
+
+  const CHAVE = 'piloto:cofre:v1';
+  const PADRAO = {
+    ligado: true, // o piloto inteiro (mas cada automação começa desligada no próprio módulo)
+    modo: 'proporcional', // 'proporcional' | 'fixo'
+    reservaMin: 5_000_000,
+    horasReserva: 2,
+    fracaoTeto: 0.5,
+    // 1.20: o teto também olha o dinheiro guardado — o maior entre o ganho (fração do ouro/h × 24 h)
+    // e esta fração do saldo acima da reserva, os dois congelados à 00:00. Quem tem muito ouro
+    // parado e ganha pouco por hora não fica travado num teto pequeno.
+    fracaoSaldo: 0.15,
+    tetoFixoDia: 10_000_000,
+    tetoSemMedida: 10_000_000, // 1.2.1: era 2 mi e travava a compra automática no primeiro dia
+    // teto por categoria (0 = categoria proibida; null = só o teto do dia)
+    tetoCategoria: { repor: null, mercado: null, ovos: 0 },
+    errosParaDesligar: 3,
+  };
+  const CATEGORIAS = { repor: 'Reposição (bolas, poções, revives)', mercado: 'Compra automática no Mercado', ovos: 'Mystery Eggs' };
+  // Os ovos do Market: o id do item e o preço em ouro (shared/chocadeira.mjs).
+  const OVOS = { 70091: 100_000_000, 70092: 500_000_000, 70093: 1_000_000_000, 70094: Infinity }; // 70094 (Shiny) nunca é comprado sozinho
+
+  const diaBrasilia = (t = Date.now()) => new Date(t - 3 * 3_600_000).toISOString().slice(0, 10);
+
+  function ler() {
+    try {
+      const s = JSON.parse(localStorage.getItem(CHAVE)) || {};
+      return {
+        cfg: { ...PADRAO, ...(s.cfg || {}), ...(Number(s.cfg && s.cfg.tetoSemMedida) === 2_000_000 ? { tetoSemMedida: PADRAO.tetoSemMedida } : {}), tetoCategoria: { ...PADRAO.tetoCategoria, ...((s.cfg || {}).tetoCategoria || {}) } },
+        dia: s.dia || diaBrasilia(),
+        gasto: s.gasto || {},
+        ouroH: Number(s.ouroH) || 0,
+        ouroHEm: Number(s.ouroHEm) || 0,
+        ouroHDia: Number(s.ouroHDia) || 0,
+        saldoDia: Number(s.saldoDia) || 0,
+        desligados: s.desligados || {},
+        avisoRepor: typeof s.avisoRepor === 'string' ? s.avisoRepor : '',
+      };
+    } catch {
+      return { cfg: { ...PADRAO, tetoCategoria: { ...PADRAO.tetoCategoria } }, dia: diaBrasilia(), gasto: {}, ouroH: 0, ouroHEm: 0, ouroHDia: 0, saldoDia: 0, desligados: {} };
+    }
+  }
+  let s = ler();
+  const gravar = () => { try { localStorage.setItem(CHAVE, JSON.stringify(s)); } catch { /* sem armazenamento */ } };
+
+  function virarDia() {
+    const hoje = diaBrasilia();
+    // O teto do dia é congelado na virada, com o ouro/h de então: uma venda grande no meio do dia
+    // não estoura o teto de hoje (auditoria, caso G).
+    if (s.dia === hoje) return false;
+    const ontem = Object.values(s.gasto).reduce((a, b) => a + (Number(b) || 0), 0);
+    const ouroAgora = Number(eu && eu.gold);
+    s.dia = hoje; s.gasto = {}; s.ouroHDia = s.ouroH; s.saldoDia = Number.isFinite(ouroAgora) && ouroAgora > 0 ? ouroAgora : 0; gravar();
+    diarioViradaPendente = `novo dia (00:00 de Brasília): gasto zerado${ontem ? `, ontem foram ${nf.format(Math.round(ontem))}` : ''}`;
+    return true;
+  }
+  let diarioViradaPendente = '';
+  // A virada não espera alguém abrir o Cofre: confere a cada 15 s e avisa o painel.
+  setInterval(() => {
+    virarDia();
+    if (diarioViradaPendente) { const t = diarioViradaPendente; diarioViradaPendente = ''; diario(t, 'ok'); }
+  }, 15_000);
+
+  // ---- o que o cofre sabe do jogo -----------------------------------------------------------
+  let eu = null;
+  let welcome = null;
+  let precoItem = new Map(); // itemId -> preço de compra na loja (1.43.1: npcPrice; o priceGold ficou menor que o cobrado)
+  // Ouro já autorizado que ainda não saiu do saldo (fila, sorteio, estado atrasado): entra no piso
+  // e no "livre". Sai quando o saldo cai (o mais antigo primeiro) ou depois de 2 min (auditoria, caso A).
+  let pendentes = []; // { id, custo, em }
+  let ouroAnterior = null;
+  const pendente = () => {
+    const limite = Date.now() - 120_000;
+    pendentes = pendentes.filter((r) => r.em >= limite && r.custo > 0);
+    return pendentes.reduce((a, r) => a + r.custo, 0);
+  };
+  PIH.on('estado', (e) => {
+    eu = e;
+    const ouro = Number(e && e.gold);
+    if (Number.isFinite(ouro)) {
+      if (ouroAnterior !== null && ouro < ouroAnterior) {
+        let caiu = ouroAnterior - ouro;
+        for (const r of pendentes) { if (caiu <= 0) break; const k = Math.min(caiu, r.custo); r.custo -= k; caiu -= k; }
+      }
+      ouroAnterior = ouro;
+      // Primeira vez no dia (ou versão nova): o saldo de agora mais o que já saiu hoje.
+      if (!s.saldoDia && ouro > 0) { s.saldoDia = Math.round(ouro + gastoHoje()); gravar(); }
+    }
+  });
+  PIH.on('welcome', (m) => {
+    welcome = m;
+    const loja = (i) => (Number(i.npcPrice) > 0 ? Number(i.npcPrice) : Number(i.priceGold) || 0);
+    for (const i of m.itensNossos || []) if (i && loja(i) > 0) precoItem.set(Number(i.id), loja(i));
+    // O catálogo do jogo (items.json) traz o priceGold das poções e revives.
+    if (PIH.carregarJogo) {
+      PIH.carregarJogo().then((j) => {
+        for (const [id, it] of j.itensPorId) if (loja(it) > 0 && !precoItem.has(id)) precoItem.set(id, loja(it));
+      }).catch(() => {});
+    }
+  });
+
+  // O ouro/h medido (só as subidas do ouro, da última meia hora contínua — nivel.js) vira a régua.
+  setInterval(() => {
+    try {
+      const m = PIH.nivel && PIH.nivel.ritmoMedido(null);
+      if (m && m.minutos >= 5 && m.ouro > 0) {
+        // média móvel: um pico (venda grande no mercado) não estoura o teto de uma vez
+        // média móvel com freio: no máximo +25% por hora (1,25^(1/60) por minuto). Venda grande
+        // no Mercado não vira "ouro/h" da noite para o dia.
+        const alvo = s.ouroH > 0 ? s.ouroH * 0.7 + m.ouro * 0.3 : m.ouro;
+        s.ouroH = Math.round(s.ouroH > 0 ? Math.min(alvo, s.ouroH * 1.25 ** (1 / 60)) : Math.min(alvo, 50_000_000));
+        if (!s.ouroHDia) s.ouroHDia = s.ouroH;
+        s.ouroHEm = Date.now();
+        gravar();
+      }
+    } catch { /* sem medida */ }
+  }, 60_000);
+
+  // ---- as contas ------------------------------------------------------------------------------
+  const reserva = () => Math.max(Number(s.cfg.reservaMin) || 0, (Number(s.cfg.horasReserva) || 0) * s.ouroH);
+  // 1.33 (pedido do André: "conta nova não compra nada no começo"): a reserva de 5 mi era maior que
+  // o saldo de quem começa, e a reposição (bola, poção, revive — sem isso o pokémon morre e a caça
+  // para) nunca comprava. Para a REPOSIÇÃO o piso é o menor entre a reserva e 10% do saldo: conta
+  // nova compra o primeiro lote; conta grande continua com a reserva inteira (10% do saldo passa dela).
+  // 1.33.2 (o André: "se eu tenho dinheiro compra e revende; o automático é pelo dinheiro da conta"):
+  // a compra automática do Mercado não usa mais o teto do DIA (que somava o que o radar comprava e
+  // já revendia: com 160 mi no saldo ela parava em ~23 mi e uma pedra 29% abaixo ficava só no aviso).
+  // O limite agora é o capital em giro: o que o radar comprou e ainda não vendeu (a custo) mais a
+  // compra nova não passa de METADE do que você tem (saldo + esse estoque). Vendeu, a vaga volta.
+  // A reserva continua valendo. Sem o número do estoque ainda, conta como estoque o que o Mercado
+  // gastou hoje (o lado seguro).
+  const GIRO_MAX = 0.5;
+  let estoqueRadar = null; // { valor, em } — vem do radar (o mesmo "Em estoque" da aba Lucro)
+  document.addEventListener('piloto:radar-estoque', (ev) => {
+    try { const d = JSON.parse(ev.detail); const v = Number(d && d.valor); if (Number.isFinite(v) && v >= 0) estoqueRadar = { valor: v, em: Date.now() }; } catch { /* nada */ }
+  });
+  const estoqueAgora = () => (estoqueRadar && Date.now() - estoqueRadar.em < 30 * 60_000 ? estoqueRadar.valor : Number(s.gasto.mercado) || 0);
+  function livreDoGiro() {
+    const ouro = Number(eu && eu.gold) || 0;
+    const est = estoqueAgora();
+    return GIRO_MAX * (ouro + est) - est - pendente();
+  }
+  const reservaDe = (categoria) => (categoria === 'repor' ? Math.min(reserva(), Math.max(0, 0.1 * (Number(eu && eu.gold) || 0))) : reserva());
+  function tetoDia() {
+    virarDia();
+    if (s.cfg.modo === 'fixo') return Number(s.cfg.tetoFixoDia) || 0;
+    const base = s.ouroHDia || 0;
+    const peloGanho = base > 0 ? (Number(s.cfg.fracaoTeto) || 0) * base * 24 : Number(s.cfg.tetoSemMedida) || 0;
+    return Math.max(peloGanho, tetoPeloSaldo());
+  }
+  // A parte do teto que vem do saldo guardado (congelado à 00:00 de Brasília).
+  function tetoPeloSaldo() {
+    const f = Number(s.cfg.fracaoSaldo);
+    if (!(f > 0) || !(s.saldoDia > 0)) return 0;
+    return Math.floor(f * Math.max(0, s.saldoDia - reserva()));
+  }
+  const gastoHoje = () => { virarDia(); return Object.values(s.gasto).reduce((a, b) => a + (Number(b) || 0), 0); };
+  // 1.46.0 (relato #3, ZaryImortal; o André aprovou em 29/10): conta pequena (Nv 100-150, 2 mi de
+  // saldo) não conseguia usar o Automático — o teto do dia sai do ouro/h, que é baixo no começo, e
+  // com o preço real da loja (1.43.1) a poção e o revive batiam no teto logo cedo. No começo do jogo
+  // quase todo o ouro vai mesmo para item. Agora, no teto "Pelo ganho" (o padrão e o do Automático),
+  // a REPOSIÇÃO fica fora do teto do dia: o limite dela é o piso da reposição (o menor entre a reserva
+  // e 10% do saldo — sempre sobram pelo menos 10%) e o teto próprio da categoria, se você puser um.
+  // O Mercado segue com a reserva e o capital em giro; os ovos, com o teto do dia. No teto "Fixo"
+  // (escolha sua no Manual), a reposição continua dentro dele, como antes.
+  const reporForaDoTeto = () => s.cfg.modo !== 'fixo';
+  const gastoNoTeto = () => gastoHoje() - (Number(s.gasto.mercado) || 0) - (reporForaDoTeto() ? (Number(s.gasto.repor) || 0) : 0);
+
+  function custoDe(pedido) {
+    if (pedido.t === 'shop.buy') {
+      let unit = null;
+      if (pedido.kind === 'ball') {
+        const b = (welcome && welcome.catalogoBolas || []).find((x) => Number(x.id) === pedido.id);
+        unit = b && Number(b.priceGold) > 0 ? Number(b.priceGold) : null;
+      } else {
+        unit = OVOS[pedido.id] || precoItem.get(pedido.id) || null;
+      }
+      if (!unit) return { custo: null, categoria: 'repor' };
+      return { custo: unit * pedido.qty, categoria: OVOS[pedido.id] ? 'ovos' : 'repor' };
+    }
+    if (pedido.t === 'market.comprar') return { custo: pedido.qtd * pedido.preco, categoria: 'mercado' };
+    // 1.21: anúncio automático de pokémon — o que sai do bolso é a diária (welcome.mercado.taxaDiaria × dias).
+    if (pedido.t === 'market.criar' && pedido.tipo === 'pokemon') {
+      const diaria = Number(welcome && welcome.mercado && welcome.mercado.taxaDiaria);
+      return { custo: diaria > 0 && Number.isInteger(pedido.dias) ? diaria * pedido.dias : null, categoria: 'mercado' };
+    }
+    return { custo: 0, categoria: null };
+  }
+
+  /** O piloto (ou o automático do radar) pode mandar isto? Reserva o ouro se puder. */
+  function autorizar(pedido, origem, opcoes = {}) {
+    virarDia();
+    if (!s.cfg.ligado) return { ok: false, motivo: 'piloto desligado' };
+    if (s.desligados[origem]) return { ok: false, motivo: `módulo ${origem} desligado pelo disjuntor (${s.desligados[origem].motivo})` };
+    const { custo, categoria } = custoDe(pedido);
+    if (custo === null) return { ok: false, motivo: 'preço desconhecido: não compro no escuro' };
+    if (custo > 0) {
+      if (pedido.moeda && pedido.moeda !== 'gold') return { ok: false, motivo: 'só ouro' };
+      const ouro = Number(eu && eu.gold);
+      if (!Number.isFinite(ouro)) return { ok: false, motivo: 'saldo desconhecido' };
+      // 1.36.2 (o André: "a ideia é que dê para comprar... as coisas evoluem"): a pedra de evolução
+      // do TIME não é estoque de revenda. Ela segue a reserva da reposição (a menor entre a reserva e
+      // 10% do saldo) em vez dos 5 mi do Mercado, e fica fora do capital em giro — mas nunca passa de
+      // metade do ouro livre, para sobrar para poção e revive (a sobrevivência vem antes).
+      const pedraTime = categoria === 'mercado' && opcoes && opcoes.pedraTime === true;
+      if (pedraTime) {
+        const livreVida = ouro - pendente() - reservaDe('repor');
+        if (ouro - pendente() - custo < reservaDe('repor')) return { ok: false, motivo: `abaixo da reserva (${fmt(reservaDe('repor'))}, com ${fmt(pendente())} já comprometido)` };
+        if (custo > 0.5 * livreVida) return { ok: false, motivo: `a pedra passaria de metade do ouro livre (${fmt(Math.max(0, livreVida))}): o resto é da reposição` };
+      } else if (ouro - pendente() - custo < reservaDe(categoria)) return { ok: false, motivo: `abaixo da reserva (${fmt(reservaDe(categoria))}, com ${fmt(pendente())} já comprometido)` };
+      if (categoria === 'mercado' && !pedraTime) {
+        const giro = livreDoGiro();
+        if (custo > giro) return { ok: false, motivo: `capital em giro: o estoque do radar mais esta compra passaria de metade do que você tem (livre ${fmt(Math.max(0, giro))})` };
+      } else if (categoria !== 'mercado' && !(categoria === 'repor' && reporForaDoTeto())) {
+        const teto = tetoDia();
+        if (gastoNoTeto() + custo > teto) return { ok: false, motivo: `teto do dia (${fmt(teto)})` };
+      }
+      const tc = s.cfg.tetoCategoria[categoria];
+      if (tc !== null && tc !== undefined && (Number(s.gasto[categoria]) || 0) + custo > tc) return { ok: false, motivo: tc === 0 ? `${CATEGORIAS[categoria]} proibida no cofre` : `teto de ${CATEGORIAS[categoria]} (${fmt(tc)})` };
+      s.gasto[categoria] = (Number(s.gasto[categoria]) || 0) + custo;
+      // 1.46.0: a reposição passou do que seria o teto do dia — só avisa (uma vez por dia), para um
+      // gasto fora do normal (pokémon morrendo sem parar) aparecer no Diário
+      if (categoria === 'repor' && reporForaDoTeto() && s.avisoRepor !== s.dia && s.gasto.repor > tetoDia()) {
+        s.avisoRepor = s.dia;
+        diario(`a reposição de hoje (${fmt(s.gasto.repor)}) passou do teto do dia (${fmt(tetoDia())}) — ela fica fora do teto e sempre sobram pelo menos 10% do saldo; se o pokémon está morrendo muito, confira a hunt`, 'aviso');
+      }
+      gravar();
+      const res = Object.freeze({ id: ++ultimaReserva, categoria, custo, dia: s.dia });
+      reservasAbertas.add(res.id);
+      pendentes.push({ id: res.id, custo, em: Date.now() });
+      // 1.35: o Extrato anota o gasto (a compra do Mercado vem do Radar, que sabe se ganhou o sorteio)
+      if (pedido.t !== 'market.comprar') { try { PIH.extrato?.doCofre?.(pedido, custo, res, origem); } catch { /* o extrato é só a tela */ } }
+      return { ok: true, motivo: null, custo, categoria, reserva: res };
+    }
+    return { ok: true, motivo: null, custo: 0, categoria, reserva: null };
+  }
+
+  // Devolve UMA reserva, uma vez, e só no dia em que ela foi feita (o dia novo começa zerado).
+  let ultimaReserva = 0;
+  const reservasAbertas = new Set();
+  function estornar(reserva) {
+    if (!reserva || !reservasAbertas.has(reserva.id)) return;
+    reservasAbertas.delete(reserva.id);
+    try { PIH.extrato?.estornoDoCofre?.(reserva); } catch { /* o extrato é só a tela */ }
+    pendentes = pendentes.filter((r) => r.id !== reserva.id);
+    virarDia();
+    if (reserva.dia !== s.dia) return;
+    s.gasto[reserva.categoria] = Math.max(0, (Number(s.gasto[reserva.categoria]) || 0) - reserva.custo);
+    gravar();
+  }
+
+  /** Quanto ainda dá para gastar agora numa categoria (para a reposição dimensionar a compra). */
+  function livre(categoria) {
+    virarDia();
+    if (!s.cfg.ligado) return 0;
+    const ouro = Number(eu && eu.gold) || 0;
+    const tc = s.cfg.tetoCategoria[categoria];
+    const porCat = tc === null || tc === undefined ? Infinity : tc - (Number(s.gasto[categoria]) || 0);
+    if (categoria === 'mercado') return Math.max(0, Math.min(ouro - pendente() - reservaDe(categoria), livreDoGiro(), porCat));
+    if (categoria === 'repor' && reporForaDoTeto()) return Math.max(0, Math.min(ouro - pendente() - reservaDe(categoria), porCat));
+    return Math.max(0, Math.min(ouro - pendente() - reservaDe(categoria), tetoDia() - gastoNoTeto(), porCat));
+  }
+
+  // ---- disjuntor --------------------------------------------------------------------------------
+  const erros = {};
+  function registrarErro(origem, chave) {
+    erros[origem] = (erros[origem] || 0) + 1;
+    diario(`${origem}: o servidor recusou (${chave || 'erro'}) — ${erros[origem]}/${s.cfg.errosParaDesligar}`, 'aviso');
+    if (erros[origem] >= s.cfg.errosParaDesligar && !s.desligados[origem]) {
+      s.desligados[origem] = { em: Date.now(), motivo: `${erros[origem]} recusas seguidas, a última: ${chave || 'erro'}` };
+      gravar();
+      diario(`DISJUNTOR: módulo ${origem} desligado. Confira o diário e religue na aba Cofre.`, 'erro');
+      PIH.emit('piloto.disjuntor', { origem });
+    }
+  }
+  function registrarSucesso(origem) { erros[origem] = 0; }
+  // 1.12.3: o disjuntor religa sozinho depois de 30 min (o Automático é de um botão só); se o
+  // servidor seguir recusando, ele cai de novo após 3 recusas.
+  const liberado = (origem) => {
+    const d = s.desligados[origem];
+    if (d && Date.now() - (Number(d.em) || 0) > 30 * 60_000) {
+      delete s.desligados[origem]; erros[origem] = 0; gravar();
+      diario(`módulo ${origem} religado sozinho depois de 30 min`, 'ok');
+    }
+    return s.cfg.ligado && !s.desligados[origem];
+  };
+
+  // ---- diário do piloto (compartilhado com a rotina) --------------------------------------------
+  const registro = [];
+  function diario(txt, tipo = 'info') {
+    registro.unshift({ t: Date.now(), txt, tipo });
+    registro.length = Math.min(registro.length, 60);
+    console.info('[piloto]', txt);
+    PIH.emit('piloto.diario', registro);
+  }
+
+  // ---- aba Cofre ----------------------------------------------------------------------------------
+  const nf = new Intl.NumberFormat('pt-BR');
+  const fmt = (v) => (Number.isFinite(v) ? nf.format(Math.round(v)) : '—');
+  const esc = (x) => String(x ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+  const hora = (t) => new Date(t).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+  // ---- aba Cofre (1.13): os números em caixas; as regras só no modo Manual ---------------------
+  function html(modo = 'manual') {
+    virarDia();
+    const K = PIH.kit;
+    const c = s.cfg;
+    const manual = modo === 'manual';
+    const trava = modo === 'desligado';
+    const CURTO = { repor: 'Reposição', mercado: 'Mercado', ovos: 'Ovos' };
+    const ICO = { repor: 'repor', mercado: 'mercado', ovos: 'ovo' };
+    // o teto do dia vale para reposição e ovos; o Mercado tem o limite do capital em giro (1.33.2)
+    const gasto = gastoNoTeto();
+    const teto = tetoDia();
+    const fora = reporForaDoTeto();
+    const topo = `<div class="plt-ks">
+        ${K.numeroGrande({ icone: 'ouro', rotulo: 'Ouro/h medido', valor: s.ouroH ? fmt(s.ouroH) : '…', classe: 'k-ouro' })}
+        ${K.numeroGrande({ icone: 'escudo', rotulo: 'Reserva', valor: fmt(reserva()), sub: reservaDe('repor') < reserva() ? `reposição: ${fmt(reservaDe('repor'))} (10% do saldo)` : 'nunca gasta abaixo' })}
+        ${K.numeroGrande({ icone: 'cofre', rotulo: 'Teto de hoje', valor: fmt(teto), sub: c.modo === 'fixo' ? 'fixo' : tetoPeloSaldo() > 0 && tetoPeloSaldo() >= teto ? `${Math.round((c.fracaoSaldo || 0) * 100)}% do saldo acima da reserva` : `${Math.round((c.fracaoTeto || 0) * 100)}% do ouro/h × 24 h` })}
+        ${K.numeroGrande({ icone: 'gasto', rotulo: 'Gasto hoje', valor: fmt(gasto), sub: teto > 0 ? `${Math.round((gasto / teto) * 100)}% do teto` : '', classe: 'k-gasto', pct: teto > 0 ? gasto / teto : 0 })}
+      </div>`;
+    const cats = Object.keys(CATEGORIAS).map((k) => {
+      const tc = c.tetoCategoria[k];
+      const usado = Number(s.gasto[k]) || 0;
+      const limite = tc === null || tc === undefined ? 'sem teto próprio' : tc === 0 ? 'proibida' : `teto ${fmt(tc)}`;
+      const limiteTxt = k === 'repor' && fora && (tc === null || tc === undefined) ? `fora do teto do dia · piso ${fmt(reservaDe('repor'))}` : limite;
+      const giro = k === 'mercado' ? ` · em estoque ${fmt(Math.round(estoqueAgora()))} · livre ${fmt(Math.max(0, Math.round(livreDoGiro())))}` : '';
+      const dica = k === 'mercado' ? `${CATEGORIAS[k]}. Fora do teto do dia: o limite é o capital em giro — o que o radar comprou e ainda não vendeu mais a compra nova não passa de metade do que você tem (saldo + esse estoque). Vendeu, a vaga volta. A reserva vale sempre.`
+        : k === 'repor' && fora ? `${CATEGORIAS[k]}. Fora do teto do dia (no começo do jogo quase todo o ouro vai para item): o limite é o piso da reposição — o menor entre a reserva e 10% do saldo, então sempre sobram pelo menos 10% — e o teto próprio desta categoria, se você puser um. No teto "Fixo", a reposição volta para dentro dele.` : CATEGORIAS[k];
+      return K.linha({ id: `cat:${k}`, icone: ICO[k], nome: CURTO[k], dica, status: `hoje ${fmt(usado)} · ${limiteTxt}${giro}`,
+        direita: manual ? `<input type="number" class="plt-num" min="0" step="100000" placeholder="livre" value="${tc === null || tc === undefined ? '' : tc}" data-definir="cofre:cat.${k}" aria-label="Teto de ${CURTO[k]} (0 = proibida)"${trava ? ' disabled' : ''}>` : '' });
+    }).join('');
+    const desl = Object.entries(s.desligados);
+    const disjuntor = desl.length ? K.linha({ id: 'disjuntor', icone: 'escudo', nome: 'Disjuntor', classe: 'plt-l-alerta', dica: 'Três recusas seguidas do servidor desligam o módulo. Ele religa sozinho em 30 min, ou agora no botão.',
+      status: desl.map(([o, d]) => `${esc(o)}: ${esc(d.motivo)}`).join(' · '), direita: desl.map(([o]) => K.acao(`Religar ${esc(o)}`, `data-acao="religar:${esc(o)}"`, '', trava)).join('') }) : '';
+    const regras = manual ? `${K.grupo('Regras')}
+      ${K.linha({ id: 'modo', icone: 'cofre', nome: 'Teto do dia', dica: 'Pelo ganho: o maior entre uma fração do ouro/h medido × 24 h e 15% do saldo acima da reserva, os dois congelados à 00:00 de Brasília. Fixo: o valor que você escolher.',
+        ajustes: `${K.fcampo('Modo', K.escala('cofre:modo', c.modo, [['proporcional', 'Pelo ganho'], ['fixo', 'Fixo']], trava))}
+          ${c.modo === 'fixo' ? K.fcampo('Teto fixo', K.numero('cofre:tetoFixoDia', c.tetoFixoDia, 0, null, 1000000, trava)) : K.fcampo('Fração', K.numero('cofre:fracaoTeto', c.fracaoTeto, 0, 1, 0.05, trava), 'Teto do dia = esta fração × ouro/h × 24 h')}` })}
+      ${K.linha({ id: 'reserva', icone: 'escudo', nome: 'Reserva', dica: 'O ouro que nunca é gasto: o maior entre o mínimo e estas horas de ouro/h.',
+        ajustes: `${K.fcampo('Mínimo', K.numero('cofre:reservaMin', c.reservaMin, 0, null, 1000000, trava))}${K.fcampo('+ horas de ouro/h', K.numero('cofre:horasReserva', c.horasReserva, 0, 48, 0.5, trava))}` })}` : '';
+    const diarioHtml = `${K.grupo('Diário')}<ul class="plt-diario">${registro.length ? registro.slice(0, 20).map((d) => `<li class="pih-d-${d.tipo}"><time>${hora(d.t)}</time>${esc(d.txt)}</li>`).join('') : '<li class="pih-dim">nada ainda</li>'}</ul>`;
+    return `${topo}${disjuntor}${K.grupo(manual ? 'Por categoria (0 = proibida)' : 'Por categoria')}${cats}${regras}${diarioHtml}`;
+  }
+
+  // Mudança vinda do painel.
+  function definir(caminho, v) {
+    if (caminho.startsWith('cat.')) {
+      const k = caminho.slice(4);
+      if (!(k in CATEGORIAS) || !Number.isFinite(v) || v < 0) return; // vazio não libera categoria (auditoria, item 9)
+      s.cfg.tetoCategoria[k] = v;
+    } else if (caminho in s.cfg) {
+      s.cfg[caminho] = v;
+      if (caminho === 'ligado') diario(v ? 'piloto ligado' : 'piloto DESLIGADO', v ? 'ok' : 'aviso');
+    } else return;
+    gravar();
+  }
+  const acoes = {};
+  function religar(o) {
+    delete s.desligados[o];
+    erros[o] = 0;
+    gravar();
+    diario(`módulo ${o} religado`, 'ok');
+  }
+
+  function ligar(painel, redesenhar) {
+    for (const el of painel.querySelectorAll('[data-cofre]')) {
+      el.addEventListener('change', () => {
+        const k = el.dataset.cofre;
+        if (el.type === 'number') {
+          // vazio ou inválido (ex.: "5.000.000") não vira 0: fica o valor anterior (auditoria, item 9)
+          const v = el.value.trim() === '' ? NaN : Number(el.value);
+          if (!Number.isFinite(v) || v < 0) { redesenhar(); return; }
+          s.cfg[k] = v;
+        } else s.cfg[k] = el.type === 'checkbox' ? el.checked : el.value;
+        if (k === 'ligado') diario(s.cfg.ligado ? 'piloto ligado' : 'piloto DESLIGADO', s.cfg.ligado ? 'ok' : 'aviso');
+        gravar();
+        redesenhar();
+      });
+    }
+    for (const el of painel.querySelectorAll('[data-cofre-cat]')) {
+      el.addEventListener('change', () => {
+        const v = el.value.trim() === '' ? NaN : Number(el.value);
+        if (!Number.isFinite(v) || v < 0) { redesenhar(); return; } // vazio não libera categoria
+        s.cfg.tetoCategoria[el.dataset.cofreCat] = v;
+        gravar();
+        redesenhar();
+      });
+    }
+    for (const el of painel.querySelectorAll('[data-religar]')) {
+      el.addEventListener('click', () => {
+        delete s.desligados[el.dataset.religar];
+        erros[el.dataset.religar] = 0;
+        gravar();
+        diario(`módulo ${el.dataset.religar} religado`, 'ok');
+        redesenhar();
+      });
+    }
+  }
+
+  // Para o painel: o interruptor geral e um resumo de leitura.
+  const ligado = () => !!s.cfg.ligado;
+  function definirLigado(v) {
+    s.cfg.ligado = !!v;
+    gravar();
+    diario(s.cfg.ligado ? 'piloto ligado' : 'piloto DESLIGADO', s.cfg.ligado ? 'ok' : 'aviso');
+  }
+  const resumo = () => ({ ligado: !!s.cfg.ligado, ouroH: s.ouroH, reserva: reserva(), teto: tetoDia(), gasto: gastoHoje(), gastoPorCategoria: { ...s.gasto }, pendente: pendente(), desligados: Object.keys(s.desligados) });
+  const ultimos = (n = 8) => registro.slice(0, n).map((r) => ({ ...r }));
+
+  // Escolher o Automático religa os módulos que o disjuntor desligou (com registro no diário).
+  function religarTudo() {
+    const ks = Object.keys(s.desligados);
+    if (!ks.length) return;
+    for (const k of ks) { delete s.desligados[k]; erros[k] = 0; }
+    gravar();
+    diario(`Automático: religados ${ks.join(', ')}`, 'ok');
+  }
+  PIH.registrarCofre({ autorizar, estornar, livre, reserva, tetoDia, gastoHoje, liberado, registrarErro, registrarSucesso, religarTudo, religar, definir, acoes, diario, html, ligar, CATEGORIAS, pendente, ligado, definirLigado, resumo, ultimos, _interno: { custoDe, estado: () => s } });
+})(globalThis);

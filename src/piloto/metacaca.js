@@ -1,0 +1,515 @@
+// Caçar o meta (1.24): vai buscar, um por um, os 5 pokémon da comp do meta.
+//
+// Pedido do André (2026-10-23/24), etapa 3 do meta:
+// - começa DESLIGADO; ligar desliga a Troca de hunt (e ligar a Troca de hunt desliga este);
+// - o mais forte do time luta; o Piloto vai à hunt onde a família do alvo aparece e fica até
+//   capturar; capturou → guarda na Coleção (nunca vende) e vai para o próximo;
+// - "o que for mais fácil de capturar": entre as hunts onde aparece algum da família (a base ou já
+//   evoluído), a de mais encontros por hora com o alvo (abates/h × fatia do alvo nos spawns), com
+//   um pequeno bônus para a forma mais evoluída. Família sem hunt (lendário) é pulada;
+// - "primeiro, depois melhora": o primeiro de cada família vale; se depois vier um melhor (mais
+//   Poder no nível máximo que você pode usar), ele toma o lugar e o antigo deixa de ser guardado;
+// - fechou os 5 → vira o time principal (campo e PvP, com cadeado) e o modo se desliga sozinho.
+//   A Troca de hunt fica para você ligar.
+// A comp é congelada quando você liga: o meta mudar no meio não muda o alvo.
+// 1.45.0 (pedido do André em 29/10, opção nova que não mexe na de sempre): "Só aceitar um bom".
+// Ligada, cada alvo só conta como pego quando o seu exemplar da família tem a nota do jogo
+// (`notaDePokemon` do shared/nota-pokemon.mjs, 0 a 10) acima do corte escolhido — a nota de quando
+// ele evoluir até o do meta (evoluir não rerola IV e sempre sobe a nota). Shiny e P5 passam sempre.
+// Pegou um ruim: ele fica guardado de reserva e o Piloto continua no mesmo alvo; veio o bom, ele
+// toma o lugar e o Piloto vai para o próximo. Desligada (o padrão), tudo é como antes.
+(function (raiz) {
+  'use strict';
+  const PIH = raiz.__pokeidleHunt;
+  if (!PIH || !PIH.on || !PIH.pedir || !PIH.kit) return;
+  const K = PIH.kit;
+  const esc = K.esc;
+
+  const CHAVE = 'piloto:metacaca:v1';
+  const IR_A_CADA_MS = 2 * 60_000;
+  const ESCOLHA_VALE_MS = 10 * 60_000;
+  const nf = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 0 });
+  const NOTAS = [3.5, 4, 5]; // 3,5 = o mínimo do Mercado; 4,0 = a faixa "bom" do jogo; 5,0 = "forte"
+  const L = () => { try { const l = PIH.idioma && PIH.idioma.atual ? PIH.idioma.atual() : 'pt'; return ['pt', 'en', 'es'].includes(l) ? l : 'pt'; } catch { return 'pt'; } };
+  const t3 = (pt, en, es) => ({ pt, en, es })[L()] || pt;
+  const notaTxt = (n) => (Number.isFinite(n) ? n.toFixed(1).replace('.', ',') : '?');
+
+  const ler = () => {
+    try {
+      const c = JSON.parse(localStorage.getItem(CHAVE) || 'null') || {};
+      return { ligado: c.ligado === true, soBom: c.soBom === true, notaMin: NOTAS.includes(Number(c.notaMin)) ? Number(c.notaMin) : 4, recorte: c.recorte === 'faixa' ? 'faixa' : 'topo', alvos: Array.isArray(c.alvos) ? c.alvos : [], vistos: Array.isArray(c.vistos) ? c.vistos : [], desde: Number(c.desde) || 0, fim: c.fim || null, rodizioDepois: c.rodizioDepois === true, descartar: Array.isArray(c.descartar) ? c.descartar.filter((d) => d && Number.isInteger(d.id)).slice(-50) : [], descartados: Array.isArray(c.descartados) ? c.descartados.map(Number).filter(Boolean).slice(-500) : [] };
+    } catch { return { ligado: false, soBom: false, notaMin: 4, recorte: 'topo', alvos: [], vistos: [], desde: 0, fim: null, descartar: [], descartados: [] }; }
+  };
+  let cfg = ler();
+  // 1.33 (o André: "um pokémon ser pulado por falta de hunt segura é impossível"): o "pulado para
+  // sempre" acabou. Quem foi pulado antes volta para a fila e é tentado de novo agora.
+  for (const a of cfg.alvos) if (a && a.semHunt) { delete a.semHunt; a.espera = { em: 0, nivel: 0 }; }
+  const gravar = () => { try { localStorage.setItem(CHAVE, JSON.stringify(cfg)); } catch { /* sem armazenamento */ } };
+  const diario = (txt, tipo) => PIH.cofre?.diario?.(`meta: ${txt}`, tipo);
+
+  let eu = null;
+  let welcome = null;
+  PIH.on('estado', (e) => { eu = e; });
+  PIH.on('welcome', (w) => { welcome = w; });
+
+  const meus = () => ((eu && eu.pokemons) || []).filter((p) => p && Number.isInteger(p.id) && !p.ovo);
+  const porId = (id) => meus().find((p) => p.id === id) || null;
+  const podeUsar = (p) => !!p && (p.starter || (Number(p.level) || 0) <= (Number(eu && eu.level) || 0) + 5);
+  const poderDe = (p) => Number(p && p.poder) || 0;
+  const nomeHunt = (slug) => ((welcome && welcome.hunts) || []).find((h) => h.slug === slug)?.nome || slug || '—';
+
+  // ---- o "melhor": o Poder no nível máximo que você pode usar (a fórmula do ⚔ do jogo) ----------
+  let N = null;
+  (async () => { try { N = await import(`${location.origin}/shared/nota-pokemon.mjs`); } catch { N = null; } })();
+  async function potencial(p) {
+    try {
+      const j = await PIH.carregarJogo();
+      const esp = j.especies.get(p.speciesId);
+      if (!N || !N.poderDePokemon || !esp) return poderDe(p);
+      return N.poderDePokemon({ ...p, level: Math.max(p.level || 1, (Number(eu && eu.level) || 1) + 5) }, esp);
+    } catch { return poderDe(p); }
+  }
+  // 1.45.0: a nota do jogo do exemplar como ele vai ficar no do meta (a maior entre a dele hoje e a
+  // dele na espécie do meta). Guardada por pokémon e espécie: a nota não muda com o nível.
+  const notas = new Map();
+  const chaveNota = (p, a) => `${p.id}:${p.speciesId}:${a.metaId}`;
+  async function notaComoMeta(p, a) {
+    const k = chaveNota(p, a);
+    if (notas.has(k)) return notas.get(k);
+    if (!N || typeof N.notaDePokemon !== 'function') return null;
+    let n = null;
+    try {
+      const j = await PIH.carregarJogo();
+      const vals = [];
+      const lerNota = (pk, esp) => { try { const r = N.notaDePokemon(pk, esp || null); const v = Number(r && typeof r === 'object' ? r.nota : r); if (Number.isFinite(v)) vals.push(v); } catch { /* sem nota */ } };
+      lerNota(p, j.especies.get(p.speciesId));
+      const espMeta = j.especies.get(a.metaId);
+      if (espMeta && a.metaId !== p.speciesId) lerNota({ ...p, speciesId: a.metaId }, espMeta);
+      if (vals.length) n = Math.max(...vals);
+    } catch { n = null; }
+    if (n != null) notas.set(k, n);
+    return n;
+  }
+  const notaGuardada = (p, a) => (p && a ? notas.get(chaveNota(p, a)) : undefined);
+  // é bom? (só vale com a opção ligada; desligada, qualquer um serve, como sempre)
+  const bomJa = (p, a) => !!p && (p.shiny === true || Number(p.potencia) >= 5 || (notaGuardada(p, a) ?? -1) >= cfg.notaMin);
+  async function ehBom(p, a) { if (!p) return false; if (p.shiny === true || Number(p.potencia) >= 5) return true; const n = await notaComoMeta(p, a); return n != null && n >= cfg.notaMin; }
+  // o alvo está pego? Desligada a opção: tem alguém da família. Ligada: e esse alguém é bom.
+  const pego = (a) => { const p = a.capturadoId ? porId(a.capturadoId) : null; return !!p && (!cfg.soBom || bomJa(p, a)); };
+
+  // ---- ligar e desligar -----------------------------------------------------------------------
+  const st = { motivo: '', alvoAtual: null, escolha: null, irEm: 0, ultimaTroca: 0 };
+  async function ligar() {
+    if (!PIH.meta || !PIH.meta.familia) return { ok: false, motivo: 'a aba Meta não carregou' };
+    if (!(await PIH.meta.familia.pronta())) return { ok: false, motivo: 'o catálogo do jogo ainda não carregou' };
+    const comp = PIH.meta.agregar(cfg.recorte).comp;
+    if (comp.length < 5) return { ok: false, motivo: `a comp do meta ainda tem ${comp.length} de 5 (espere a aba Meta ler mais times)` };
+    const alvos = [];
+    for (const a of comp) {
+      const raizId = PIH.meta.familia.raizDoMeta(a);
+      // 1.26.3: quem evolui até o do meta (todas as linhagens), não só a linhagem da raiz
+      const membros = PIH.meta.familia.membrosDoMeta ? PIH.meta.familia.membrosDoMeta({ speciesId: a.speciesId, nome: a.nome }) : (raizId != null ? PIH.meta.familia.membros(raizId) : []);
+      // a mesma família pode aparecer duas vezes na comp (ex.: Charizard e Mega Charizard): cada vaga precisa do seu
+      const usados = new Set(alvos.map((x) => x.capturadoId).filter(Boolean));
+      const tenho = meus().filter((p) => PIH.meta.familia.serve(p, { speciesId: a.speciesId, nome: a.nome }) && !usados.has(p.id)).sort((x, y) => poderDe(y) - poderDe(x))[0] || null;
+      alvos.push({ meta: a.nome, metaId: a.speciesId, raiz: raizId, membros, capturadoId: tenho ? tenho.id : null, tinhaId: tenho ? tenho.id : null, tinha: !!tenho, espera: null, semHuntNoJogo: false });
+    }
+    // 1.41.0: só uma caçada por vez (Melhorar o time e Completar a Pokédex devolvem a Troca de hunt e o rodízio antes)
+    try { if (PIH.cacadas && PIH.cacadas.ativo()) PIH.cacadas.desligar('ligou o Caçar o meta'); } catch { /* sem caçadas */ }
+    // 1.47.0: o Modo farm também (ele devolve o rodízio e a Troca de hunt antes; daqui o Caçar o meta cuida)
+    try { if (PIH.farm && PIH.farm.ativo()) PIH.farm.desligar('ligou o Caçar o meta'); } catch { /* sem farm */ }
+    cfg = { ...cfg, ligado: true, alvos, vistos: meus().map((p) => p.id), desde: Date.now(), fim: null };
+    gravar();
+    // os dois não andam juntos: a Troca de hunt levaria o Piloto para longe do alvo
+    if (PIH.auto && PIH.auto._interno && PIH.auto._interno.cfg().hunt.ligado) { PIH.auto.definir('hunt.ligado', false); diario('Troca de hunt desligada (o Caçar o meta escolhe a hunt)'); }
+    // 1.32 (pedido do André): o rodízio também desliga, e só religa junto com a Troca de hunt
+    try {
+      if (PIH.rotina && PIH.rotina._interno && PIH.rotina._interno.cfg().rodizio.ligado) {
+        PIH.rotina.definir('rodizio.ligado', false);
+        cfg.rodizioDepois = true; gravar();
+        diario('Rodízio do time desligado (volta junto com a Troca de hunt)');
+      }
+    } catch { /* sem rotina */ }
+    diario(`ligado — alvo: ${alvos.map((x) => x.meta).join(', ')}${alvos.some((x) => x.tinha) ? ` (já tem: ${alvos.filter((x) => x.tinha).map((x) => x.meta).join(', ')})` : ''}`, 'ok');
+    st.escolha = null;
+    return { ok: true };
+  }
+  function desligar(motivo) {
+    if (!cfg.ligado) return;
+    cfg.ligado = false;
+    gravar();
+    diario(`desligado${motivo ? ` (${motivo})` : ''}`);
+    // você religou a Troca de hunt na mão: o rodízio volta junto
+    if (motivo === 'a Troca de hunt foi ligada') religarRodizio();
+  }
+  // 1.32: o rodízio que o Caçar o meta desligou volta quando a Troca de hunt volta (no fim da troca
+  // do time no Centro, ou quando você religa a Troca de hunt).
+  function religarRodizio() {
+    if (!cfg.rodizioDepois) return;
+    cfg.rodizioDepois = false; gravar();
+    try { if (PIH.rotina && !PIH.rotina._interno.cfg().rodizio.ligado) { PIH.rotina.definir('rodizio.ligado', true); diario('Rodízio do time ligado de novo (junto com a Troca de hunt)'); } } catch { /* sem rotina */ }
+  }
+
+  // ---- capturas -------------------------------------------------------------------------------
+  // 1.26: a família pela raiz (Mega X e as linhagens alternativas contam), não pela lista de ids.
+  // 1.26.3: serve para a vaga quem é o do meta (ou o Mega) ou evolui até ele, por qualquer linhagem.
+  const daFamilia = (a, p) => (PIH.meta?.familia?.serve ? PIH.meta.familia.serve(p, { speciesId: a.metaId, nome: a.meta }) : (a.raiz != null && PIH.meta?.familia?.raizDePk?.(p) === a.raiz));
+  // a primeira vaga ainda sem pokémon dessa família; se todas têm, a do mais fraco (para melhorar)
+  const alvoDaEspecie = (p) => cfg.alvos.find((a) => daFamilia(a, p) && !(a.capturadoId && porId(a.capturadoId))) || cfg.alvos.find((a) => daFamilia(a, p));
+  async function conferirCapturas() {
+    const vistos = new Set(cfg.vistos);
+    const novos = meus().filter((p) => !vistos.has(p.id));
+    if (!novos.length) return;
+    for (const p of novos) {
+      vistos.add(p.id);
+      const a = alvoDaEspecie(p);
+      if (!a) continue;
+      const atual = a.capturadoId ? porId(a.capturadoId) : null;
+      if (cfg.soBom) {
+        // 1.45.0: ruim não fecha o alvo; o bom toma o lugar de quem não é bom
+        const bomNovo = await ehBom(p, a);
+        const bomAtual = atual ? await ehBom(atual, a) : false;
+        const nota = notaTxt(await notaComoMeta(p, a));
+        if (!atual || (bomNovo && !bomAtual) || (bomNovo === bomAtual && (await potencial(p)) > (await potencial(atual)) * 1.02)) {
+          if (atual) aDescartar(atual, a);
+          a.capturadoId = p.id;
+          if (bomNovo) { diario(`capturou um bom: ${p.nome} (Nv ${p.level}, nota ${nota}) — ${a.meta} do meta, guardado na Coleção`, 'ok'); guardarNaColecao(p); }
+          else diario(`capturou ${p.nome} (Nv ${p.level}, nota ${nota}) — abaixo de ${notaTxt(cfg.notaMin)}, continua caçando ${a.meta}`);
+        } else if (!bomNovo) diario(`capturou ${p.nome} (Nv ${p.level}, nota ${nota}) — abaixo de ${notaTxt(cfg.notaMin)}, continua caçando ${a.meta}`);
+        continue;
+      }
+      if (!atual) {
+        a.capturadoId = p.id;
+        diario(`capturou ${p.nome} (Nv ${p.level}) — ${a.meta} do meta, guardado na Coleção`, 'ok');
+        guardarNaColecao(p);
+      } else if ((await potencial(p)) > (await potencial(atual)) * 1.02) {
+        aDescartar(atual, a);
+        a.capturadoId = p.id;
+        diario(`capturou um ${p.nome} melhor — ele fica no lugar do anterior (${atual.nome} Nv ${atual.level})`, 'ok');
+        guardarNaColecao(p);
+      }
+    }
+    cfg.vistos = [...vistos].slice(-3000);
+    gravar();
+  }
+  // 1.32 (o André: "o Ancient Pupitar é da Outland, não evolui para Tyranitar"): a comp congelada
+  // antes da 1.31 guardou variantes Outland na família e como "já tinha". Uma vez por carga, com o
+  // catálogo e os pokémon na mão: tira a Outland da família (a não ser que o próprio meta seja
+  // Outland) e esquece o pokémon guardado que não serve mais — o cartão volta a dizer que falta.
+  let saneado = false;
+  async function sanear() {
+    if (saneado || !PIH.meta?.familia?.serve || !PIH.meta.familia.ehOutland) return;
+    if (!(await PIH.meta.familia.pronta())) return;
+    if (!meus().length) return;
+    saneado = true;
+    const F = PIH.meta.familia;
+    let mexeu = false;
+    for (const a of cfg.alvos) {
+      const membros = Array.isArray(a.membros) ? a.membros : [];
+      const soOutland = membros.length > 0 && membros.every((m) => F.ehOutland(m.id));
+      const limpos = soOutland ? membros : membros.filter((m) => !F.ehOutland(m.id));
+      if (limpos.length !== membros.length) { a.membros = limpos; mexeu = true; }
+      for (const k of ['capturadoId', 'tinhaId']) {
+        const p = a[k] ? porId(a[k]) : null;
+        if (p && !daFamilia(a, p)) {
+          if (k === 'capturadoId') diario(`${a.meta}: ${p.nome} é da Outland e não evolui — não conta para o meta`, 'aviso');
+          a[k] = null; if (k === 'tinhaId') a.tinha = false; mexeu = true;
+        }
+      }
+    }
+    if (mexeu) gravar();
+  }
+  setInterval(() => { if (!saneado) sanear().catch(() => {}); }, 5000);
+
+  // 1.26 (pedido do André: "sempre verificar para deixar 100% alinhado"): a cada volta, cada vaga
+  // fica com o MELHOR pokémon seu daquela família — inclusive o que você já tinha antes de ligar
+  // (o Venusaur que ele tinha no time e o 1.24 não viu). Ninguém ocupa duas vagas.
+  async function alinhar() {
+    if (!PIH.meta?.familia?.serve) return;
+    const usados = new Set();
+    let mexeu = false;
+    for (const a of cfg.alvos) {
+      const cand = meus().filter((p) => !usados.has(p.id) && !descartadosSet().has(p.id) && daFamilia(a, p));
+      let melhor = null;
+      let mv = -1;
+      let mb = false;
+      // 1.45.0: com "Só aceitar um bom", o bom vem antes (depois, o de mais Poder)
+      for (const p of cand) { const v = await potencial(p); const b = cfg.soBom ? await ehBom(p, a) : false; if ((b && !mb) || (b === mb && v > mv)) { mv = v; mb = b; melhor = p; } }
+      let atual = a.capturadoId ? porId(a.capturadoId) : null;
+      if (atual && !daFamilia(a, atual)) { a.capturadoId = null; atual = null; mexeu = true; } // 1.32: não serve mais (Outland)
+      const bAtual = atual && cfg.soBom ? await ehBom(atual, a) : false;
+      if (melhor && (!atual || usados.has(atual.id) || (melhor.id !== atual.id && ((mb && !bAtual) || (mb === bAtual && mv > (await potencial(atual)) * 1.02))))) {
+        if (atual && !usados.has(atual.id)) diario(`${a.meta}: você já tem um ${melhor.nome} melhor (Nv ${melhor.level}) — ele fica no lugar do ${atual.nome} Nv ${atual.level}`, 'ok');
+        else if (!atual) diario(`${a.meta}: você já tem ${melhor.nome} (Nv ${melhor.level}) — não precisa caçar`, 'ok');
+        a.capturadoId = melhor.id; a.tinhaId = melhor.id; a.tinha = true; mexeu = true;
+      }
+      if (a.capturadoId) usados.add(a.capturadoId);
+    }
+    if (mexeu) gravar();
+  }
+  function guardarNaColecao(p) {
+    const colecao = (eu && eu.automation && Array.isArray(eu.automation.pokemonTravado)) ? eu.automation.pokemonTravado : [];
+    if (colecao.includes(p.id) || p.slot != null) return;
+    PIH.pedir({ t: 'colecao.mover', pokemonId: p.id, para: 'colecao' }, 'metacaca');
+  }
+
+  // 1.50.0 (relato #5, ponto 4): quando vem um melhor, o anterior (mesma família, pior) sai da
+  // Coleção do mesmo jeito que o Piloto já descarta: volta para o Depot (colecao.mover 'depot', que
+  // o gancho só aceita abaixo do Nv 50, fora do time, sem item, nunca shiny nem P5) e dali segue a
+  // tarefa do Depot (vender ou Oferendar, se ligada). Antes ele ficava na Coleção para sempre; e,
+  // mandado para o Depot à mão, a proteção "família do alvo" da rotina o guardava de novo.
+  // Um por volta, com as travas: nunca o capturado/"já tinha" de alguma vaga, shiny, P5, quem está
+  // no time ou é o ativo, quem segura item, o que a Guarda protege (PvP, os melhores de farm/PvP/
+  // treino, lendário), o que o Melhorar o time ou o Modo farm protegem, nem nota alta (3,5+, o mínimo
+  // do Mercado). Nada é vendido aqui e nada gasta ouro, Diamante ou Gema.
+  const NOTA_ALTA = 3.5;
+  const COL_NV_DEPOT = 50; // o gancho só devolve ao Depot abaixo do Nv 50 (1.34.1)
+  const descartadosSet = () => new Set(cfg.descartados || []);
+  function aDescartar(p, a) {
+    if (!p || !a) return;
+    if (!Array.isArray(cfg.descartar)) cfg.descartar = [];
+    if (cfg.descartar.some((d) => d.id === p.id)) return;
+    cfg.descartar.push({ id: p.id, raiz: a.raiz, em: Date.now() });
+    gravar();
+  }
+  const naColecao = (p) => ((eu && eu.automation && eu.automation.pokemonTravado) || []).map(Number).includes(Number(p.id));
+  async function descartarUm() {
+    if (!eu || !Array.isArray(cfg.descartar) || !cfg.descartar.length) return null;
+    if (!PIH.cofre || !PIH.cofre.liberado || !PIH.cofre.liberado('metacaca')) return null;
+    const d = cfg.descartar[0];
+    const p = porId(d.id);
+    const tirar = (txt, tipo) => { cfg.descartar.shift(); gravar(); if (txt) diario(txt, tipo); return txt; };
+    if (!p) return tirar(null); // já saiu (vendido, solto)
+    const a = cfg.alvos.find((x) => x.raiz === d.raiz) || null;
+    const quem = `${p.nome} Nv ${nf.format(p.level || 0)}`;
+    const fica = (porque) => tirar(`o anterior ${quem} fica: ${porque}`);
+    if (cfg.alvos.some((x) => x.capturadoId === p.id || x.tinhaId === p.id)) return tirar(null); // voltou a ser o do meta
+    if (p.shiny === true) return fica('é shiny');
+    if (Number(p.potencia) >= 5) return fica('é P5');
+    if (p.slot != null || p.id === eu.activeId) return fica('está no time');
+    if (Number(p.heldItemId) > 0) return fica('segura item');
+    const G = PIH.guarda && PIH.guarda.resumo ? PIH.guarda.resumo() : null;
+    if (!G || !G.pronto) return null; // espera a Guarda (sem ela, não dá para saber quem proteger)
+    if (G.ids.includes(p.id)) return fica('a Guarda protege (PvP, melhores de farm/PvP/treino, lendário)');
+    const outros = [...(PIH.cacadas && PIH.cacadas.protegidos ? PIH.cacadas.protegidos() : []), ...(PIH.farm && PIH.farm.protegidos ? PIH.farm.protegidos() : [])];
+    if (outros.includes(p.id)) return fica('o Melhorar o time ou o Modo farm protegem');
+    if (a) {
+      if (!N || typeof N.notaDePokemon !== 'function') return null; // espera a nota do jogo
+      const n = await notaComoMeta(p, a);
+      if (n != null && n >= NOTA_ALTA) return fica(`nota alta (${notaTxt(n)})`);
+    }
+    if (naColecao(p) && (Number(p.level) || 0) >= COL_NV_DEPOT) return fica(`na Coleção: Nv ${COL_NV_DEPOT}+ (o Piloto só tira da Coleção abaixo do Nv ${COL_NV_DEPOT})`);
+    cfg.descartados = [...descartadosSet(), p.id].slice(-500);
+    if (!naColecao(p)) return tirar(`o anterior ${quem} (veio um melhor) fica no Depot e não é mais guardado`, 'ok');
+    const r = PIH.pedir({ t: 'colecao.mover', pokemonId: p.id, para: 'depot' }, 'metacaca');
+    if (!r || !r.ok) { gravar(); return null; } // recusado agora: tenta na próxima volta
+    return tirar(`o anterior ${quem} sai da Coleção para o Depot (veio um melhor)`, 'ok');
+  }
+  let descartando = false;
+  setInterval(() => { if (descartando) return; descartando = true; descartarUm().catch(() => {}).finally(() => { descartando = false; }); }, 10_000);
+
+  // ---- onde caçar -----------------------------------------------------------------------------
+  function cacador() {
+    const time = meus().filter((p) => p.slot != null && p.stats && podeUsar(p) && !(p.hp != null && Number(p.hp) <= 0));
+    return time.sort((a, b) => poderDe(b) - poderDe(a))[0] || null;
+  }
+  // 1.33: quem caça é escolhido junto com a hunt — cada pokémon do time que pode lutar é testado em
+  // cada hunt da família (antes só o mais forte), e fica a dupla com mais encontros por hora com o
+  // alvo, sempre dentro do corte de risco. O mais forte nem sempre é o que mata ali com segurança
+  // (tipo, imunidade, golpe que tira muito HP).
+  function cacadores() {
+    return meus().filter((p) => p.slot != null && p.stats && podeUsar(p) && !(p.hp != null && Number(p.hp) <= 0)).sort((a, b) => poderDe(b) - poderDe(a));
+  }
+  function huntsDaFamilia(alvo) {
+    const F = PIH.meta && PIH.meta.familia;
+    const ehOutland = (id) => (F && F.ehOutland ? F.ehOutland(id) : Number(id) >= 2001 && Number(id) < 2100);
+    const soOutland = alvo.membros.length > 0 && alvo.membros.every((m) => ehOutland(m.id));
+    const huntOutland = (h) => h.area === 'outland' || h.regiao === 'outland' || /outland/i.test(String(h.slug || ''));
+    const hunts = ((welcome && welcome.hunts) || []).filter((h) => (soOutland || !huntOutland(h)) && (h.especies || []).some((e) => alvo.membros.some((m) => m.id === e.pokeId) && (soOutland || !ehOutland(e.pokeId))));
+    return { hunts, ehOutland, soOutland };
+  }
+  async function escolherHunt(alvo, pkSo = null) {
+    // 1.31 (o André: "pokémon da Outland não evolui, tem que ser os normais dos campos normais"):
+    // a Outland fica de fora, a não ser que a própria espécie do meta seja uma variante Outland.
+    const { hunts, ehOutland, soOutland } = huntsDaFamilia(alvo);
+    if (!hunts.length) return null;
+    const jogo = await PIH.carregarJogo();
+    const ctx = {
+      mod: jogo.mod, especies: jogo.especies, precoItem: jogo.precoItem, hunts,
+      consts: PIH.constsDoRanking(welcome, { sazonal: false }),
+      eu, geo: (slug) => (PIH.geo ? PIH.geo.daHunt(slug) : null), ritmoMedido: () => null,
+    };
+    let melhor = null;
+    for (const pk of (pkSo ? [pkSo] : cacadores())) {
+      let linhas = [];
+      try { linhas = PIH.engine.analisar(pk, ctx, { soLiberadas: true, comPocao: true }).linhas || []; } catch { linhas = []; }
+      for (const l of linhas) {
+        if (!l || l.inviavel || PIH.engine.arriscada(l)) continue; // o mesmo corte de risco da Troca de hunt e do rodízio (1.33: uma regra só, no engine)
+        const h = hunts.find((x) => x.slug === l.slug);
+        if (!h) continue;
+        const total = (h.especies || []).reduce((s, e) => s + (Number(e.pontos) || 0), 0) || 1;
+        let nota = 0;
+        let qual = null;
+        for (const e of h.especies || []) {
+          const m = alvo.membros.find((x) => x.id === e.pokeId);
+          if (!m || (!soOutland && ehOutland(e.pokeId))) continue;
+          const v = (Number(l.kph) || 0) * ((Number(e.pontos) || 0) / total) * (1 + 0.25 * m.estagio);
+          if (v > nota) { nota = v; qual = m; }
+        }
+        if (nota > 0 && (!melhor || nota > melhor.nota)) melhor = { slug: h.slug, nome: h.nome, nota, especie: qual, pkId: pk.id, pkNome: pk.nome, porHora: (Number(l.kph) || 0) * ((h.especies.find((e) => e.pokeId === qual.id)?.pontos || 0) / total) };
+      }
+    }
+    return melhor;
+  }
+  // 1.33: sem hunt segura AGORA não é "pulado": o alvo espera e é tentado de novo quando o treinador
+  // sobe de nível (abre hunt nova, o time fica mais forte) ou a cada 30 min. Enquanto todos os que
+  // faltam esperam, o time farma na melhor hunt de XP (sobe de nível) e o modo continua ligado.
+  // Só fica de fora a família que não aparece em NENHUMA hunt do jogo (lendário: vem de boss/ovo).
+  const ESPERA_MS = 30 * 60_000;
+  const podeTentar = (a) => !a.espera || (Number(eu && eu.level) || 0) > (Number(a.espera.nivel) || 0) || Date.now() - (Number(a.espera.em) || 0) > ESPERA_MS;
+
+  // ---- o relógio --------------------------------------------------------------------------------
+  let andando = false;
+  async function tique() {
+    if (!cfg.ligado || andando || !eu || !welcome) return;
+    if (!PIH.cofre || !PIH.cofre.liberado || !PIH.cofre.liberado('metacaca')) { st.motivo = 'Piloto desligado (ou disjuntor)'; return; }
+    andando = true;
+    try {
+      await conferirCapturas();
+      await alinhar();
+      if (cfg.soBom) {
+        if (!N || typeof N.notaDePokemon !== 'function') { st.motivo = 'esperando a nota do jogo carregar ("Só aceitar um bom")'; return; }
+        for (const a of cfg.alvos) { const p = a.capturadoId ? porId(a.capturadoId) : null; if (p) await notaComoMeta(p, a); }
+      }
+      const falta = cfg.alvos.filter((a) => !pego(a) && !a.semHuntNoJogo);
+      if (!falta.length) return concluir();
+      if (!cacador()) { st.motivo = 'nenhum pokémon do time pode lutar'; return; }
+      const prontos = falta.filter(podeTentar);
+      if (!prontos.length) return farmarEsperando(falta);
+      const alvo = prontos[0];
+      if (!st.escolha || st.escolha.alvo !== alvo.raiz || Date.now() - st.escolha.em > ESCOLHA_VALE_MS) {
+        if (!huntsDaFamilia(alvo).hunts.length) {
+          alvo.semHuntNoJogo = true; gravar();
+          diario(`${alvo.meta}: a família não aparece em nenhuma hunt do jogo (vem de boss ou ovo) — fica fora da caça`, 'aviso');
+          return;
+        }
+        const h = await escolherHunt(alvo);
+        if (!h) {
+          alvo.espera = { em: Date.now(), nivel: Number(eu.level) || 0 }; gravar();
+          st.escolha = null;
+          diario(`${alvo.meta}: nenhuma hunt liberada onde a família aparece e um pokémon do time mate com segurança — tento de novo quando o treinador subir de nível ou em 30 min`, 'aviso');
+          return;
+        }
+        if (alvo.espera) { alvo.espera = null; gravar(); }
+        st.escolha = { alvo: alvo.raiz, em: Date.now(), ...h };
+      }
+      // quem caça é o escolhido junto com a hunt (o rodízio fica parado enquanto este modo estiver ligado)
+      const pk = porId(st.escolha.pkId) || cacador();
+      if (eu.activeId !== pk.id && Date.now() - st.ultimaTroca > 60_000) { st.ultimaTroca = Date.now(); PIH.pedir({ t: 'team.active', pokemonId: pk.id }, 'metacaca'); diario(`${pk.nome} (⚔ ${nf.format(poderDe(pk))}) entra para caçar`); }
+      st.alvoAtual = alvo;
+      const e = st.escolha;
+      if (eu.huntSlug !== e.slug || eu.noCentro) {
+        if (!st.motivo || !/^(indo|não deu)/.test(st.motivo)) st.motivo = `a caminho de ${e.nome} (atrás de ${e.especie.nome})`;
+        if (PIH.auto && !PIH.auto.rotinaAtual() && Date.now() - st.irEm > IR_A_CADA_MS) {
+          st.irEm = Date.now();
+          const r = PIH.auto.irParaHunt(e.slug);
+          st.motivo = r.ok ? `indo para ${e.nome} atrás de ${e.especie.nome}` : `não deu para ir a ${e.nome}: ${r.motivo}`;
+        }
+        return;
+      }
+      const captura = PIH.captura && PIH.captura.resumo ? PIH.captura.resumo() : null;
+      const semBola = captura && !captura.vip && !captura.ligado;
+      st.motivo = `caçando ${e.especie.nome} em ${e.nome} · ~${e.porHora >= 1 ? nf.format(e.porHora) : '<1'} por hora${semBola ? ' · ligue a Pokébola automática!' : ''}`;
+    } catch (err) { st.motivo = 'não consegui calcular'; console.warn('[piloto] metacaca:', err); } finally { andando = false; }
+  }
+  // 1.33: todos os que faltam esperam hunt segura — o mais forte farma na melhor hunt de XP dele
+  // (o mesmo 👑 da aba Caçar) para o treinador e o time subirem; a cada 30 min (ou nível novo) tenta de novo.
+  let farmEm = 0;
+  async function farmarEsperando(falta) {
+    st.escolha = null;
+    const pk = cacador();
+    const nomes = falta.map((a) => a.meta).join(', ');
+    st.motivo = `esperando hunt segura para ${nomes} · farmando XP enquanto isso (tenta de novo quando o treinador subir de nível ou em 30 min)`;
+    if (!pk || !PIH.auto || PIH.auto.rotinaAtual() || Date.now() - farmEm < IR_A_CADA_MS) return;
+    farmEm = Date.now();
+    if (eu.activeId !== pk.id) { PIH.pedir({ t: 'team.active', pokemonId: pk.id }, 'metacaca'); return; }
+    const m = PIH.auto.melhorHuntPara ? await PIH.auto.melhorHuntPara(pk.id) : null;
+    if (m && m.slug && (eu.huntSlug !== m.slug || eu.noCentro)) { const r = PIH.auto.irParaHunt(m.slug); if (r && r.ok) diario(`esperando hunt segura para ${nomes}: ${pk.nome} vai farmar XP em ${m.nome}`); }
+  }
+  // 1.26 (pedido do André): completou → o "Montar o time principal sozinho" passa a usar os do meta
+  // que você tem (sem cadeado: se aparecer um melhor da família, ele entra), no campo e no PvP, e a
+  // Troca de hunt volta a ligar para farmar com esse time.
+  function concluir() {
+    const ids = cfg.alvos.map((a) => a.capturadoId).filter((id) => id && porId(id)).slice(0, 5); // com "Só aceitar um bom", todos já são bons
+    cfg.fim = { em: Date.now(), ids };
+    desligar('o time do meta está completo');
+    // 1.26.3 (pedido do André): a Troca de hunt só religa DEPOIS que a janela Time trocar o time
+    // inteiro no Centro (ela religa no fim da troca).
+    if (PIH.time && PIH.time.usarMeta) PIH.time.usarMeta('o Caçar o meta completou o time', null, { huntDepois: true });
+    else religarHunt();
+    diario(`time do meta completo: ${ids.map((id) => porId(id)?.nome).join(', ')} — agora o Piloto vai ao Centro trocar o time (campo e PvP) e depois religa a Troca de hunt.`, 'ok');
+    const fora = cfg.alvos.filter((x) => x.semHuntNoJogo && !(x.capturadoId && porId(x.capturadoId))).map((x) => x.meta);
+    if (fora.length) diario(`fora do time do meta (não aparecem em hunt): ${fora.join(', ')}`, 'aviso');
+  }
+  function religarHunt() {
+    try { if (PIH.auto && PIH.auto._interno && !PIH.auto._interno.cfg().hunt.ligado) { PIH.auto.definir('hunt.ligado', true); diario('Troca de hunt ligada de novo (farm com o time do meta)'); } } catch { /* sem auto */ }
+    religarRodizio();
+  }
+  // 1.26: quem completou na 1.24/1.25 ficou com os 5 no cadeado e a Troca de hunt desligada. Uma vez:
+  // solta o cadeado (o time segue os do meta), liga a Troca de hunt.
+  try {
+    // só na página do jogo: a extensão também carrega em /terms (a vigia), e lá não há time para soltar
+    if (/^\/app\/?$/.test(location.pathname) && !cfg.ligado && cfg.fim && !localStorage.getItem('piloto:migr:meta126')) {
+      localStorage.setItem('piloto:migr:meta126', '1');
+      setTimeout(() => {
+        if (PIH.time && PIH.time.usarMeta) PIH.time.usarMeta('1.26: o time segue os do meta que você tem', cfg.fim.ids);
+        religarHunt();
+      }, 20_000);
+    }
+  } catch { /* sem armazenamento */ }
+  setInterval(() => { tique(); }, 10_000);
+
+  // Os guardados: o capturado de cada família e, enquanto caça, toda a família dos alvos no Depot.
+  const protegidos = () => cfg.alvos.map((a) => a.capturadoId).filter(Boolean);
+  const especiesAlvo = () => (cfg.ligado ? cfg.alvos.flatMap((a) => a.membros.map((m) => m.id)) : []);
+
+  // ---- a linha na aba Meta ----------------------------------------------------------------------
+  function html({ modo, arte }) {
+    const trava = modo === 'desligado';
+    const ok = (a) => pego(a);
+    const feitos = cfg.alvos.filter(ok).length;
+    const status = cfg.ligado ? `${feitos}/${cfg.alvos.length} · ${esc(st.motivo || 'começando…')}` : cfg.fim ? `último: time completo em ${new Date(cfg.fim.em).toLocaleDateString('pt-BR')}` : 'desligado';
+    const linha = K.linha({ id: 'metacaca', icone: 'cacar', nome: 'Caçar o meta', alvo: 'metacaca:ligado', on: cfg.ligado, trava, status,
+      dica: 'Vai buscar os 5 da comp do meta, um por um: o mais forte do time luta na hunt onde a família aparece com mais frequência (a base ou já evoluído) até capturar. Capturado vai para a Coleção e nunca é vendido. Se vier um melhor, ele fica no lugar. Com os 5, viram o time principal (campo e PvP) e este modo se desliga. Ligar desliga a Troca de hunt; ligar a Troca de hunt desliga este. Precisa de bola: VIP (Lançar sem Parar) ou a Pokébola automática.',
+      direita: cfg.ligado ? '' : K.escala('metacaca:recorte', cfg.recorte, [['topo', 'Topo 20'], ['faixa', 'Sua faixa']], trava),
+      // 1.45.0: a opção nova fica embaixo e começa desligada (desligada = tudo como antes)
+      ajustes: `${K.mini('metacaca:soBom', cfg.soBom, t3('Só aceitar um bom', 'Only accept a good one', 'Solo aceptar uno bueno'), t3('Fica em cada alvo até capturar um com a nota do jogo acima do corte (a nota de quando ele evoluir até o do meta; shiny e P5 passam sempre). Os de nota baixa ficam de reserva até vir o bom. Só então vai para o próximo. Desligado: aceita o primeiro, como sempre.', 'Stays on each target until it catches one with the game grade above the cut (the grade once it evolves into the meta one; shiny and P5 always pass). Low-grade ones are kept as backup until the good one comes. Only then it moves to the next. Off: takes the first one, as always.', 'Se queda en cada objetivo hasta capturar uno con la nota del juego por encima del corte (la nota cuando evolucione al del meta; shiny y P5 pasan siempre). Los de nota baja quedan de reserva hasta que llegue el bueno. Recién entonces va al siguiente. Apagado: acepta el primero, como siempre.'), trava)}${K.escala('metacaca:notaMin', String(cfg.notaMin), NOTAS.map((n) => [String(n), `${t3('nota', 'grade', 'nota')} ${notaTxt(n)}+`, ({ 3.5: t3('o mínimo do Mercado', 'the Market minimum', 'el mínimo del Mercado'), 4: t3('a faixa "bom" do jogo', 'the game\'s "good" band', 'la franja "bueno" del juego'), 5: t3('a faixa "forte" do jogo', 'the game\'s "strong" band', 'la franja "fuerte" del juego') })[n]]), trava || !cfg.soBom)}` });
+    if (!cfg.alvos.length) return linha;
+    const linhas = cfg.alvos.map((a) => {
+      const p = ok(a) ? porId(a.capturadoId) : null;
+      const atual = cfg.ligado && st.alvoAtual && st.alvoAtual.raiz === a.raiz;
+      const reserva = !p && cfg.soBom && a.capturadoId ? porId(a.capturadoId) : null; // 1.45.0: tem, mas não é bom
+      const notaDe = (pk) => (cfg.soBom ? ` · ${t3('nota', 'grade', 'nota')} ${notaTxt(notaGuardada(pk, a))}${pk.shiny === true ? ' · shiny' : Number(pk.potencia) >= 5 ? ' · P5' : ''}` : '');
+      const estado = p ? `<span class="plt-meta-tem on">${p.id === a.tinhaId ? 'já tinha' : 'capturado'}: ${esc(p.nome)} Nv ${nf.format(p.level || 0)}${notaDe(p)}</span>`
+        : reserva && !a.semHuntNoJogo && !(a.espera && !podeTentar(a)) ? `<span class="plt-meta-tem plt-meta-cacando">${esc(t3(`tem ${reserva.nome} nota ${notaTxt(notaGuardada(reserva, a))} · ${atual ? 'caçando' : 'quer'} um ${notaTxt(cfg.notaMin)}+`, `has ${reserva.nome} grade ${notaTxt(notaGuardada(reserva, a))} · ${atual ? 'hunting' : 'wants'} a ${notaTxt(cfg.notaMin)}+`, `tiene ${reserva.nome} nota ${notaTxt(notaGuardada(reserva, a))} · ${atual ? 'cazando' : 'quiere'} uno ${notaTxt(cfg.notaMin)}+`))}</span>`
+        : a.semHuntNoJogo ? '<span class="plt-meta-tem plt-meta-falta">não aparece em hunt</span>'
+          : a.espera && !podeTentar(a) ? '<span class="plt-meta-tem plt-meta-falta">esperando hunt segura</span>'
+          : atual ? `<span class="plt-meta-tem plt-meta-cacando">caçando${st.escolha ? ` ${esc(st.escolha.especie.nome)} em ${esc(nomeHunt(st.escolha.slug))}` : ''}</span>` : '<span class="plt-meta-tem">na fila</span>';
+      return `<div class="plt-an-l"><span class="plt-an-arte">${arte({ speciesId: a.metaId, shiny: false, nome: a.meta }, 34, `caca:${a.raiz}`)}</span><span class="plt-an-nome"><b>${esc(a.meta)}</b><small>${esc(a.membros.map((m) => m.nome).join(' → '))}</small></span><span class="plt-an-acoes">${estado}</span></div>`;
+    }).join('');
+    return `${linha}<div class="plt-an">${linhas}</div>`;
+  }
+  async function definir(caminho, v) {
+    if (caminho === 'recorte' && !cfg.ligado && (v === 'topo' || v === 'faixa')) { cfg.recorte = v; gravar(); return null; }
+    // 1.45.0: dá para ligar, desligar e mudar o corte com a caça andando (vale na próxima volta)
+    if (caminho === 'soBom') { cfg.soBom = !!v; gravar(); diario(`só aceitar um bom ${cfg.soBom ? `ligado (nota ${notaTxt(cfg.notaMin)}+, shiny e P5 passam)` : 'desligado'}`); return null; }
+    if (caminho === 'notaMin' && NOTAS.includes(Number(v))) { cfg.notaMin = Number(v); gravar(); diario(`só aceitar um bom: nota ${notaTxt(cfg.notaMin)}+`); return null; }
+    if (caminho === 'ligado') {
+      if (v) { const r = await ligar(); if (!r.ok) { st.motivo = r.motivo; diario(`não liguei: ${r.motivo}`, 'aviso'); } return r; }
+      desligar('você desligou');
+    }
+    return null;
+  }
+
+  PIH.metaCaca = { html, definir, desligar, religarRodizio, ativo: () => cfg.ligado, protegidos, especiesAlvo, descartados: () => [...descartadosSet()], _interno: { cfg: () => cfg, st, tique, notaComoMeta, pego, escolherHunt, podeTentar, conferirCapturas, sanear, descartarUm, refazer: () => { saneado = false; } } };
+})(globalThis);

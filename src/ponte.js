@@ -1,0 +1,438 @@
+// Radar do Mercado: ponte entre o hook (world MAIN) e a extensão.
+//
+// Roda no mundo isolado da aba do jogo. Recebe do hook só o que já passou pelo filtro de
+// privacidade e:
+// - publica no barramento (RadarBus) para o radar e o painel;
+// - grava em chrome.storage.local quando a gravação de diagnóstico está ligada;
+// - mantém o status que o popup mostra;
+// - leva os pedidos do radar ao hook (RadarPonte.enviar) e devolve a resposta.
+// Nada daqui fala com a rede.
+(function () {
+  'use strict';
+
+  const PREFIXO = '[radar-mercado]';
+  const EVT_SAIDA = 'radar-mercado:hook';
+  const EVT_ENTRADA = 'radar-mercado:ponte';
+  const CHAVE_GRAVANDO = 'radar:gravando';
+  const CHAVE_STATUS = 'radar:status';
+  const ESPERA_ESCRITA_MS = 1500;
+  const PULSO_STATUS_MS = 15000;
+  const ESPERA_ENVIO_MS = 3000;
+
+  // A versão vai para um atributo da página: o painel (mundo MAIN) não enxerga chrome.runtime.
+  try { document.documentElement.dataset.pilotoVersao = chrome.runtime.getManifest().version; } catch { /* sem versão */ }
+  // 1.44.0: a vigia da versão do jogo (era uma tarefa agendada a cada 3 h). A versão que esta aba
+  // carregou está no HTML (o `estilo.css?v=`); conferir é buscar o HTML do /app como o Passo 1 do
+  // VIGIA.md — só o arquivo estático da mesma origem, nada na conta. Mudou: a página mostra o aviso.
+  const naPaginaDoJogo = () => /^\/app\/?$/.test(location.pathname);
+  const RE_VERSAO = /estilo\.css\?v=([\d.]+)/;
+  let versaoCarregada = null;
+  let conferidoEm = 0;
+  const lerVersaoDaPagina = () => {
+    if (versaoCarregada) return versaoCarregada;
+    const l = document.querySelector('link[href*="estilo.css"]');
+    const m = l && RE_VERSAO.exec(l.getAttribute('href') || '');
+    if (m) versaoCarregada = m[1];
+    return versaoCarregada;
+  };
+  async function conferirVersaoDoJogo(motivo) {
+    if (!naPaginaDoJogo() || !lerVersaoDaPagina()) return null;
+    conferidoEm = Date.now();
+    try {
+      const html = await (await fetch('/app', { cache: 'no-cache', credentials: 'same-origin' })).text();
+      const m = RE_VERSAO.exec(html);
+      const agora = m ? m[1] : null;
+      if (agora && agora !== versaoCarregada) document.dispatchEvent(new CustomEvent('piloto:jogo-novo', { detail: JSON.stringify({ antes: versaoCarregada, agora, motivo }) }));
+      return { carregada: versaoCarregada, agora };
+    } catch (e) { return { carregada: versaoCarregada, erro: String(e && e.message || e) }; }
+  }
+  // ao voltar para a aba, no máximo 1 vez a cada 10 min (o alarme de 30 min é o principal)
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && Date.now() - conferidoEm > 10 * 60_000) conferirVersaoDoJogo('voltou para a aba').catch(() => {});
+  });
+  setTimeout(() => { lerVersaoDaPagina(); }, 3000);
+
+  // 1.38.0: a parada de emergência pelo atalho do navegador (o fundo avisa; o mundo da página para)
+  try {
+    chrome.runtime.onMessage.addListener((m, remetente, responder) => {
+      if (!m || remetente.id !== chrome.runtime.id) return false;
+      if (m.tipo === 'piloto:jogo-conferir') { conferirVersaoDoJogo('alarme de 30 min').then((r) => responder(r)).catch(() => responder(null)); return true; }
+      if (m.tipo !== 'piloto:emergencia') return false;
+      document.dispatchEvent(new CustomEvent('piloto:emergencia'));
+      return false;
+    });
+  } catch { /* sem mensagens */ }
+
+  const G = globalThis.RadarGravador;
+  const Config = globalThis.RadarConfig;
+  if (!G || !Config || !globalThis.RadarBarramento) { console.error(PREFIXO, 'bibliotecas não carregaram'); return; }
+
+  const bus = globalThis.RadarBarramento.criarBarramento(PREFIXO);
+  const pagina = Math.random().toString(36).slice(2, 8);
+  let gravando = false;
+  let escuta = false; // hook repassando o mercado para o barramento
+  let gravador = null;
+  let escritaAgendada = null;
+  let contextoValido = true;
+  // Só a aba que tem o socket do jogo escreve o status (uma aba de /terms não pode apagar o
+  // "conectado" da aba do jogo).
+  let temJogo = false;
+  // versaoExtensao: o popup compara com a dele para avisar quando a aba roda scripts antigos.
+  const status = { pagina, atualizadoEm: Date.now(), conectado: false, sid: null, ultimoFechamento: null, versaoJogo: null, versaoExtensao: chrome.runtime.getManifest().version, gravando: false };
+  const envios = new Map(); // ref -> { resolver, timer }
+  let proximoRef = 1;
+
+  function erro(e) { try { console.error(PREFIXO, e); } catch { /* nada */ } }
+
+  function storage() {
+    // Extensão recarregada com a aba aberta: o contexto morre e qualquer chamada lança erro.
+    if (!contextoValido || !globalThis.chrome || !chrome.runtime || !chrome.runtime.id) {
+      if (contextoValido) {
+        contextoValido = false;
+        paraHook({ tipo: 'gravar', ligado: false });
+        paraHook({ tipo: 'radar', ligado: false });
+        bus.emit('contexto-perdido', null);
+      }
+      return null;
+    }
+    return chrome.storage.local;
+  }
+
+  function paraHook(cmd) {
+    try {
+      document.dispatchEvent(new CustomEvent(EVT_ENTRADA, { detail: JSON.stringify(cmd) }));
+    } catch (e) {
+      erro(e);
+    }
+  }
+
+  function versaoDoJogo() {
+    try {
+      const s = document.querySelector('script[src*="app.js"]');
+      const m = s && /[?&]v=([\w.-]+)/.exec(s.getAttribute('src'));
+      return m ? m[1] : null;
+    } catch {
+      return null;
+    }
+  }
+
+  // ---- escrita no storage --------------------------------------------------------------------
+
+  function agendarEscrita(imediata) {
+    if (escritaAgendada) {
+      if (!imediata) return;
+      clearTimeout(escritaAgendada);
+    }
+    escritaAgendada = setTimeout(escrever, imediata ? 0 : ESPERA_ESCRITA_MS);
+  }
+
+  async function escrever() {
+    escritaAgendada = null;
+    const st = storage();
+    if (!st) return;
+    try {
+      const lote = temJogo ? { [CHAVE_STATUS]: { ...status, atualizadoEm: Date.now() } } : {};
+      if (gravador) Object.assign(lote, gravador.pendente());
+      if (Object.keys(lote).length) await st.set(lote);
+      if (gravador && gravador.meta.cheio && gravando) {
+        // Perto do teto do storage: para sozinha e o popup avisa.
+        await st.set({ [CHAVE_GRAVANDO]: false });
+      }
+    } catch (e) {
+      erro(e);
+    }
+  }
+
+  // ---- eventos do hook -----------------------------------------------------------------------
+
+  function registrar(entrada) {
+    if (!gravando || !gravador) return;
+    gravador.versaoJogo(status.versaoJogo);
+    gravador.adicionar({ ...entrada, pg: pagina });
+    agendarEscrita(false);
+  }
+
+  function aoHook(ev) {
+    let msg;
+    try { msg = JSON.parse(String(ev.detail)); } catch { return; }
+    if (!msg || typeof msg !== 'object') return;
+    try {
+      switch (msg.tipo) {
+        case 'hook-pronto':
+          iniciar();
+          break;
+        case 'entrada': {
+          const { tipo, ...resto } = msg;
+          registrar(resto);
+          if (escuta) bus.emit('entrada', resto);
+          break;
+        }
+        case 'conta':
+          // Só para o radar: nunca vai para a gravação nem para o storage.
+          if (escuta) bus.emit('conta', { id: msg.id, gold: msg.gold, itens: msg.itens, em: msg.em });
+          break;
+        case 'enviado': {
+          const espera = envios.get(msg.ref);
+          if (espera) {
+            envios.delete(msg.ref);
+            clearTimeout(espera.timer);
+            espera.resolver({ ok: msg.ok === true, motivo: msg.motivo || null, em: msg.em });
+          }
+          break;
+        }
+        case 'socket':
+          temJogo = true;
+          if (msg.evento === 'aberto') { status.conectado = true; status.sid = msg.sid; }
+          if (msg.evento === 'fechado' && msg.sid === status.sid) {
+            status.conectado = false;
+            status.ultimoFechamento = { em: msg.em, codigo: msg.codigo, motivo: msg.motivo };
+          }
+          registrar({ dir: '-', t: 'socket', em: msg.em, sid: msg.sid, dados: { evento: msg.evento, codigo: msg.codigo, motivo: msg.motivo, limpo: msg.limpo, endereco: msg.endereco } });
+          bus.emit('socket', msg);
+          agendarEscrita(true);
+          break;
+        // Os seus pokémon (0.7.0): só para o radar, nunca para a gravação nem para o storage.
+        case 'pokemons':
+          if (escuta) bus.emit('pokemons', { em: msg.em, activeId: msg.activeId, lista: Array.isArray(msg.lista) ? msg.lista : [] });
+          break;
+        // Pulso: o jogo recebeu mensagens (só a hora). Separa "servidor parado" de "recusou".
+        case 'pulso':
+          if (escuta) bus.emit('pulso', { em: msg.em });
+          break;
+        // Rastro da compra (só tipos e chaves): o radar junta à compra enviada.
+        case 'rastro': {
+          const { tipo, ...resto } = msg;
+          if (escuta) bus.emit('rastro', resto);
+          break;
+        }
+        case 'contagem':
+          // Pode chegar logo depois de parar (o hook manda a última ao desligar).
+          if (gravador) {
+            gravador.contagem(msg.contagem, msg.descartadas);
+            agendarEscrita(false);
+          }
+          break;
+        case 'status': {
+          if ((msg.sockets || []).length) temJogo = true;
+          const aberto = (msg.sockets || []).find((s) => s.sid === msg.atual && s.readyState === 1);
+          status.conectado = Boolean(aberto);
+          status.sid = msg.atual;
+          status.gravando = msg.gravando;
+          bus.emit('status', { conectado: status.conectado, sid: msg.atual });
+          agendarEscrita(true);
+          break;
+        }
+        default:
+          break;
+      }
+    } catch (e) {
+      erro(e);
+    }
+  }
+
+  // ---- pedidos do radar ----------------------------------------------------------------------
+
+  // Resolve com { ok, motivo, em }. Sem resposta do hook em 3 s conta como falha.
+  function enviar(pedido) {
+    return new Promise((resolver) => {
+      if (!contextoValido) { resolver({ ok: false, motivo: 'extensão recarregada', em: Date.now() }); return; }
+      const ref = `r${proximoRef++}`;
+      const timer = setTimeout(() => {
+        envios.delete(ref);
+        resolver({ ok: false, motivo: 'o hook não respondeu', em: Date.now() });
+      }, ESPERA_ENVIO_MS);
+      envios.set(ref, { resolver, timer });
+      paraHook({ tipo: 'enviar', ref, pedido });
+    });
+  }
+
+  // ---- ligar e desligar ----------------------------------------------------------------------
+
+  function aplicarGravacao(ligado, meta) {
+    gravando = ligado;
+    status.gravando = ligado;
+    if (ligado && !gravador) gravador = G.criarGravador({ pagina, meta: meta || null });
+    paraHook({ tipo: 'gravar', ligado });
+    agendarEscrita(true);
+  }
+
+  let iniciado = false;
+  async function iniciar() {
+    const st = storage();
+    if (!st) return;
+    try {
+      const salvo = await st.get([CHAVE_GRAVANDO, G.CHAVE_META]);
+      const ligado = salvo[CHAVE_GRAVANDO] === true;
+      gravando = ligado;
+      status.gravando = ligado;
+      // A escuta do mercado fica sempre ligada na aba do jogo: o painel (Compras, Vendas) usa
+      // mesmo com o radar desligado. Ligar e desligar o radar só liga e desliga as consultas.
+      escuta = true;
+      if (ligado && !gravador) gravador = G.criarGravador({ pagina, meta: salvo[G.CHAVE_META] || null });
+      // "pronto" pode ir duas vezes (ponte e hook carregando em qualquer ordem); o hook ignora a repetida.
+      paraHook({ tipo: 'pronto', gravando: ligado, radar: escuta });
+      iniciado = true;
+    } catch (e) {
+      erro(e);
+    }
+  }
+
+  function aoMudarStorage(mudancas, area) {
+    if (area !== 'local') return;
+    try {
+      if (mudancas[G.CHAVE_META] && mudancas[G.CHAVE_META].newValue === undefined) {
+        // O popup limpou a gravação.
+        gravador = gravando ? G.criarGravador({ pagina, meta: null }) : null;
+      }
+      if (mudancas[CHAVE_GRAVANDO] && iniciado) {
+        const ligado = mudancas[CHAVE_GRAVANDO].newValue === true;
+        if (ligado !== gravando) {
+          if (ligado && !gravador) {
+            storage().get(G.CHAVE_META).then((s) => aplicarGravacao(true, s[G.CHAVE_META])).catch(erro);
+          } else {
+            aplicarGravacao(ligado);
+          }
+        }
+      }
+    } catch (e) {
+      erro(e);
+    }
+  }
+
+  globalThis.RadarBus = bus;
+  globalThis.RadarPonte = Object.freeze({
+    enviar,
+    // Compra automática que não aconteceu: o ouro reservado no cofre (no hook) volta.
+    estornarCofre: (anuncioId) => paraHook({ tipo: 'cofre-estornar', anuncioId }),
+    // Comprado para revender: a rotina do piloto não gasta essas unidades (pedra não vira evolução).
+    reservarItens: (itemId, qtd) => paraHook({ tipo: 'reservar-itens', itemId, qtd }),
+    pagina,
+    temJogo: () => temJogo,
+    conectado: () => status.conectado,
+    versaoJogo: () => status.versaoJogo,
+    storage,
+  });
+
+  try {
+    document.addEventListener(EVT_SAIDA, aoHook);
+    chrome.storage.onChanged.addListener(aoMudarStorage);
+    document.addEventListener('DOMContentLoaded', () => {
+      status.versaoJogo = versaoDoJogo();
+      agendarEscrita(true);
+    });
+    setInterval(() => { if (temJogo && storage()) agendarEscrita(true); }, PULSO_STATUS_MS);
+    iniciar();
+    // 1.25: atualização (o service worker procura no GitHub; aqui só leva e traz para o painel)
+    const CHAVE_UPD = 'piloto:update';
+    const mandarUpd = (st) => { try { document.dispatchEvent(new CustomEvent('piloto:upd', { detail: JSON.stringify(st || {}) })); } catch (e) { erro(e); } };
+    const lerUpd = () => { const s2 = storage(); if (s2) s2.get(CHAVE_UPD).then((r) => mandarUpd(r[CHAVE_UPD])).catch(() => {}); };
+    chrome.storage.onChanged.addListener((m, area) => { if (area === 'local' && m[CHAVE_UPD]) mandarUpd(m[CHAVE_UPD].newValue); });
+    document.addEventListener('piloto:upd-pedir', (ev) => {
+      let d = {};
+      try { d = JSON.parse(ev.detail) || {}; } catch { return; }
+      const tipo = { checar: 'upd:checar', aplicar: 'upd:aplicar', dispensar: 'upd:dispensar' }[d.acao];
+      if (!tipo || !storage()) return;
+      chrome.runtime.sendMessage({ tipo, versao: typeof d.versao === 'string' ? d.versao : null, limparAviso: d.limparAviso === true, minMs: Number.isFinite(Number(d.minMs)) ? Math.min(Math.max(0, Number(d.minMs)), 3_600_000) : 0 })
+        .then((r) => { document.dispatchEvent(new CustomEvent('piloto:upd-resposta', { detail: JSON.stringify({ acao: d.acao, r: r && r.dados }) })); lerUpd(); })
+        .catch((e) => { document.dispatchEvent(new CustomEvent('piloto:upd-resposta', { detail: JSON.stringify({ acao: d.acao, erro: String(e && e.message || e) }) })); });
+    });
+    setTimeout(lerUpd, 1500);
+    // 1.31 (regra 12): o "já viu" do guia de primeiro uso e das novidades, no storage.local
+    // 1.52.0: o respondedor do Dúvidas pede a trava aqui (só a ponte enxerga o chrome.storage). Sem comparar e
+    // gravar de uma vez, ela grava, espera um pouco e confere de quem ficou: quem foi sobrescrito desiste.
+    const CHAVE_TRAVAS_DUV = 'piloto:duvidas:travas';
+    const VALE_TRAVA_MS = 10 * 60_000;
+    const respTrava = (pedido, ok) => { try { document.dispatchEvent(new CustomEvent('piloto:duvidas-trava-resposta', { detail: JSON.stringify({ pedido, ok }) })); } catch (e) { erro(e); } };
+    document.addEventListener('piloto:duvidas-trava', async (ev) => {
+      let d = {};
+      try { d = JSON.parse(ev.detail) || {}; } catch { return; }
+      if (!Number.isInteger(d.pedido) || !/^[ch]\d{1,20}$/.test(String(d.chave)) || !/^[a-z0-9]{1,16}$/.test(String(d.token))) return;
+      const s2 = storage();
+      if (!s2) return respTrava(d.pedido, false);
+      try {
+        const agora = Date.now();
+        const lidas = (await s2.get(CHAVE_TRAVAS_DUV))[CHAVE_TRAVAS_DUV] || {};
+        const vivas = Object.fromEntries(Object.entries(lidas).filter(([, v]) => v && v.ate > agora));
+        if (vivas[d.chave] && vivas[d.chave].token !== d.token) return respTrava(d.pedido, false);
+        vivas[d.chave] = { token: d.token, ate: agora + VALE_TRAVA_MS };
+        await s2.set({ [CHAVE_TRAVAS_DUV]: vivas });
+        await new Promise((r) => setTimeout(r, 300 + Math.random() * 300));
+        const depois = (await s2.get(CHAVE_TRAVAS_DUV))[CHAVE_TRAVAS_DUV] || {};
+        respTrava(d.pedido, !!depois[d.chave] && depois[d.chave].token === d.token);
+      } catch (e) { erro(e); respTrava(d.pedido, false); }
+    });
+    const CHAVE_GUIA = 'piloto:guia';
+    const mandarGuia = (g) => { try { document.dispatchEvent(new CustomEvent('piloto:guia-estado', { detail: JSON.stringify(g && typeof g === 'object' ? g : {}) })); } catch (e) { erro(e); } };
+    document.addEventListener('piloto:guia-ler', () => {
+      const s2 = storage();
+      if (!s2) return mandarGuia({});
+      s2.get(CHAVE_GUIA).then((r) => mandarGuia(r[CHAVE_GUIA])).catch(() => mandarGuia({}));
+    });
+    document.addEventListener('piloto:guia-gravar', (ev) => {
+      let d = {};
+      try { d = JSON.parse(ev.detail) || {}; } catch { return; }
+      const limpo = {};
+      if (typeof d.tutorial === 'boolean') limpo.tutorial = d.tutorial;
+      if (typeof d.novidades === 'string' && /^\d+\.\d+\.\d+$/.test(d.novidades)) limpo.novidades = d.novidades;
+      const s2 = storage();
+      if (!s2 || !Object.keys(limpo).length) return;
+      s2.get(CHAVE_GUIA).then((r) => s2.set({ [CHAVE_GUIA]: { ...(r[CHAVE_GUIA] || {}), ...limpo } })).catch(() => {});
+    });
+    // 1.39.0: os avisos de achados (shiny, drop raro) com a aba do jogo escondida: notificação do
+    // sistema. No máximo uma a cada 5 s (a página não consegue encher a tela de notificações).
+    let notificadaEm = 0;
+    document.addEventListener('piloto:notificar', (ev) => {
+      let d = {};
+      try { d = JSON.parse(ev.detail) || {}; } catch { return; }
+      const titulo = String(d.titulo || '').slice(0, 120);
+      const mensagem = String(d.mensagem || '').slice(0, 300);
+      if (!titulo || !mensagem || Date.now() - notificadaEm < 5000) return;
+      notificadaEm = Date.now();
+      chrome.runtime.sendMessage({ tipo: 'notificar', titulo, mensagem }).catch(() => {});
+    });
+    // "Notificar o Chrome": um só interruptor (radar:config.notificacoes), lido e gravado aqui para a linha
+    // das Configurações do Piloto; a do Mercado usa a mesma chave. O fundo (sw.js) respeita em todo aviso.
+    const CHAVE_RADAR = 'radar:config';
+    const mandarNotif = (cfg) => { try { document.dispatchEvent(new CustomEvent('piloto:notif-estado', { detail: JSON.stringify({ ligado: !(cfg && cfg.notificacoes === false) }) })); } catch (e) { erro(e); } };
+    document.addEventListener('piloto:notif-ler', () => {
+      const s2 = storage();
+      if (!s2) return mandarNotif(null);
+      s2.get(CHAVE_RADAR).then((r) => mandarNotif(r[CHAVE_RADAR])).catch(() => mandarNotif(null));
+    });
+    document.addEventListener('piloto:notif-gravar', (ev) => {
+      let d = {};
+      try { d = JSON.parse(ev.detail) || {}; } catch { return; }
+      const s2 = storage();
+      if (!s2 || typeof d.ligado !== 'boolean') return;
+      s2.get(CHAVE_RADAR).then((r) => s2.set({ [CHAVE_RADAR]: { ...(r[CHAVE_RADAR] || {}), notificacoes: d.ligado } })).catch(() => {});
+    });
+    chrome.storage.onChanged.addListener((m, area) => { if (area === 'local' && m[CHAVE_RADAR]) mandarNotif(m[CHAVE_RADAR].newValue); });
+    // 1.40.0: manter o PC acordado (o fundo pede ao navegador; a resposta volta para a linha da aba Caçar)
+    document.addEventListener('piloto:acordado', (ev) => {
+      let d = {};
+      try { d = JSON.parse(ev.detail) || {}; } catch { return; }
+      chrome.runtime.sendMessage({ tipo: 'acordado', ligar: d.ligar === true }).then((r) => {
+        const x = r && r.dados ? r.dados : {};
+        document.dispatchEvent(new CustomEvent('piloto:acordado-resposta', { detail: JSON.stringify({ suportado: x.suportado !== false, acordado: !!x.acordado }) }));
+      }).catch(() => {});
+    });
+    // 1.29: abrir as salas da Plateia (o service worker abre numa janela à parte)
+    document.addEventListener('piloto:plateia-abrir', (ev) => {
+      let d = {};
+      try { d = JSON.parse(ev.detail) || {}; } catch { return; }
+      const plataformas = (Array.isArray(d.plataformas) ? d.plataformas : []).filter((x) => x === 'twitch' || x === 'kick');
+      if (!plataformas.length || !storage()) return;
+      const reabrir = d.reabrir === true;
+      chrome.runtime.sendMessage({ tipo: 'plateia:abrir', plataformas, reabrir }).then((r) => {
+        // 1.36.0: o que foi reaberto volta para a página (diário)
+        const feitas = r && r.dados && typeof r.dados === 'object' ? r.dados : null;
+        const lista = (x) => (Array.isArray(x) ? x.filter((y) => y === 'twitch' || y === 'kick') : []);
+        const abertas = Array.isArray(feitas) ? lista(feitas) : lista(feitas && feitas.abertas);
+        const recarregadas = Array.isArray(feitas) ? [] : lista(feitas && feitas.recarregadas);
+        if (reabrir && (abertas.length || recarregadas.length)) document.dispatchEvent(new CustomEvent('piloto:plateia-reaberta', { detail: JSON.stringify({ abertas, recarregadas }) }));
+      }).catch(() => {});
+    });
+  } catch (e) {
+    erro(e);
+  }
+})();

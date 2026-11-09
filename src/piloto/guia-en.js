@@ -1,0 +1,194 @@
+// First-run guide and "What's new" texts (hub rule 12) — ENGLISH.
+// Every new version: add the `novidades` entry in the three files (pt, en, es), in short sentences
+// written for the person using it. Only the current version shows in the box.
+(function (raiz) {
+  'use strict';
+  const PIH = (raiz.__pokeidleHunt = raiz.__pokeidleHunt || {});
+  (PIH.guiaTextos = PIH.guiaTextos || {}).en = {
+    ui: {
+      comoUsar: 'How to use the Pilot', pular: 'Skip', voltar: 'Back', proximo: 'Next', entendi: 'Got it', fechar: 'Close (Esc)',
+      passo: 'Step {n} of {t}', novidades: "What's new in v{v}", verGuia: 'See the guide', eMais: 'and {n} more — the full list is on GitHub',
+      versaoUrgente: 'Urgent update v{v}', urgentePausado: 'The Pilot is paused until you update.', novaVersao: 'New version v{v}', voceTem: "You're on v{v}. What changed:", atualizar: 'Update', verNoGithub: 'See on GitHub',
+      updMsg: {
+        aplicando: 'Updating…',
+        'precisa-pasta': "Authorize the extension folder once (a tab opened) and future versions install themselves.",
+        baixado: 'The new zip was downloaded (Downloads folder). Extract it over the Pilot folder: within 1 min it reloads by itself and the game tabs reload.',
+        firefox: 'Firefox will ask whether to install the new version: click Add. The game tabs reload by themselves.',
+        'firefox-temporario': 'The new zip was downloaded. In about:debugging, remove the Pilot and load the new zip with "Load Temporary Add-on".',
+        loja: "The browser hasn't released the new version yet: try again in a little while.",
+        erro: "Couldn't update right now. Try again with the Check for updates button in the panel.",
+      },
+    },
+    tutorial: [
+      { t: 'Welcome to the Pilot', x: 'The Pilot plays for you right here in PokeIdle: it picks the best hunt, restocks balls and potions, and looks after your team and the Market. It only spends gold and always within the Vault; never gems or diamonds. The Pilot button sits right above your Pokémon in the field: that is where the panel opens.' },
+      { t: 'Off, Manual and Auto', x: 'The mode is at the top. Off: nothing runs. Manual: you turn on and tune each automation. Auto: the Pilot turns everything on and works out the numbers; each row keeps its own ON/OFF. Emergency: Alt+Shift+P switches everything Off at once, from any browser tab.' },
+      { t: 'The Vault controls spending', x: 'Before turning it on, open the Vault tab and check the reserve (the gold that is never spent) and the daily cap. Every purchase the Pilot makes goes through it.' },
+      { t: 'The tabs', x: 'Hunt: hunt switching, restock and team rotation. Level: when each one levels up. Routine: Pass, XP Share, PvP and Depot. Market: the Radar alerts, buys and resells for gold.' },
+      { t: "Your team in the game's panel", x: "The game's Team panel gets the Team button (your field and PvP team, plus the Ranked meta) and a ⏱ on each Pokémon with its turn and the rotation queue." },
+      { t: 'Help is always at hand', x: 'The ? on each row explains what it does. Report bug, Check for updates and the language are below the menu. This guide comes back with the ? button at the top.' },
+    ],
+    novidades: {
+      '1.31.1': [
+        "Fixed: the Ancient Pupitar (and the other Outland variants) no longer counts as \"already had\" in Hunt the meta: they don't evolve.",
+      ],
+      '2.0.0': [
+        "New brand: the extension is now called Netrix IdleAux, with a new logo. The version restarts at 2.0.",
+        "Fixed: \"Improve the team\" now rates every Pokémon by its final evolution (a good Gastly or Haunter counts as the Gengar it will become) instead of only accepting an already-evolved Gengar.",
+        "Automatic updates: the extension checks the GitHub Releases (DevTungs/netrix-idleaux) and updates itself. The first time, authorize the extension folder in the tab that opens by itself.",
+      ],
+      '1.53.0': [
+        "New option \"Sell the low-grade ones\" in the Routine tab, off by default: when on it only lists in the journal what it would sell; really selling takes a second switch and never touches shiny, P5, team or grade 3.5+.",
+      ],
+      '1.52.0': [
+        "Answer in Questions (still off by default): it now waits a random time, stays quiet if another player already answered, only one tab answers each question, the wording varies and there is an hourly limit.",
+      ],
+      '1.51.2': [
+        "Fixed: when a switch of items in the game's automations didn't go through, Restock could stop buying everything, until your balls ran out. It now keeps buying what is set in the game, and the journal tells you.",
+      ],
+      '1.51.1': [
+        "Fixed: the Pilot couldn't set the Golden Potion in the game's automations, and the game could stay on a potion you had run out of. It is now really set, and the journal tells you when a switch doesn't go through.",
+      ],
+      '1.51.0': [
+        "The hunt ranking (Hunt tab and Farm mode) now takes the game's Seasonal Day into account: in Map hunts, Pokémon of the day's type hit twice as hard and take a quarter of the damage. On a Bug day, the bug hunt drops for anyone who isn't Bug. It is worked out again by itself at the 18:00 turnover.",
+      ],
+      '1.50.0': [
+        "Fixed: the potion the Pilot sets in the game is now picked by the HP of the Pokémon that is fighting, not the team average. Leveling a weak one in a strong team (the Magikarp from issue #5), it sets Small Potion instead of Ultra.",
+        "Fixed: in Hunt the meta, when a better one comes, the previous low-grade one leaves the Collection for the Depot and is not kept again. Shiny, P5, team members, grade 3.5+, Lv 50+ and whatever the Guard protects stay.",
+      ],
+      '1.49.1': [
+        "In the game's Friends window, each friend shows their PvP Ranked rank next to the name: the emblem, the tier, the points and the position if they're in the top 100. Ranks are kept and show up as soon as the window opens.",
+      ],
+      '1.48.0': [
+        "New notice: if the original /hunt or Market Radar stay on together with the Pilot, it warns you in the middle of the screen and in the Log and explains how to turn them off. The Pilot already does everything they do, and running both makes them fight over the same spot on screen.",
+      ],
+      '1.47.1': [
+        "New Support ♥ button in the footer, optional: Pix (Brazil) or GitHub Sponsors (other countries). It changes nothing in the Pilot.",
+      ],
+      '1.47.0': [
+        "New Farm mode (Hunt tab): the Pilot works out which Pokémon earns the most XP at your level, for the trainer and for itself, and farms with it nonstop. If you don't have it, it catches one, which steps in right away and evolves by itself into the chosen one. Recalculates once a day and when a new hunt unlocks.",
+      ],
+      '1.46.0': [
+        "Small accounts can now use Auto: restock (balls, potions and revives) is outside the daily cap, since early in the game almost all gold goes to items. At least 10% of the balance is always kept, and the journal warns if restock goes past the cap. The Market keeps its reserve.",
+      ],
+      '1.45.0': [
+        "Hunt the meta has a new \"Only accept a good one\" option (off by default): the Pilot stays on each target until it catches one with the game grade above the cut you pick (3.5+, 4.0+ or 5.0+; shiny and P5 always pass), and only then moves to the next.",
+      ],
+      '1.44.0': [
+        "The Pilot now notices by itself when PokeIdle publishes a new game version (it checks every 30 min and when you come back to the tab) and shows \"PokeIdle updated the game, press F5\" in the middle of the screen, with a button to reload.",
+      ],
+      '1.43.1': [
+        "Fixed: potions and revives cost much more in the game's shop than the Pilot counted, so the Vault let it spend far past the cap. The math now uses the price the shop charges, and so do the potion choice and the amounts.",
+        "Fixed: a team Pokémon that can't fight safely in any hunt (a Magikarp, for example) is left out of the rotation instead of stepping in and fainting over and over.",
+      ],
+      '1.43.0': [
+        "Update the team by the meta got \"Do it myself\" (Team window, Meta tab): once the difference from the meta stays the same for 30 min, the Pilot updates the team by itself; if a meta Pokémon is missing, it turns on Hunt the meta by itself and, after the hunt, swaps the team at the Center and turns hunt switching and the rotation back on.",
+      ],
+      '1.42.0': [
+        "PvP: the game's \"Battle screen\" always stays on Minimized (new row in the Routine tab). If you pick \"Don't show\", it stays as you chose.",
+      ],
+      '1.41.0': [
+        "Improve the team (Hunt tab): hunts the family of each team Pokémon, up to 1 h each, looking for one with more Power at your max level. The better one stays in the Collection, trains in the XP Share and joins the team once it passes the current one.",
+        "Complete the Pokédex (Hunt tab): hunts the species you've never caught, going to the safe hunt with the most of them per hour. Only one hunting mode runs at a time; at the end, hunt switching and the rotation come back.",
+      ],
+      '1.40.0': [
+        "Keep the PC awake (Hunt tab): with the game open and the Pilot in Manual or Auto, the computer doesn't go to sleep; the screen can still turn off. Doesn't work on Firefox. And when \"Come back on its own if the game drops\" reloads the game, you get a notification.",
+      ],
+      '1.39.0': [
+        "Rare-find alerts (Routine tab): a shiny on the field, a shiny caught, a P5 catch and a rare drop (Boss Token, fragments, TM pieces, tickets). With the game in view, a small card in the corner; with it hidden, a system notification. The row shows what dropped today.",
+      ],
+      '1.38.0': [
+        "Emergency stop: Alt+Shift+P switches the Pilot Off at once, from any browser tab. A box confirms it and has a button to go back to the previous mode. You can change the key at chrome://extensions/shortcuts.",
+      ],
+      '1.37.1': [
+        'Team: a Pokémon outside the meta no longer holds its slot. If you catch another one outside the meta with more Power, it takes the weakest one\'s place. The meta ones still come first.',
+      ],
+      '1.37.0': [
+        "New Questions tab: the Piloto can answer questions in the chat's Questions channel by itself, with 53 answers taken from the game's Pokepedia. It comes off; turn it on in the tab if you want. It waits 20 s, stays quiet if someone already helped and speaks at most once every 5 min.",
+      ],
+      '1.36.2': [
+        "Evolve: the team's stone now uses the same reserve as potions (not the Market's 5M), so low-gold accounts can buy it too — never more than half the free gold, so potions don't run out.",
+        "Live PvP: each trainer's name in a blue (you) or red (opponent) tag and each Pokémon in a light little square — no more dark box behind.",
+      ],
+      '1.36.1': [
+        "Restock: revive and potion always come before balls, and balls only use the gold left after the next potion restock is secured — low-gold accounts no longer run out of potions.",
+        "Restock: when the chosen potion (or ball, or revive) changes, the Piloto switches and buys right away instead of going up to 40 min without buying either; and it no longer drops to a weaker potion just because it just spent gold.",
+        "Evolve: if the vault won't release gold for the stone (low-gold account), it tries again in 30 min instead of retrying nonstop.",
+      ],
+      '1.36.0': [
+        "Evolve: the team evolves the moment it reaches the level — any Pokémon, the starter too. Without the stone, the Piloto buys one on the Market right away (for gold) and it never goes to resale.",
+        "Evolve: fixed what blocked evolutions — the stone lookup lost its turn to the Radar, a second stone from the same seller was refused and a lost command held the Pokémon for 24 h.",
+        "Plateia: \"Reopen if it closes\" option — if the Twitch or Kick window closes or is discarded from memory, the Piloto reopens it within 1 min.",
+        "Live PvP: all 6 on each side show from the start, in a vertical list in each corner — a frame on whoever is fighting, fading as they lose HP and grey when they faint.",
+      ],
+      '1.35.0': [
+        "Meta tab in the Team window: \"Update team\" button — switches to the current meta right away (at the Center), shows who comes in, who goes out and what's still to catch; \"Hunt the missing ones\" only when you click.",
+        "New Statement tab: what you spent and what came in, with the item icon or the Pokémon, when and how long ago; totals for today, 7 and 30 days.",
+        "Live PvP: in the small window and the full screen of the match, each trainer's name and Pokémon in the corners — fading as they lose HP and grey when they faint.",
+      ],
+      '1.34.1': [
+        "Collection: a Pokémon the Auto Collection kept below Lv 50 (the Market only takes it from there) that isn't useful for the team, PvP or the meta goes back to the Depot and is sold instead of sitting there.",
+        "The Pilot's version shows, discreetly, next to its name on the In the field bar.",
+        "Team button: turns gold with a red dot when the meta changes and you haven't seen it yet; opening it goes straight to the Meta tab.",
+        "Next to your rank you see the last ranked result: ▲ the PR you won or ▼ the PR you lost.",
+        "Battle Pass: when the Pilot collects the daily reward, it closes the \"Amazing!\" box and the Pass window by itself.",
+        "An automatic buy that didn't go out because the game connection dropped tries again by itself when the connection is back.",
+      ],
+      '1.34.0': [
+        "New version: the Pilot checks on its own when the game opens, every 30 min and when you come back to the tab, and shows the notice right away, without reloading. The X only postpones it for 1 h; an urgent update pauses the Pilot until you update.",
+        "Manual mode: Targets tab in the Market — for each item, the max price in gold and how many to buy; the Radar buys on its own when a listing shows up at or below it. Also Pokémon targets in gold (P5 and minimum grade).",
+        "Manual mode: with \"Calculate limits automatically\" off, the Market limits become fields you can type in, and F5 no longer undoes what you set.",
+        "Restock: the revive, potion or ball picked for the account is bought again when it runs out, even if the game unticks it for being at zero.",
+        "Rotation: if the turn ends during a trip to the Center (a restock, for example), the swap happens on that same trip, without going back to the hunt first.",
+      ],
+      '1.33.9': [
+        "Automatic resale: what you buy by hand (on the Market, with a click in the Radar, or a Pokémon) is never listed on its own; only what came by itself (drops or the Radar's automatic buys) goes to resale.",
+        "The stone your team will spend to evolve stays out of resale while it's needed.",
+      ],
+      '1.33.7': [
+        "In the field: a golden \"+N\" next to the level shows how many levels the Pokémon gained this rotation turn (only if it leveled up; it starts over when it comes back).",
+      ],
+      '1.33.6': [
+        "What's new now shows only what changed since the last version you saw (6 lines at most).",
+      ],
+      '1.33.5': [
+        "Automatic evolution: the stone the Radar buys for the team no longer goes to resale (before, the Pokémon kept waiting and the Radar bought another every 30 min); if the Radar already has the stone in stock, it uses one from there.",
+      ],
+      '1.33.4': [
+        "Rotation: when the hunt never gives a break in combat (the weak Pokémon keeps getting hit), after 2 min the next one in line comes in right there, clears the hunt and goes on to the Center and its best hunt. The order doesn't change.",
+        "If the next one in line can't handle that hunt, the team's strongest comes in only to clear it; it doesn't count as a turn or lose its place in line.",
+        "No VIP: the automatic Poké Ball keeps throwing with the window minimized (Chrome was slowing the clock to once a minute).",
+      ],
+      '1.33.3': [
+        "Automatic Market buying now follows your money: it buys what's profitable while the radar's stock plus the purchase stays under half of what you have; once it sells, room opens again. It left the daily cap.",
+        "When the game says \"Devagar aí — muitas mensagens\" (too many messages), the radar and the Pilot slow down on their own and speed back up slowly.",
+        "The ball takes your balance into account: an account with lots of gold uses the Ultra Ball even while leveling a weak Pokémon.",
+      ],
+      '1.33.0': [
+        "Restock for new accounts: the Pilot ticks one ball, one potion and one revive right away and buys the first batch as soon as there is gold (it keeps only 10% of the balance).",
+        "Restock amounts come from what your account actually uses (1 h minimum, 6 h target), and the potion is the one with the lowest gold per HP it really heals.",
+        "Hunt tab: gold/h already takes potions off, and a hunt where fainting costs more XP than it gives is flagged as risky.",
+        "Hunt the meta no longer skips anyone: it tries every team Pokémon and, with no safe hunt, waits while farming XP until the trainer levels up.",
+      ],
+      '1.32.3': [
+        "Plateia also stops opening a duplicate room after a Piloto update or with Windows display scaling (it adopts the window that is already open).",
+        "Hunt tab: a hunt where your Pokémon dies before finishing a single kill leaves the ranking (e.g. Larvitar Lv 20 at Ledyba Lv 230), and with \"Avoid risk\" the risky ones come after the safe ones.",
+        "The first time, the Pilot opens in your browser language (Portuguese, English or Spanish); the PT · EN · ES picker is still in the panel.",
+        "New version, what is new and the guide show up by themselves in the middle of the game screen, without opening the panel. X or Esc closes them.",
+        "Plateia rooms no longer open again when the game or the extension restarts: only a missing one opens.",
+        "When the rotation is turned back on, it starts with the weakest Pokémon and leaves the strongest for last.",
+        "Hunt the meta also turns off the team rotation; it comes back together with Hunt switching.",
+        "Tournaments: the Pilot signs you up for the World, the Amateur and the Showdown as soon as registration opens (Routine tab).",
+      ],
+      '1.31.0': [
+        'Now also works on Edge, Brave, Opera GX and Firefox.',
+        'Manual mode is unlocked: you turn on and tune each automation.',
+        'Team rotation by turn: in Manual you choose how long a turn lasts.',
+        "The game's Session TIME now has a box with the days.",
+        "Hunt the meta no longer goes to the Outland: Pokémon from there don't evolve.",
+        'This first-run guide and the "What\'s new" box (? button at the top).',
+        "Restock picks one ball, one potion and one revive for your account and switches them as it grows.",
+        "The team only takes meta Pokémon; the meta it follows only changes after 24 h.",
+      ],
+    },
+  };
+})(globalThis);

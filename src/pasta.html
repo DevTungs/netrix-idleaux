@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Netrix IdleAux · atualização automática</title>
+<style>
+  body { font: 15px/1.5 system-ui, sans-serif; background: #14173a; color: #eef3ff; margin: 0; display: grid; place-items: center; min-height: 100vh; }
+  main { max-width: 520px; padding: 28px; }
+  img { width: 64px; height: 64px; }
+  h1 { font-size: 20px; margin: 12px 0 8px; }
+  p { color: #c5cfee; }
+  button { font: inherit; font-weight: 600; padding: 10px 18px; border: 0; border-radius: 8px; background: #ff9628; color: #1b1300; cursor: pointer; }
+  #msg { margin-top: 16px; min-height: 1.5em; }
+  .ok { color: #7be0a0; } .erro { color: #ff9a9a; }
+</style>
+</head>
+<body>
+<main>
+  <img src="../icons/icon-128.png" alt="">
+  <h1>Atualização automática</h1>
+  <p>Para o Netrix IdleAux se atualizar sozinho a partir do GitHub, escolha <b>uma vez</b> a pasta onde você instalou a extensão (a que tem o <code>manifest.json</code>). Depois disso não precisa fazer mais nada.</p>
+  <p id="estado"></p>
+  <button id="bt" type="button">Escolher a pasta da extensão</button>
+  <div id="msg" role="status"></div>
+</main>
+<script src="lib/autoatualiza.js"></script>
+<script src="pasta.js"></script>
+</body>
+</html>

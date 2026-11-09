@@ -1,0 +1,157 @@
+{
+  "manifest_version": 3,
+  "name": "Netrix IdleAux",
+  "version": "2.0.0",
+  "author": "Dreds",
+  "description": "Auxiliar não oficial para o pokeidle.io: Radar do Mercado + /hunt numa extensão só. Onde caçar, troca de hunt, rotina diária, XP Share, revenda e compra no Mercado em ouro, com cofre de orçamento. Nunca gasta Gema nem diamante.",
+  "minimum_chrome_version": "121",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "idleaux@netrix",
+      "strict_min_version": "140.0",
+      "data_collection_permissions": {
+        "required": [
+          "none"
+        ]
+      }
+    }
+  },
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "permissions": [
+    "storage",
+    "notifications",
+    "alarms",
+    "power"
+  ],
+  "host_permissions": [
+    "https://pokeidle.io/*",
+    "https://api.github.com/*",
+    "https://codeload.github.com/*",
+    "https://raw.githubusercontent.com/*"
+  ],
+  "background": {
+    "service_worker": "src/sw.js",
+    "scripts": [
+      "src/lib/estatistica.js",
+      "src/lib/historico.js",
+      "src/lib/csv.js",
+      "src/lib/compra.js",
+      "src/lib/lucro.js",
+      "src/sw.js"
+    ]
+  },
+  "action": {
+    "default_title": "Netrix IdleAux: abrir o jogo",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png"
+    }
+  },
+  "commands": {
+    "parar-tudo": {
+      "suggested_key": {
+        "default": "Alt+Shift+P"
+      },
+      "description": "Parar tudo (emergência) · Stop everything (emergency) · Parar todo (emergencia)"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://pokeidle.io/*"
+      ],
+      "js": [
+        "src/hook.js",
+        "src/piloto/kit.js",
+        "src/piloto/idioma-dic.js",
+        "src/piloto/idioma.js",
+        "src/piloto/cofre.js",
+        "src/piloto/extrato.js",
+        "src/hunt/game.js",
+        "src/hunt/engine.js",
+        "src/hunt/geo.js",
+        "src/hunt/nivel.js",
+        "src/hunt/auto.js",
+        "src/piloto/rotina.js",
+        "src/piloto/captura.js",
+        "src/piloto/centro.js",
+        "src/piloto/duvidas.js",
+        "src/hunt/ui.js",
+        "src/piloto/emergencia.js",
+        "src/piloto/jogo-novo.js",
+        "src/piloto/duplicada.js",
+        "src/piloto/mini.js",
+        "src/piloto/meta.js",
+        "src/piloto/time.js",
+        "src/piloto/pvp-vivo.js",
+        "src/piloto/guarda.js",
+        "src/piloto/metacaca.js",
+        "src/piloto/cacadas.js",
+        "src/piloto/farm.js",
+        "src/piloto/vendanota.js",
+        "src/piloto/saude.js",
+        "src/piloto/volta.js",
+        "src/piloto/acordado.js",
+        "src/piloto/suporte.js",
+        "src/piloto/amigos-rank.js",
+        "src/piloto/plateia.js",
+        "src/piloto/avisos.js",
+        "src/piloto/torneio.js",
+        "src/piloto/sessao-dias.js",
+        "src/piloto/guia-pt.js",
+        "src/piloto/guia-en.js",
+        "src/piloto/guia-es.js",
+        "src/piloto/guia.js"
+      ],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": [
+        "https://pokeidle.io/*"
+      ],
+      "css": [
+        "src/hunt/ui.css",
+        "src/hunt/janela.css"
+      ],
+      "run_at": "document_start"
+    },
+    {
+      "matches": [
+        "https://pokeidle.io/*"
+      ],
+      "js": [
+        "src/lib/navegador.js",
+        "src/lib/gravador.js",
+        "src/lib/barramento.js",
+        "src/lib/estatistica.js",
+        "src/lib/config.js",
+        "src/lib/agenda.js",
+        "src/lib/relogio.js",
+        "src/lib/precos.js",
+        "src/lib/historico.js",
+        "src/lib/compra.js",
+        "src/lib/vitrine.js",
+        "src/lib/pessoal.js",
+        "src/lib/automatica.js",
+        "src/lib/revenda.js",
+        "src/lib/especies.js",
+        "src/lib/pokemon.js",
+        "src/lib/revendapk.js",
+        "src/lib/lucro.js",
+        "src/ponte.js",
+        "src/painel.js",
+        "src/revenda.js",
+        "src/revendapk.js",
+        "src/tela.js",
+        "src/radar.js"
+      ],
+      "run_at": "document_start"
+    }
+  ]
+}

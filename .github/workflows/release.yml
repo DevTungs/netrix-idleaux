@@ -1,0 +1,21 @@
+# Cada push na main cuja versão (manifest.json) ainda não tem Release cria o Release v<versão>.
+# É o zip "Source code" desse Release que a extensão baixa para se atualizar sozinha.
+name: release
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Criar o Release da versão do manifest
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VER=$(jq -r .version manifest.json)
+          if gh release view "v$VER" >/dev/null 2>&1; then echo "v$VER já tem Release"; exit 0; fi
+          jq -r --arg v "$VER" '.versoes[$v].pt // [] | map("- " + .) | join("\n")' changelog.json > notas.md
+          gh release create "v$VER" --target "$GITHUB_SHA" --title "Netrix IdleAux $VER" --notes-file notas.md
