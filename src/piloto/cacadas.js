@@ -38,12 +38,12 @@
       const c = JSON.parse(localStorage.getItem(CHAVE) || 'null') || {};
       return {
         modo: c.modo === 'melhorar' || c.modo === 'dex' ? c.modo : null,
-        alvos: Array.isArray(c.alvos) ? c.alvos : [], i: Number(c.i) || 0, vistos: Array.isArray(c.vistos) ? c.vistos : [],
+        alvos: Array.isArray(c.alvos) ? c.alvos : [], escolhidos: Array.isArray(c.escolhidos) ? c.escolhidos : null, soFinal: c.soFinal !== false, i: Number(c.i) || 0, vistos: Array.isArray(c.vistos) ? c.vistos : [],
         promessas: Array.isArray(c.promessas) ? c.promessas : [], dexFrio: c.dexFrio && typeof c.dexFrio === 'object' ? c.dexFrio : {},
         dexPegos: Array.isArray(c.dexPegos) ? c.dexPegos : [], huntDepois: c.huntDepois === true, rodizioDepois: c.rodizioDepois === true,
         desde: Number(c.desde) || 0, fim: c.fim || null,
       };
-    } catch { return { modo: null, alvos: [], i: 0, vistos: [], promessas: [], dexFrio: {}, dexPegos: [], huntDepois: false, rodizioDepois: false, desde: 0, fim: null }; }
+    } catch { return { modo: null, alvos: [], escolhidos: null, soFinal: true, i: 0, vistos: [], promessas: [], dexFrio: {}, dexPegos: [], huntDepois: false, rodizioDepois: false, desde: 0, fim: null }; }
   };
   let cfg = ler();
   const gravar = () => { try { localStorage.setItem(CHAVE, JSON.stringify(cfg)); } catch { /* sem armazenamento */ } };
@@ -148,13 +148,21 @@
     try { if (PIH.farm && PIH.farm.ativo()) PIH.farm.desligar(t3(`ligou ${nomeModo}`, `turned on ${nomeModo}`, `encendió ${nomeModo}`)); } catch { /* sem farm */ }
     let alvos = [];
     if (modo === 'melhorar') {
-      const time = timeCampo().filter((p) => p.stats);
+      const time = timeCampo().filter((p) => p.stats && (!cfg.escolhidos || cfg.escolhidos.includes(p.id)));
+      if (!time.length && cfg.escolhidos) return { ok: false, motivo: t3('escolha ao menos um pokémon do time', 'pick at least one team Pokémon', 'elige al menos un pokémon del equipo') };
       if (!time.length) return { ok: false, motivo: t3('o time de campo está vazio', 'the field team is empty', 'el equipo de campo está vacío') };
       for (const p of time) {
         const raizId = F().raizDePk(p);
         let membros = raizId != null ? F().membros(raizId) : [];
         if (!ehOutland(p.speciesId)) membros = membros.filter((m) => !ehOutland(m.id));
         if (!membros.length) membros = [{ id: p.speciesId, nome: p.nome, estagio: 0 }];
+        // só a forma final (Charizard, não Charmander); se ela não aparece em nenhuma hunt, cai para a família toda
+        if (cfg.soFinal) {
+          const topo = Math.max(...membros.map((m) => Number(m.estagio) || 0));
+          const finais = membros.filter((m) => (Number(m.estagio) || 0) === topo);
+          const aparece = (welcome.hunts || []).some((h) => !huntOutland(h) && (h.especies || []).some((e) => finais.some((m) => m.id === Number(e.pokeId))));
+          if (aparece) membros = finais;
+        }
         alvos.push({ pkId: p.id, nome: p.nome, speciesId: p.speciesId, raiz: raizId, membros, base: await potencial(p), melhorId: null, melhorPot: 0, naHuntMs: 0, espera: null, semHunt: false, feito: false });
       }
     } else {
@@ -392,11 +400,27 @@
             : k === cfg.i ? '<span class="plt-meta-tem plt-meta-cacando">caçando</span>' : '<span class="plt-meta-tem">na fila</span>';
       return `<div class="plt-an-l"><span class="plt-an-nome"><b>${esc(a.nome)}</b><small>${esc(a.membros.map((x) => x.nome).join(' → '))}</small></span><span class="plt-an-acoes">${est}</span></div>`;
     }).join('')}</div>` : '';
-    return `${K.grupo('Caçadas')}${K.linha({ id: 'cacadas-melhorar', icone: 'cacar', nome: 'Melhorar o time', alvo: 'cacadas:melhorar', on: cfg.modo === 'melhorar', trava, status: semTr(sMel),
+    const rodando = cfg.modo === 'melhorar';
+    const auto = !cfg.escolhidos;
+    const escolha = `${K.mini('cacadas:final', cfg.soFinal, t3('Só a forma final', 'Final form only', 'Solo la forma final'), t3('Caça só a evolução final (ex.: Charizard). Se ela não aparece em hunt, caça a família toda.', 'Hunts only the final evolution (e.g. Charizard). If it does not spawn in any hunt, hunts the whole family.', 'Caza solo la evolución final (p. ej. Charizard). Si no aparece en hunt, caza toda la familia.'), rodando)}${K.mini('cacadas:auto', auto, t3('Automático (o time todo)', 'Automatic (whole team)', 'Automático (todo el equipo)'), '', rodando)}${auto ? '' : timeCampo().map((p) => K.mini(`cacadas:pk:${p.id}`, cfg.escolhidos.includes(p.id), `<span data-sem-traducao="1">${esc(p.nome)} ${t3('Nv', 'Lv', 'Nv')} ${nf.format(p.level || 0)}</span>`, '', rodando)).join('')}`;
+    return `${K.grupo('Caçadas')}${K.linha({ id: 'cacadas-melhorar', ajustes: escolha, icone: 'cacar', nome: 'Melhorar o time', alvo: 'cacadas:melhorar', on: cfg.modo === 'melhorar', trava, status: semTr(sMel),
       dica: 'Para cada pokémon do time de campo, caça a família dele (até 1 h por pokémon) atrás de um exemplar com mais Poder no nível máximo que você pode usar — qualidade, IV e Potência, a fórmula do ⚔ do jogo. O melhor vai para a Coleção (nunca vendido) e treina no XP Share; quando passar o do time em Poder, entra no lugar. Ligar desliga a Troca de hunt, o rodízio, o Caçar o meta e o Completar a Pokédex; no fim, a Troca de hunt e o rodízio voltam. Precisa de bola: VIP ou a Pokébola automática em "Todo corpo".' })}${lista}${K.linha({ id: 'cacadas-dex', icone: 'bola', nome: 'Completar a Pokédex', alvo: 'cacadas:dex', on: cfg.modo === 'dex', trava, status: semTr(sDex),
       dica: 'Caça as espécies que você nunca capturou (pela Pokédex do próprio jogo). Vai à hunt segura com mais espécies faltando por hora e fica até capturar todas de lá, ou até 45 min sem novidade (aí troca de hunt). Capturou, a espécie entra na Pokédex e o pokémon segue o caminho normal (Coleção ou venda). A Outland fica de fora (não conta na Pokédex). Ligar desliga a Troca de hunt, o rodízio, o Caçar o meta e o Melhorar o time; no fim, voltam. Precisa de bola: VIP ou a Pokébola automática em "Todo corpo".' })}`;
   }
   async function definir(caminho, v) {
+    if (caminho === 'final') { if (cfg.modo !== 'melhorar') { cfg.soFinal = !!v; gravar(); } return null; }
+    if (caminho === 'auto' || caminho.startsWith('pk:')) {
+      if (cfg.modo === 'melhorar') return null; // a seleção só muda com o modo desligado
+      if (caminho === 'auto') cfg.escolhidos = v ? null : timeCampo().map((p) => p.id);
+      else {
+        const id = Number(caminho.slice(3));
+        const atual = new Set(cfg.escolhidos || timeCampo().map((p) => p.id));
+        if (v) atual.add(id); else atual.delete(id);
+        cfg.escolhidos = [...atual];
+      }
+      gravar();
+      return null;
+    }
     if (caminho !== 'melhorar' && caminho !== 'dex') return null;
     if (v) { const r = await ligar(caminho); if (!r.ok) { st.motivo = r.motivo; diario(`${t3('não liguei', "didn't turn on", 'no encendí')}: ${r.motivo}`, 'aviso', caminho); } return r; }
     if (cfg.modo === caminho) desligar(t3('você desligou', 'you turned it off', 'lo apagaste'));

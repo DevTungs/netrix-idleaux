@@ -361,6 +361,7 @@
     'Relatar bug': ['Report bug', 'Reportar bug'],
     'Atualização': ['Update', 'Actualización'],
     'Procurar atualização': ['Check for updates', 'Buscar actualización'],
+    'Automático (o time todo)': ['Automatic (whole team)', 'Automático (todo el equipo)'],
     'atualizando… a extensão vai recarregar': ['updating… the extension will reload', 'actualizando… la extensión se recargará'],
     'autorize a pasta na aba que abriu': ['allow the folder in the tab that opened', 'autoriza la carpeta en la pestaña que se abrió'],
     'não achei os Releases no GitHub (404)': ["couldn't find the Releases on GitHub (404)", 'no encontré los Releases en GitHub (404)'],

@@ -1,5 +1,16 @@
 {
   "versoes": {
+    "2.0.4": {
+      "pt": [
+        "Melhorar o time: agora você escolhe quais pokémon do time melhorar (ou deixa no Automático) e, por padrão, caça só a forma final (Charizard, não Charmander). Se a forma final não aparece em hunt, caça a família toda."
+      ],
+      "en": [
+        "Improve the team: you now pick which team Pokémon to improve (or leave it on Automatic) and, by default, it hunts only the final form (Charizard, not Charmander). If the final form does not spawn in any hunt, it hunts the whole family."
+      ],
+      "es": [
+        "Mejorar el equipo: ahora eliges qué pokémon del equipo mejorar (o lo dejas en Automático) y, por defecto, caza solo la forma final (Charizard, no Charmander). Si la forma final no aparece en hunt, caza toda la familia."
+      ]
+    },
     "2.0.3": {
       "pt": [
         "Corrigido: o botão Procurar atualização agora mostra o que aconteceu (Release não encontrado, pasta sem permissão, atualizando) em vez de sempre dar erro."
