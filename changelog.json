@@ -1,5 +1,19 @@
 {
   "versoes": {
+    "2.0.5": {
+      "pt": [
+        "Melhorar o time: quando acha um pokémon melhor, avisa com um cartão na tela (ou notificação do Chrome) e um som de captura. Dá para desligar no interruptor \"Avisar com som\".",
+        "Melhorar o time: a comparação agora usa o Poder atual do pokémon do time, não o de quando o modo ligou."
+      ],
+      "en": [
+        "Improve the team: when it finds a better Pokémon, it alerts with an on-screen card (or Chrome notification) and a capture sound. You can turn it off with the \"Sound alert\" switch.",
+        "Improve the team: the comparison now uses the team Pokémon's current Power, not the one from when the mode was turned on."
+      ],
+      "es": [
+        "Mejorar el equipo: al encontrar un pokémon mejor, avisa con una tarjeta en pantalla (o notificación de Chrome) y un sonido de captura. Se puede apagar con el interruptor \"Avisar con sonido\".",
+        "Mejorar el equipo: la comparación ahora usa el Poder actual del pokémon del equipo, no el de cuando se encendió el modo."
+      ]
+    },
     "2.0.4": {
       "pt": [
         "Melhorar o time: agora você escolhe quais pokémon do time melhorar (ou deixa no Automático) e, por padrão, caça só a forma final (Charizard, não Charmander). Se a forma final não aparece em hunt, caça a família toda."

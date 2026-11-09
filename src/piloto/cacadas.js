@@ -38,12 +38,12 @@
       const c = JSON.parse(localStorage.getItem(CHAVE) || 'null') || {};
       return {
         modo: c.modo === 'melhorar' || c.modo === 'dex' ? c.modo : null,
-        alvos: Array.isArray(c.alvos) ? c.alvos : [], escolhidos: Array.isArray(c.escolhidos) ? c.escolhidos : null, soFinal: c.soFinal !== false, i: Number(c.i) || 0, vistos: Array.isArray(c.vistos) ? c.vistos : [],
+        alvos: Array.isArray(c.alvos) ? c.alvos : [], escolhidos: Array.isArray(c.escolhidos) ? c.escolhidos : null, soFinal: c.soFinal !== false, avisar: c.avisar !== false, i: Number(c.i) || 0, vistos: Array.isArray(c.vistos) ? c.vistos : [],
         promessas: Array.isArray(c.promessas) ? c.promessas : [], dexFrio: c.dexFrio && typeof c.dexFrio === 'object' ? c.dexFrio : {},
         dexPegos: Array.isArray(c.dexPegos) ? c.dexPegos : [], huntDepois: c.huntDepois === true, rodizioDepois: c.rodizioDepois === true,
         desde: Number(c.desde) || 0, fim: c.fim || null,
       };
-    } catch { return { modo: null, alvos: [], escolhidos: null, soFinal: true, i: 0, vistos: [], promessas: [], dexFrio: {}, dexPegos: [], huntDepois: false, rodizioDepois: false, desde: 0, fim: null }; }
+    } catch { return { modo: null, alvos: [], escolhidos: null, soFinal: true, avisar: true, i: 0, vistos: [], promessas: [], dexFrio: {}, dexPegos: [], huntDepois: false, rodizioDepois: false, desde: 0, fim: null }; }
   };
   let cfg = ler();
   const gravar = () => { try { localStorage.setItem(CHAVE, JSON.stringify(cfg)); } catch { /* sem armazenamento */ } };
@@ -214,6 +214,9 @@
       const a = cfg.alvos.find((x) => !x.feito && daFamilia(x, p)) || cfg.alvos.find((x) => daFamilia(x, p));
       if (!a) continue;
       const v = await potencial(p);
+      // o pokémon do time pode ter treinado ou mudado desde que o modo ligou: compara com o Poder de agora
+      const doTime = porId(a.pkId);
+      if (doTime) a.base = Math.max(a.base, await potencial(doTime));
       if (v > a.base * MARGEM && v > a.melhorPot) {
         const antes = a.melhorId ? porId(a.melhorId) : null;
         a.melhorId = p.id; a.melhorPot = v;
@@ -221,11 +224,52 @@
         guardarNaColecao(p);
         const pct = Math.round((v / a.base - 1) * 100);
         diario(t3(`achou um ${p.nome} melhor que o ${a.nome} do time (+${pct}% de Poder no seu nível máximo) — guardado na Coleção e indo para o XP Share`, `found a ${p.nome} better than the team's ${a.nome} (+${pct}% Power at your max level) — kept in the Collection and going to the XP Share`, `encontró un ${p.nome} mejor que el ${a.nome} del equipo (+${pct}% de Poder en tu nivel máximo) — guardado en la Colección y yendo al XP Share`), 'ok');
+        avisarMelhor(p, a, pct);
         if (a === cfg.alvos[cfg.i]) a.feito = true;
       }
     }
     cfg.vistos = [...vistos].slice(-3000);
     gravar();
+  }
+  // aviso de "achou um melhor": cartão na tela (ou notificação do Chrome com a aba em segundo plano) + som
+  // de captura. O Chrome só toca som depois de um clique/tecla na página; antes disso fica calado.
+  let gestoFeito = false;
+  let audio = null;
+  for (const t of ['pointerdown', 'keydown']) addEventListener(t, () => { gestoFeito = true; }, { capture: true, passive: true });
+  function somCaptura() {
+    if (!gestoFeito) return;
+    try {
+      const Ctx = raiz.AudioContext || raiz.webkitAudioContext;
+      if (!Ctx) return;
+      if (!audio) audio = new Ctx();
+      const ctx = audio;
+      if (ctx.state === 'suspended') { ctx.resume().catch(() => {}); return; }
+      const t0 = ctx.currentTime;
+      // do-mi-sol-do agudo, curtinho e alegre
+      [523.25, 659.25, 783.99, 1046.5].forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        osc.type = 'square';
+        osc.frequency.value = freq;
+        const ini = t0 + i * 0.11;
+        const dur = i === 3 ? 0.4 : 0.1;
+        g.gain.setValueAtTime(0.0001, ini);
+        g.gain.exponentialRampToValueAtTime(0.09, ini + 0.015);
+        g.gain.exponentialRampToValueAtTime(0.0001, ini + dur);
+        osc.connect(g).connect(ctx.destination);
+        osc.start(ini);
+        osc.stop(ini + dur + 0.02);
+      });
+    } catch { /* sem áudio */ }
+  }
+  function avisarMelhor(p, a, pct) {
+    if (!cfg.avisar) return;
+    const titulo = t3('Achou um pokémon melhor!', 'Found a better Pokémon!', '¡Encontró un pokémon mejor!');
+    const linha = t3(`${p.nome} Nv ${p.level || '?'}: +${pct}% de Poder que o ${a.nome} do time`, `${p.nome} Lv ${p.level || '?'}: +${pct}% Power over the team's ${a.nome}`, `${p.nome} Nv ${p.level || '?'}: +${pct}% de Poder que el ${a.nome} del equipo`);
+    somCaptura();
+    const aVista = document.visibilityState === 'visible' && (typeof document.hasFocus !== 'function' || document.hasFocus());
+    if (aVista) { try { PIH.emit('piloto.achado', { titulo, linha, categoria: 'pokemon', speciesId: p.speciesId, nome: p.nome, tag: `melhor:${p.id}` }); } catch { /* sem cartão */ } }
+    else { try { document.dispatchEvent(new CustomEvent('piloto:notificar', { detail: JSON.stringify({ titulo: `Netrix PokeIdle Aux · ${titulo}`, mensagem: linha }) })); } catch { /* sem ponte */ } }
   }
   function guardarNaColecao(p) {
     const colecao = (eu && eu.automation && Array.isArray(eu.automation.pokemonTravado)) ? eu.automation.pokemonTravado : [];
@@ -402,12 +446,13 @@
     }).join('')}</div>` : '';
     const rodando = cfg.modo === 'melhorar';
     const auto = !cfg.escolhidos;
-    const escolha = `${K.mini('cacadas:final', cfg.soFinal, t3('Só a forma final', 'Final form only', 'Solo la forma final'), t3('Caça só a evolução final (ex.: Charizard). Se ela não aparece em hunt, caça a família toda.', 'Hunts only the final evolution (e.g. Charizard). If it does not spawn in any hunt, hunts the whole family.', 'Caza solo la evolución final (p. ej. Charizard). Si no aparece en hunt, caza toda la familia.'), rodando)}${K.mini('cacadas:auto', auto, t3('Automático (o time todo)', 'Automatic (whole team)', 'Automático (todo el equipo)'), '', rodando)}${auto ? '' : timeCampo().map((p) => K.mini(`cacadas:pk:${p.id}`, cfg.escolhidos.includes(p.id), `<span data-sem-traducao="1">${esc(p.nome)} ${t3('Nv', 'Lv', 'Nv')} ${nf.format(p.level || 0)}</span>`, '', rodando)).join('')}`;
+    const escolha = `${K.mini('cacadas:avisar', cfg.avisar, t3('Avisar com som quando achar um melhor', 'Sound alert when a better one is found', 'Avisar con sonido al encontrar uno mejor'), '', false)}${K.mini('cacadas:final', cfg.soFinal, t3('Só a forma final', 'Final form only', 'Solo la forma final'), t3('Caça só a evolução final (ex.: Charizard). Se ela não aparece em hunt, caça a família toda.', 'Hunts only the final evolution (e.g. Charizard). If it does not spawn in any hunt, hunts the whole family.', 'Caza solo la evolución final (p. ej. Charizard). Si no aparece en hunt, caza toda la familia.'), rodando)}${K.mini('cacadas:auto', auto, t3('Automático (o time todo)', 'Automatic (whole team)', 'Automático (todo el equipo)'), '', rodando)}${auto ? '' : timeCampo().map((p) => K.mini(`cacadas:pk:${p.id}`, cfg.escolhidos.includes(p.id), `<span data-sem-traducao="1">${esc(p.nome)} ${t3('Nv', 'Lv', 'Nv')} ${nf.format(p.level || 0)}</span>`, '', rodando)).join('')}`;
     return `${K.grupo('Caçadas')}${K.linha({ id: 'cacadas-melhorar', ajustes: escolha, icone: 'cacar', nome: 'Melhorar o time', alvo: 'cacadas:melhorar', on: cfg.modo === 'melhorar', trava, status: semTr(sMel),
       dica: 'Para cada pokémon do time de campo, caça a família dele (até 1 h por pokémon) atrás de um exemplar com mais Poder no nível máximo que você pode usar — qualidade, IV e Potência, a fórmula do ⚔ do jogo. O melhor vai para a Coleção (nunca vendido) e treina no XP Share; quando passar o do time em Poder, entra no lugar. Ligar desliga a Troca de hunt, o rodízio, o Caçar o meta e o Completar a Pokédex; no fim, a Troca de hunt e o rodízio voltam. Precisa de bola: VIP ou a Pokébola automática em "Todo corpo".' })}${lista}${K.linha({ id: 'cacadas-dex', icone: 'bola', nome: 'Completar a Pokédex', alvo: 'cacadas:dex', on: cfg.modo === 'dex', trava, status: semTr(sDex),
       dica: 'Caça as espécies que você nunca capturou (pela Pokédex do próprio jogo). Vai à hunt segura com mais espécies faltando por hora e fica até capturar todas de lá, ou até 45 min sem novidade (aí troca de hunt). Capturou, a espécie entra na Pokédex e o pokémon segue o caminho normal (Coleção ou venda). A Outland fica de fora (não conta na Pokédex). Ligar desliga a Troca de hunt, o rodízio, o Caçar o meta e o Melhorar o time; no fim, voltam. Precisa de bola: VIP ou a Pokébola automática em "Todo corpo".' })}`;
   }
   async function definir(caminho, v) {
+    if (caminho === 'avisar') { cfg.avisar = !!v; gravar(); return null; }
     if (caminho === 'final') { if (cfg.modo !== 'melhorar') { cfg.soFinal = !!v; gravar(); } return null; }
     if (caminho === 'auto' || caminho.startsWith('pk:')) {
       if (cfg.modo === 'melhorar') return null; // a seleção só muda com o modo desligado
