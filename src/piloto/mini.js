@@ -349,7 +349,7 @@
   addEventListener('scroll', posicionarPilha, true);
   const abrirMercado = () => document.dispatchEvent(new CustomEvent('piloto:abrir', { detail: '{}' }));
   const painelNoMercado = () => {
-    const p = document.querySelector('.plt-janela');
+    const p = document.querySelector('.plt-janela:not(.plt-fechando)');
     return !!(p && p.querySelector('[data-conteudo][data-aba="mercado"]'));
   };
 

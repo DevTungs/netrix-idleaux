@@ -58,7 +58,7 @@
     return vers.flatMap((x) => nov[x] || []);
   }
   let quadro = null; // { el, tipo: 'tutorial'|'novidades', passo }
-  const janela = () => document.querySelector('.plt-janela:not(.plt-janela-time)');
+  const janela = () => document.querySelector('.plt-janela:not(.plt-janela-time):not(.plt-fechando)');
 
   function fechar() {
     if (!quadro) return;
@@ -298,7 +298,7 @@
   document.addEventListener('piloto:idioma', () => {
     desenhar();
     const T = textos();
-    const b = document.querySelector('.plt-janela [data-guia-abrir]');
+    const b = document.querySelector('.plt-janela:not(.plt-fechando) [data-guia-abrir]');
     if (b && T) { b.title = T.ui.comoUsar; b.setAttribute('aria-label', T.ui.comoUsar); }
   });
   const obs = new MutationObserver(() => {

@@ -146,7 +146,7 @@
   let ultimoBts = '';
   let ultimoCartoes = '';
   function pintar() {
-    const j = document.querySelector('.plt-janela:not(.plt-janela-time)');
+    const j = document.querySelector('.plt-janela:not(.plt-janela-time):not(.plt-fechando)');
     if (!j) { ultimoBts = ''; ultimoCartoes = ''; return; }
     const bts = j.querySelector('[data-suporte-bts]');
     const cart = j.querySelector('[data-suporte]');

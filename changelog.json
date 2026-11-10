@@ -1,5 +1,19 @@
 {
   "versoes": {
+    "2.0.14": {
+      "pt": [
+        "Janela do Piloto com animações: abre e fecha suave, troca de aba com fade, e o ON/OFF e as barras agora animam de verdade (o painel atualiza só o que mudou).",
+        "Reposição: agora dá para escolher também a poção e o revive (ou deixar no Automático, que mostra a sugestão do módulo), além da bola."
+      ],
+      "en": [
+        "Pilot window animations: smooth open and close, fade on tab change, and the ON/OFF switches and bars now really animate (the panel updates only what changed).",
+        "Restock: you can now also pick the potion and the revive (or leave them on Automatic, which shows the module's suggestion), besides the ball."
+      ],
+      "es": [
+        "Animaciones en la ventana del Piloto: abre y cierra suave, fade al cambiar de pestaña, y los ON/OFF y las barras ahora se animan de verdad (el panel actualiza solo lo que cambió).",
+        "Reposición: ahora también puedes elegir la poción y el revive (o dejarlos en Automático, que muestra la sugerencia del módulo), además de la bola."
+      ]
+    },
     "2.0.13": {
       "pt": [
         "Janela do Piloto: o efeito gelatina foi removido; ao arrastar, ela agora acompanha o mouse de forma suave e direta."

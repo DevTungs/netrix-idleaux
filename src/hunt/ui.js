@@ -465,8 +465,9 @@
   function fecharPainel() {
     clearInterval(relogio);
     soltarMercado();
-    painel?.remove();
+    const saindo = painel;
     painel = null;
+    if (saindo) { saindo.classList.add('plt-fechando'); setTimeout(() => saindo.remove(), 140); }
     assinatura = '';
     ultimoHtml = '';
     removeEventListener('keydown', aoTeclar, true);
@@ -532,7 +533,14 @@
       if (aberta) abertas.add(l.dataset.linha); else abertas.delete(l.dataset.linha);
       return;
     }
-    if (t.matches('.cfg-toggle[data-alternar]')) { rotear(t.dataset.alternar, !t.classList.contains('on')); return; }
+    if (t.matches('.cfg-toggle[data-alternar]')) {
+      const ligar = !t.classList.contains('on');
+      // responde na hora (o botão desliza); se o módulo recusar, o próximo desenho volta ao estado real, também animado
+      t.classList.toggle('on', ligar);
+      t.setAttribute('aria-checked', String(ligar));
+      rotear(t.dataset.alternar, ligar);
+      return;
+    }
     if (t.matches('.cfg-escala-bt[data-escolha]')) { rotear(t.dataset.escolha, t.dataset.valor); return; }
     const acao = t.dataset.acao;
     if (!acao) return;
@@ -1018,12 +1026,53 @@
   // Troca o conteúdo só se mudou: atualizar a cada segundo sem piscar nem perder o mouse.
   let ultimoHtml = '';
   let ultimaAba = '';
+  // Atualiza o DOM no lugar (em vez de trocar tudo por innerHTML): os elementos que continuam existindo
+  // são os mesmos, então as transições do CSS rodam (o botão ON/OFF desliza, as barras crescem, a linha
+  // acende). Só entra HTML novo onde o HTML mudou; o que é novo ganha a entrada suave (.plt-novo).
+  const chaveDe = (el) => (el.nodeType === 1 ? (el.dataset.linha || el.id || '') : '');
+  function ajustarAtributos(o, x) {
+    for (const a of [...o.attributes]) if (!x.hasAttribute(a.name)) o.removeAttribute(a.name);
+    for (const a of [...x.attributes]) if (o.getAttribute(a.name) !== a.value) o.setAttribute(a.name, a.value);
+  }
+  function ajustarFilhos(velho, novo) {
+    const a = [...velho.childNodes];
+    const b = [...novo.childNodes];
+    for (let i = 0; i < Math.max(a.length, b.length); i++) {
+      const o = a[i];
+      const x = b[i];
+      if (!x) { o.remove(); continue; }
+      if (!o) { velho.appendChild(x); if (x.nodeType === 1) x.classList.add('plt-novo'); continue; }
+      if (o.nodeType !== x.nodeType || o.nodeName !== x.nodeName || chaveDe(o) !== chaveDe(x)) {
+        velho.replaceChild(x, o);
+        if (x.nodeType === 1) x.classList.add('plt-novo');
+        continue;
+      }
+      if (o.nodeType !== 1) { if (o.nodeValue !== x.nodeValue) o.nodeValue = x.nodeValue; continue; }
+      ajustarAtributos(o, x);
+      ajustarFilhos(o, x);
+      // campos: o valor mora na propriedade, não no atributo (e não mexe no que a pessoa está digitando)
+      if (o !== document.activeElement) {
+        if (o.tagName === 'INPUT') { if (o.type === 'checkbox' || o.type === 'radio') o.checked = x.hasAttribute('checked'); else if (o.value !== (x.getAttribute('value') ?? '')) o.value = x.getAttribute('value') ?? ''; }
+        else if (o.tagName === 'SELECT') { const i = [...x.options].findIndex((op) => op.hasAttribute('selected')); if (i >= 0) o.selectedIndex = i; }
+      }
+    }
+  }
   function pintarSeMudou(alvo, aba, html) {
     if (aba === ultimaAba && html === ultimoHtml && alvo.childElementCount) return false;
+    const mesmaAba = aba === ultimaAba && alvo.childElementCount > 0 && aba !== 'extrato'; // o Extrato se monta por fora (hidratar)
     ultimaAba = aba;
     ultimoHtml = html;
     const rolagem = alvo.scrollTop;
-    alvo.innerHTML = html;
+    if (mesmaAba) {
+      const t = document.createElement('template');
+      t.innerHTML = html;
+      ajustarFilhos(alvo, t.content);
+    } else {
+      alvo.innerHTML = html;
+      alvo.classList.remove('plt-troca');
+      void alvo.offsetWidth; // reinicia a animação de troca de aba
+      alvo.classList.add('plt-troca');
+    }
     for (const l of alvo.querySelectorAll('.cfg-linha[data-linha]')) {
       if (abertas.has(l.dataset.linha)) { l.classList.add('aberta'); l.querySelector('.cfg-ajuda')?.setAttribute('aria-expanded', 'true'); }
     }

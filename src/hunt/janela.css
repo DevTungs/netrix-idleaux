@@ -675,3 +675,28 @@ html[data-piloto-tema="claro"] .plt-janela .plt-tab tbody tr:hover td { backgrou
 .plt-janela:not(.plt-janela-time) .plt-topo { cursor: grab; touch-action: none; }
 .plt-janela.plt-arrastando .plt-topo { cursor: grabbing; }
 .plt-janela.plt-arrastando { user-select: none; }
+
+/* ---- movimento da janela (2.1): abre, fecha, troca de aba, liga/desliga e linhas novas ------------- */
+.plt-janela { animation: plt-janela-abre .18s cubic-bezier(.2, .8, .3, 1); }
+.plt-janela.plt-fechando { animation: plt-janela-fecha .14s ease-in forwards; pointer-events: none; }
+@keyframes plt-janela-abre { from { opacity: 0; transform: translateY(10px) scale(.98); } to { opacity: 1; transform: none; } }
+@keyframes plt-janela-fecha { to { opacity: 0; transform: translateY(6px) scale(.985); } }
+/* conteúdo da aba: entra suave ao trocar de aba; linha ou cartão que aparece sozinho também */
+.plt-troca { animation: plt-aba-entra .2s ease-out; }
+@keyframes plt-aba-entra { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.plt-novo { animation: plt-novo-entra .22s ease-out; }
+@keyframes plt-novo-entra { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+/* ligar e desligar: a linha acende e apaga (o botão ON/OFF já desliza, e agora o elemento é o mesmo) */
+.plt-janela .cfg-linha { transition: box-shadow .22s ease, background-color .22s ease, filter .15s ease; }
+.plt-janela .cfg-toggle { transition: background-color .2s ease, filter .12s ease, box-shadow .2s ease; }
+.plt-janela .cfg-toggle::after { transition: transform .22s cubic-bezier(.4, 1.3, .5, 1), background .2s ease; }
+.plt-janela .cfg-cat { transition: background-color .15s ease, filter .15s ease, transform .15s ease; }
+.plt-janela .cfg-cat:hover { filter: brightness(1.08); }
+.plt-janela .cfg-escala-bt, .plt-janela .plt-bt, .plt-janela .plt-modo-bt { transition: filter .12s ease, transform .08s ease, background-color .18s ease, box-shadow .18s ease; }
+.plt-janela .cfg-escala-bt:active, .plt-janela .plt-bt:active { transform: translateY(1px); }
+.plt-janela .cfg-desc { transition: opacity .18s ease; }
+.plt-medidor > span, .plt-janela .plt-pvv-vida > i { transition: width .35s ease; }
+@media (prefers-reduced-motion: reduce) {
+  .plt-janela, .plt-janela.plt-fechando, .plt-troca, .plt-novo { animation: none; }
+  .plt-janela .cfg-linha, .plt-janela .cfg-toggle, .plt-janela .cfg-toggle::after, .plt-janela .cfg-cat, .plt-janela .cfg-escala-bt, .plt-janela .plt-bt, .plt-janela .plt-modo-bt, .plt-medidor > span { transition: none; }
+}
