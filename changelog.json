@@ -1,5 +1,16 @@
 {
   "versoes": {
+    "2.0.21": {
+      "pt": [
+        "Apoiar ♥: o QR Code do Pix agora é o oficial (mesma chave), e o botão \"Copiar Pix copia e cola\" copia o mesmo código do QR."
+      ],
+      "en": [
+        "Support ♥: the Pix QR Code is now the official one (same key), and the \"Copy Pix copy-and-paste code\" button copies the same code as the QR."
+      ],
+      "es": [
+        "Apoyar ♥: el código QR del Pix ahora es el oficial (misma clave), y el botón \"Copiar Pix copia y pega\" copia el mismo código del QR."
+      ]
+    },
     "2.0.20": {
       "pt": [
         "Novo botão Apoiar ♥ no rodapé do menu, opcional: mostra o QR Code e a chave Pix para ajudar a manter a extensão, com botões de copiar. Não muda nada no Netrix Hub.",
