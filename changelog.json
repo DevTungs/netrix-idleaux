@@ -1,5 +1,16 @@
 {
   "versoes": {
+    "2.0.13": {
+      "pt": [
+        "Janela do Piloto: o efeito gelatina foi removido; ao arrastar, ela agora acompanha o mouse de forma suave e direta."
+      ],
+      "en": [
+        "Pilot window: the jelly effect was removed; dragging now follows the mouse smoothly and directly."
+      ],
+      "es": [
+        "Ventana del Piloto: se quitó el efecto gelatina; al arrastrar, ahora sigue al ratón de forma suave y directa."
+      ]
+    },
     "2.0.12": {
       "pt": [
         "Janela do Piloto com efeito gelatina ao arrastar (como as janelas wobbly do KDE): segue o mouse numa mola, balança e assenta. Respeita a opção de reduzir movimento do sistema."
