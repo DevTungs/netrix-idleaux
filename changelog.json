@@ -1,5 +1,22 @@
 {
   "versoes": {
+    "2.0.15": {
+      "pt": [
+        "Troca de hunt: a linha agora mostra por que está parada. Se o jogo recusar entrar numa hunt, ela fica de fora por 30 min e a Troca segue para a próxima melhor.",
+        "Troca de hunt: novo interruptor \"Incluir Outland\" (ligado por padrão), também no modo Auto.",
+        "Aviso de shiny mais claro: \"Raichu shiny (Nv 2102) apareceu na hunt Gengar\"."
+      ],
+      "en": [
+        "Hunt switch: the line now shows why it is stopped. If the game refuses to enter a hunt, it is left out for 30 min and the switch moves on to the next best.",
+        "Hunt switch: new \"Include Outland\" switch (on by default), also in Auto mode.",
+        "Clearer shiny alert: \"A shiny Raichu (Lv 2102) showed up in the Gengar hunt\"."
+      ],
+      "es": [
+        "Cambio de hunt: la línea ahora muestra por qué está detenida. Si el juego rechaza entrar en una hunt, queda fuera 30 min y el cambio sigue con la siguiente mejor.",
+        "Cambio de hunt: nuevo interruptor \"Incluir Outland\" (activado por defecto), también en modo Auto.",
+        "Aviso de shiny más claro: \"Apareció un Raichu shiny (Nv 2102) en la hunt Gengar\"."
+      ]
+    },
     "2.0.14": {
       "pt": [
         "Janela do Piloto com animações: abre e fecha suave, troca de aba com fade, e o ON/OFF e as barras agora animam de verdade (o painel atualiza só o que mudou).",

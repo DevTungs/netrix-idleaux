@@ -16,7 +16,7 @@
 
   const CHAVE = 'pokeidle-hunt:auto:v1';
   const PADRAO = {
-    hunt: { ligado: false, criterio: 'xp', intervaloMin: 30, margemPct: 10, evitarRisco: true, curar: true, conferir: true },
+    hunt: { ligado: false, criterio: 'xp', intervaloMin: 30, margemPct: 10, evitarRisco: true, curar: true, conferir: true, outland: true },
     // 1.33 (pedido do André: conta nova não comprava nada): o "Guardar" da reposição era 5 mi, acima
     // do saldo de quem começa. Agora 0 — o piso é o do cofre (que, para a reposição, nunca passa de
     // 10% do saldo; ver piloto/cofre.js).
@@ -190,7 +190,8 @@
       }
       if (parado > 6000) {
         const erro = erroDepoisDe(r.enviadoEm);
-        encerrar(`não consegui entrar em ${nomeHunt(r.destino)}${erro ? ` (${erro})` : ''}`, 'erro');
+        encerrar(`não consegui entrar em ${nomeHunt(r.destino)}${erro ? ` (${erro})` : ''}${r.manual ? '' : '; ela fica de fora da Troca de hunt por 30 min'}`, 'erro');
+        if (!r.manual) { cfg.castigo[r.destino] = Date.now() + 30 * 60_000; gravar(); }
         // nunca deixar você parado no Centro (a vigia do Centro, no relógio, tenta de novo depois)
         if (eu.noCentro && r.origem && r.origem !== r.destino) PIH.enviar({ t: 'hunt.select', slug: r.origem });
         centroFalhou++;
@@ -274,6 +275,11 @@
   async function avaliarHunt(forcar = false) {
     const c = cfg.hunt;
     if (analisando) return;
+    if (!forcar && c.ligado) {
+      // diz no painel por que a Troca de hunt está parada (antes ficava calada)
+      const motivo = ocupado() ? `parada: ${rotina.motivo}` : !naHunt() ? 'esperando você estar numa hunt' : !PIH.cofre?.liberado('hunt') ? 'parada: o Cofre desligou a Troca de hunt (disjuntor ou Piloto em Off)' : '';
+      if (motivo) ultimoResultado = motivo;
+    }
     if (!forcar && (!c.ligado || ocupado() || !naHunt() || !PIH.cofre?.liberado('hunt'))) return;
     if (forcar && (ocupado() || !naHunt())) return anotar('teste: só funciona caçando numa hunt e sem outra ação em andamento', 'aviso');
     ultimaAnalise = Date.now();
@@ -287,9 +293,12 @@
   // pouco a cada nível) é que ela precisa ser top 1 em duas análises seguidas (≈20 s), para não
   // ficar pulando entre duas hunts quase iguais.
   const criterioDaLista = () => { try { return JSON.parse(localStorage.getItem('pokeidle-hunt:prefs:v1'))?.ordem === 'ouro' ? 'ouro' : 'xp'; } catch { return 'xp'; } };
+  const ehHuntOutland = (slug) => { const h = (welcome?.hunts ?? []).find((x) => x.slug === slug); return !!h && (h.area === 'outland' || h.regiao === 'outland' || /outland/i.test(String(h.slug || ''))); };
   function melhorDe(linhas, criterio = criterioDaLista()) {
     const c = cfg.hunt;
-    const cands = (linhas || []).filter((l) => !l.inviavel && l.liberada && !(c.evitarRisco && arriscada(l)));
+    const agora = Date.now();
+    const cands = (linhas || []).filter((l) => !l.inviavel && l.liberada && !(c.evitarRisco && arriscada(l))
+      && !(c.outland === false && ehHuntOutland(l.slug)) && !(cfg.castigo[l.slug] > agora));
     cands.sort((a, b) => valorDe(b, criterio) - valorDe(a, criterio));
     return cands[0] || null;
   }
@@ -942,11 +951,12 @@
       : '<p class="plt-nota">Marque bolas, poções e revives nas Automações do jogo.</p>';
     return K.linha({ icone: 'cacar', nome: 'Troca de hunt', alvo: 'auto:hunt.ligado', on: h.ligado, trava, status: stHunt,
       dica: 'Vai sempre para o 👑 do ranking lá embaixo — o top 1 do pokémon em campo. Analisa o tempo todo (a cada 20 s, e na hora em que o pokémon em campo ou a hunt mudam); trocou de pokémon, vai para o top 1 dele. Espera sair de combate (trava de 3 s do jogo) antes de mudar. Para caçar uma hunt específica (capturar um pokémon), desligue: ao religar, ele volta para a melhor na hora.',
-      ajustes: manual ? `${K.fcampo('Top 1 por', K.escala('ui:ordem', criterioDaLista(), [['xp', 'XP/h'], ['ouro', 'Ouro/h']], trava), 'O mesmo "Ordenar por" do ranking lá embaixo: o 👑 é o destino')}
+      ajustes: (manual ? `${K.fcampo('Top 1 por', K.escala('ui:ordem', criterioDaLista(), [['xp', 'XP/h'], ['ouro', 'Ouro/h']], trava), 'O mesmo "Ordenar por" do ranking lá embaixo: o 👑 é o destino')}
         <span class="plt-f-quebra"></span>
         ${K.mini('auto:hunt.curar', h.curar, 'Curar antes', 'Passa no Centro e cura antes de ir', trava)}
         ${K.mini('auto:hunt.evitarRisco', h.evitarRisco, 'Evitar risco', 'Fora hunts com 1 hit, mortes estimadas ou golpe que tira 50%+ do HP', trava)}
-        ${K.acao('Analisar agora', 'data-acao="testar-hunt"', 'cacar', trava)}` : '' })
+        ${K.acao('Analisar agora', 'data-acao="testar-hunt"', 'cacar', trava)}` : '')
+          + K.mini('auto:hunt.outland', h.outland !== false, 'Incluir Outland', 'Deixa a Outland entrar na disputa: se for a melhor hunt para o pokémon em campo, o Piloto vai para lá. Desligado, só as hunts normais.', trava) })
       + K.linha({ icone: 'repor', nome: 'Reposição', alvo: 'auto:repor.ligado', on: p.ligado, trava, status: stRepor,
         dica: 'Repõe as bolas, poções e revives marcados nas Automações do jogo, sempre dentro do cofre. Com "Escolher os itens pela conta" (ligado no Auto), o Piloto deixa marcado um de cada (uma bola, uma poção e um revive) e troca conforme a conta e o ouro sobem: a poção de menor ouro por HP que cura de verdade, o revive pelo custo e a bola pelo ouro/h e pelo saldo. As quantidades também vêm da conta: o mínimo é 1 h do que você gasta de cada item e o alvo, 6 h. Conta nova compra o primeiro lote assim que tiver o ouro.',
         ajustes: (manual ? `${K.fcampo('Guardar (ouro)', K.numero('auto:repor.reservaOuro', p.reservaOuro, 0, null, 100000, trava), 'Nunca gasta abaixo disso')}
