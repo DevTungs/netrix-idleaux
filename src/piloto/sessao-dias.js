@@ -70,7 +70,7 @@
     if (rot.dataset.pt !== r) { rot.dataset.pt = r; rot.textContent = r; } // compara com o PT: o tradutor troca o texto
     par.classList.toggle('zero', dias === 0);
     const mudouLargura = h.textContent.length !== horas.length;
-    h.textContent = horas;
+    if (h.textContent !== horas) h.textContent = horas; // sem regravar igual: gravar dispara o observador do corpo
     if (mudouLargura || !vistos.has(h)) { vistos.add(h); caber(h); }
     // o relógio do jogo continua andando no vão escondido; observa direto o texto dele
     if (!vistos.has(b)) { vistos.add(b); obsTexto.observe(b, { childList: true, characterData: true, subtree: true }); }
@@ -79,11 +79,9 @@
   let agendado = 0;
   const pedir = () => { if (!agendado) agendado = requestAnimationFrame(() => { agendado = 0; try { pintar(); } catch { /* tenta no próximo */ } }); };
   const obsTexto = new MutationObserver(pedir);
-  const obs = new MutationObserver((muts) => {
-    for (const m of muts) for (const n of m.addedNodes) {
-      if (n.nodeType === 1 && (n.id === 'sessao-tempo' || n.querySelector?.('#sessao-tempo'))) { pedir(); return; }
-    }
-  });
+  // O corpo muda o tempo todo na batalha: o aviso só custa um getElementById (antes, um querySelector em cada nó novo).
+  // Relógio novo (o jogo redesenhou a prancheta) ainda não visto → repinta; o andamento do texto é do obsTexto.
+  const obs = new MutationObserver(() => { const b = document.getElementById('sessao-tempo'); if (b && !vistos.has(b)) pedir(); });
   const ligar = () => { if (document.body) { obs.observe(document.body, { childList: true, subtree: true }); pedir(); } else setTimeout(ligar, 300); };
   ligar();
   raiz.addEventListener?.('resize', () => { const h = document.querySelector('.plt-ss-h'); if (h) caber(h); });

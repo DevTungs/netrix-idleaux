@@ -1,5 +1,19 @@
 {
   "versoes": {
+    "2.0.22": {
+      "pt": [
+        "Menos engasgos: o Netrix Hub lê cada mensagem de estado do jogo uma vez só (antes lia duas) e o relógio da sessão em dias deixou de varrer cada elemento novo da tela.",
+        "Novo medidor de desempenho: se ainda engasgar, abra o console (F12) no jogo e rode __pokeidleHunt.perf.top() para ver o que mais gasta tempo; avisos \"[netrix-perf] lento\" aparecem sozinhos no console."
+      ],
+      "en": [
+        "Fewer stutters: the Netrix Hub reads each game state message once (it used to read it twice) and the session day clock no longer scans every new element on screen.",
+        "New performance meter: if it still stutters, open the console (F12) in the game and run __pokeidleHunt.perf.top() to see what takes the most time; \"[netrix-perf] lento\" warnings show up in the console on their own."
+      ],
+      "es": [
+        "Menos tirones: el Netrix Hub lee cada mensaje de estado del juego una sola vez (antes lo leía dos) y el reloj de días de la sesión dejó de recorrer cada elemento nuevo de la pantalla.",
+        "Nuevo medidor de rendimiento: si aún se traba, abre la consola (F12) en el juego y ejecuta __pokeidleHunt.perf.top() para ver qué gasta más tiempo; los avisos \"[netrix-perf] lento\" salen solos en la consola."
+      ]
+    },
     "2.0.21": {
       "pt": [
         "Apoiar ♥: o QR Code do Pix agora é o oficial (mesma chave), e o botão \"Copiar Pix copia e cola\" copia o mesmo código do QR."

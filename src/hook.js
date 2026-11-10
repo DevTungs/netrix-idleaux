@@ -410,7 +410,7 @@
   };
   function emitirInterno(tipo, dado) {
     if (PIH_RETIDOS.has(tipo)) pihUltimo.set(tipo, dado);
-    for (const fn of pihOuvintes.get(tipo) || []) { try { fn(dado); } catch (e) { erro(e); } }
+    for (const fn of pihOuvintes.get(tipo) || []) { try { if (PIH.perf) PIH.perf.medir(`evento ${tipo}`, fn, null, [dado]); else fn(dado); } catch (e) { erro(e); } }
   }
   // O que vem do SERVIDOR (estado, welcome, campo, erro) só o hook publica: a página não pode
   // fingir um saldo maior para o cofre aprovar (auditoria de 2026-10-19, caso C2).
@@ -1013,14 +1013,16 @@
         }
       }
       // Os seus pokémon: a coleção no quadro cheio, depois só os que mudaram ou saíram.
+      let lido = null; // a mensagem inteira é lida no máximo uma vez, mesmo com pokémon e ouro juntos
+      const doc = () => (lido ??= JSON.parse(texto));
       const comPokemons = texto.includes('"pokemons"') || texto.includes('"pkMud"') || texto.includes('"pkFora"') || texto.includes('"activeId"');
       if (st.radar && comPokemons) {
-        const est = JSON.parse(texto).estado;
+        const est = doc().estado;
         if (aplicarPokemons(est, Boolean(est && est.cheio))) agendarPokemons();
       }
       // O ouro e os itens vêm no delta só quando mudam; o id, no quadro cheio (reconexão).
       if (st.radar && (texto.includes('"gold"') || texto.includes('"cheio"') || texto.includes('"items"'))) {
-        const conta = lerConta(JSON.parse(texto).estado);
+        const conta = lerConta(doc().estado);
         const antes = st.ultimaConta || {};
         if (conta && ((conta.gold !== undefined && conta.gold !== antes.gold) || (conta.id !== undefined && conta.id !== antes.id) || (conta.itens !== undefined && !mesmosItens(conta.itens, antes.itens)))) {
           st.ultimaConta = { ...(st.ultimaConta || {}), ...conta };
