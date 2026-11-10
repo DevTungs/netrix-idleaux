@@ -72,6 +72,18 @@
     if (solto) setTimeout(() => talvezMostrar(true), 500);
   }
 
+  const faseAtiva = (U) => { const pr = upd.progresso; return pr && U && U.updFase && Date.now() - (pr.em || 0) < 120_000 ? U.updFase[pr.fase] || '' : ''; };
+  function pintarBarra() {
+    const T = textos();
+    const fase = T && faseAtiva(T.ui);
+    const b = quadro && quadro.el.querySelector('.plt-prog');
+    if (!b || !fase) return;
+    const pct = Number.isFinite(upd.progresso.pct) ? Math.max(0, Math.min(100, upd.progresso.pct)) : null;
+    b.firstElementChild.classList.toggle('ind', pct == null);
+    b.firstElementChild.style.width = pct == null ? '' : pct + '%';
+    if (pct == null) b.removeAttribute('aria-valuenow'); else b.setAttribute('aria-valuenow', pct);
+    if (b.nextElementSibling) b.nextElementSibling.textContent = fase + (pct == null ? '' : ` ${pct}%`);
+  }
   function desenhar() {
     if (!quadro) return;
     const T = textos();
@@ -97,10 +109,9 @@
     } else if (quadro.tipo === 'versao') {
       const itens = mudancasDaVersao();
       const msg = (updStatus && U.updMsg ? U.updMsg[updStatus] || '' : '') + (updStatus === 'erro' && upd.autoErro ? ` (${upd.autoErro})` : '');
-      const pr = upd.progresso;
-      const fase = pr && U.updFase && Date.now() - (pr.em || 0) < 120_000 ? U.updFase[pr.fase] : '';
-      const pct = pr && Number.isFinite(pr.pct) ? Math.max(0, Math.min(100, pr.pct)) : null;
-      const barra = fase ? `<div class="plt-prog" role="progressbar" aria-valuemin="0" aria-valuemax="100"${pct != null ? ` aria-valuenow="${pct}"` : ''}><i class="${pct == null ? 'ind' : ''}"${pct != null ? ` style="width:${pct}%"` : ''}></i></div><small class="plt-prog-t">${esc(fase)}${pct != null ? ` ${pct}%` : ''}</small>` : '';
+      const fase = faseAtiva(U);
+      // HTML fixo: o valor entra direto no DOM (pintarBarra); refazer o quadro a cada passo piscava
+      const barra = fase ? '<div class="plt-prog" role="progressbar" aria-valuemin="0" aria-valuemax="100"><i></i></div><small class="plt-prog-t"></small>' : '';
       titulo = fmt(urgente() ? (U.versaoUrgente || 'Atualização urgente v{v}') : (U.novaVersao || 'Nova versão v{v}'), { v: upd.ultima || '?' });
       if (urgente() && PIH.pausarUrgente) PIH.pausarUrgente(String(upd.ultima || '?'));
       corpo = `<p class="plt-guia-de">${esc(fmt(U.voceTem || 'Você está na v{v}.', { v: versao() || upd.atual || '?' }))}</p>
@@ -131,6 +142,7 @@
         <div class="plt-guia-corpo">${corpo}</div>
         <div class="plt-guia-rodape">${rodape}</div>
       </div>`;
+    pintarBarra();
     const foco = quadro.el.querySelector('.cfg-escala-bt.on');
     if (foco) try { foco.focus({ preventScroll: true }); } catch { /* ok */ }
   }
@@ -184,7 +196,10 @@
   }
   const pedirUpd = (acao, extra = {}) => document.dispatchEvent(new CustomEvent('piloto:upd-pedir', { detail: JSON.stringify({ acao, ...extra }) }));
   document.addEventListener('piloto:upd', (ev) => {
+    const antes = JSON.stringify({ ...upd, progresso: null });
     try { upd = JSON.parse(ev.detail) || {}; } catch { upd = {}; }
+    // só a barra andou: ajusta no lugar, sem refazer o quadro (e sem perder o foco do botão)
+    if (quadro && quadro.tipo === 'versao' && upd.disponivel && antes === JSON.stringify({ ...upd, progresso: null }) && quadro.el.querySelector('.plt-prog')) { pintarBarra(); return; }
     if (quadro && quadro.tipo === 'versao') { if (!versaoNova()) { quadro.el.remove(); quadro = null; } else desenhar(); }
     else if (prontoParaSoltar) talvezMostrar(true);
   });

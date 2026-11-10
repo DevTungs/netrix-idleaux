@@ -1,5 +1,16 @@
 {
   "versoes": {
+    "2.0.9": {
+      "pt": [
+        "Atualização automática: a barra de progresso não pisca mais durante a instalação."
+      ],
+      "en": [
+        "Automatic update: the progress bar no longer flickers during installation."
+      ],
+      "es": [
+        "Actualización automática: la barra de progreso ya no parpadea durante la instalación."
+      ]
+    },
     "2.0.8": {
       "pt": [
         "Plateia: as salas da Twitch e da Kick não abrem mais sozinhas ao entrar no jogo. Só abrem quando você pedir (botão Abrir a sala) ou se ligar a opção na aba Rotina."

@@ -89,11 +89,21 @@
 
   // barra de progresso da atualização por pasta (o service worker grava upd.progresso)
   const FASES = { baixando: 'Baixando a versão nova', extraindo: 'Abrindo o pacote', gravando: 'Instalando', pronto: 'Pronto: recarregando a extensão…' };
-  function barraUpd() {
+  const progAtivo = () => { const pr = upd.progresso; return !!(pr && FASES[pr.fase] && Date.now() - (pr.em || 0) <= 120_000); };
+  // o HTML da barra é sempre igual: o valor entra direto no DOM (pintarBarra), senão o cartão inteiro
+  // seria refeito a cada passo e piscaria
+  const barraUpd = () => (progAtivo() ? '<div class="plt-prog" role="progressbar" aria-valuemin="0" aria-valuemax="100"><i></i></div><small class="plt-prog-t"></small>' : '');
+  function pintarBarra(raiz) {
+    const b = raiz.querySelector('.plt-prog');
+    if (!b || !progAtivo()) return;
     const pr = upd.progresso;
-    if (!pr || !FASES[pr.fase] || Date.now() - (pr.em || 0) > 120_000) return '';
     const pct = Number.isFinite(pr.pct) ? Math.max(0, Math.min(100, pr.pct)) : null;
-    return `<div class="plt-prog" role="progressbar" aria-valuemin="0" aria-valuemax="100"${pct != null ? ` aria-valuenow="${pct}"` : ''}><i class="${pct == null ? 'ind' : ''}"${pct != null ? ` style="width:${pct}%"` : ''}></i></div><small class="plt-prog-t">${esc(tr(FASES[pr.fase]))}${pct != null ? ` ${pct}%` : ''}</small>`;
+    const i = b.firstElementChild;
+    i.classList.toggle('ind', pct == null);
+    i.style.width = pct == null ? '' : pct + '%';
+    if (pct == null) b.removeAttribute('aria-valuenow'); else b.setAttribute('aria-valuenow', pct);
+    const t = b.nextElementSibling;
+    if (t) t.textContent = tr(FASES[pr.fase]) + (pct == null ? '' : ` ${pct}%`);
   }
   function htmlBotoes() {
     const procurando = status === 'procurando';
@@ -143,6 +153,7 @@
     if (bts) { const h = htmlBotoes(); if (h !== ultimoBts || !bts.firstChild) { ultimoBts = h; bts.innerHTML = h; } }
     if (cart) {
       const h = htmlCartoes();
+      queueMicrotask(() => pintarBarra(cart));
       if (h !== ultimoCartoes || (h && !cart.firstChild)) {
         const texto = cart.querySelector('[data-sup-oque]')?.value || '';
         ultimoCartoes = h; cart.innerHTML = h;
