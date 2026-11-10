@@ -1,5 +1,16 @@
 {
   "versoes": {
+    "2.0.12": {
+      "pt": [
+        "Janela do Piloto com efeito gelatina ao arrastar (como as janelas wobbly do KDE): segue o mouse numa mola, balança e assenta. Respeita a opção de reduzir movimento do sistema."
+      ],
+      "en": [
+        "The Pilot window has a jelly effect when dragged (like KDE's wobbly windows): it follows the mouse on a spring, wobbles and settles. It respects the system's reduce-motion setting."
+      ],
+      "es": [
+        "La ventana del Piloto tiene efecto gelatina al arrastrar (como las ventanas wobbly de KDE): sigue al ratón con un muelle, se balancea y se asienta. Respeta la opción de reducir movimiento del sistema."
+      ]
+    },
     "2.0.11": {
       "pt": [
         "A janela do Piloto agora é móvel: arraste pelo topo. A posição fica guardada e, depois de movida, clicar fora não fecha mais a janela. Duplo clique no topo volta ao lugar de origem."

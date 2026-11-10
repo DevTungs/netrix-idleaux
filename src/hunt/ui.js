@@ -570,30 +570,80 @@
     painel.style.top = `${top}px`;
     return { left, top };
   }
+  // Efeito "gelatina" (como as janelas wobbly do KDE): a janela segue o mouse numa mola — atrasa, passa
+  // um pouco do ponto, balança e assenta — e se deforma (skew + leve esticada) conforme o atraso, com a
+  // origem no ponto que você agarrou. Com "reduzir movimento" no sistema, segue direto, sem efeito.
+  const MOLA = 0.16; // força que puxa a janela para o mouse (por quadro de 16,7 ms)
+  const ATRITO = 0.74; // quanto da velocidade sobra a cada quadro (menor = para mais rápido)
+  const gelatina = (atraso) => {
+    const lim = (v, m) => Math.max(-m, Math.min(m, v));
+    return `skew(${lim(-atraso.x * 0.06, 9)}deg, ${lim(-atraso.y * 0.06, 9)}deg) scale(${1 + lim(Math.hypot(atraso.x, atraso.y) * 0.0006, 0.05)})`;
+  };
+  let pararArrasto = null; // cancela o balanço anterior se a pessoa agarrar a janela de novo
   function ligarArrastar() {
     const topo = painel.querySelector('.plt-topo');
     if (!topo) return;
+    const reduzido = matchMedia('(prefers-reduced-motion: reduce)').matches;
     topo.addEventListener('pointerdown', (ev) => {
       if (ev.button !== 0 || ev.target.closest('button, a, input, select, textarea, .plt-modos')) return;
-      const r = painel.getBoundingClientRect();
-      const dx = ev.clientX - r.left;
-      const dy = ev.clientY - r.top;
+      const el = painel;
+      if (pararArrasto) pararArrasto();
+      // left/top (não o retângulo): durante o balanço o retângulo vem deformado pelo skew
+      const ex = parseFloat(el.style.left) || el.getBoundingClientRect().left;
+      const ey = parseFloat(el.style.top) || el.getBoundingClientRect().top;
+      const dx = ev.clientX - ex;
+      const dy = ev.clientY - ey;
+      const alvo = { x: ex, y: ey };
+      const pos = { x: ex, y: ey };
+      const vel = { x: 0, y: 0 };
+      let segurando = true;
+      let raf = 0;
+      let ultimo = 0;
+      pararArrasto = () => { cancelAnimationFrame(raf); segurando = false; topo.removeEventListener('pointermove', mover); topo.removeEventListener('pointerup', soltar); topo.removeEventListener('pointercancel', soltar); pararArrasto = null; };
       topo.setPointerCapture(ev.pointerId);
-      painel.classList.add('plt-arrastando');
-      const mover = (e) => { aplicarPos(e.clientX - dx, e.clientY - dy); };
+      el.classList.add('plt-arrastando');
+      if (!reduzido) el.style.transformOrigin = `${dx}px ${dy}px`;
+      const guardar = () => {
+        el.style.transform = '';
+        el.style.transformOrigin = '';
+        el.classList.remove('plt-arrastando');
+        if (painel !== el) return;
+        const f = el.getBoundingClientRect();
+        prefs.pos = { x: Math.round(f.left), y: Math.round(f.top) };
+        gravarJson(CHAVE_PREFS, prefs);
+      };
+      const passo = (t) => {
+        if (painel !== el) { pararArrasto = null; return; } // fechou no meio do balanço
+        const dt = Math.min(2, ultimo ? (t - ultimo) / 16.67 : 1);
+        ultimo = t;
+        for (const e of ['x', 'y']) {
+          vel[e] += (alvo[e] - pos[e]) * MOLA * dt;
+          vel[e] *= Math.pow(ATRITO, dt);
+          pos[e] += vel[e] * dt;
+        }
+        const c = aplicarPos(pos.x, pos.y);
+        pos.x = c.left; pos.y = c.top;
+        const atraso = { x: alvo.x - pos.x, y: alvo.y - pos.y };
+        el.style.transform = gelatina(atraso);
+        if (!segurando && Math.hypot(atraso.x, atraso.y) < 0.4 && Math.hypot(vel.x, vel.y) < 0.1) { aplicarPos(alvo.x, alvo.y); guardar(); pararArrasto = null; return; }
+        raf = requestAnimationFrame(passo);
+      };
+      const mover = (e) => {
+        const c = dentroDaTela(e.clientX - dx, e.clientY - dy);
+        alvo.x = c.left; alvo.y = c.top;
+        if (reduzido) aplicarPos(alvo.x, alvo.y);
+      };
       const soltar = () => {
+        segurando = false;
         topo.removeEventListener('pointermove', mover);
         topo.removeEventListener('pointerup', soltar);
         topo.removeEventListener('pointercancel', soltar);
-        painel?.classList.remove('plt-arrastando');
-        if (!painel) return;
-        const pos = painel.getBoundingClientRect();
-        prefs.pos = { x: Math.round(pos.left), y: Math.round(pos.top) };
-        gravarJson(CHAVE_PREFS, prefs);
+        if (reduzido) guardar();
       };
       topo.addEventListener('pointermove', mover);
       topo.addEventListener('pointerup', soltar);
       topo.addEventListener('pointercancel', soltar);
+      if (!reduzido) raf = requestAnimationFrame(passo);
       ev.preventDefault();
     });
     topo.addEventListener('dblclick', (ev) => {
