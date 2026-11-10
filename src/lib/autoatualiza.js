@@ -96,12 +96,28 @@
     return out;
   }
 
-  async function baixarZip(url) {
+  // lê em pedaços para dar progresso; o GitHub às vezes não manda o tamanho (pct = null: barra sem fim)
+  async function baixarZip(url, aoAndar) {
     const r = await fetch(url, { cache: 'no-store' });
     if (!r.ok) throw new Error('HTTP ' + r.status);
-    const buf = await r.arrayBuffer();
-    if (buf.byteLength > MAX_ZIP) throw new Error('zip grande demais');
-    return buf;
+    const total = Number(r.headers.get('content-length')) || 0;
+    if (total > MAX_ZIP) throw new Error('zip grande demais');
+    if (!r.body || !r.body.getReader) return r.arrayBuffer();
+    const leitor = r.body.getReader();
+    const partes = [];
+    let lidos = 0;
+    for (;;) {
+      const { done, value } = await leitor.read();
+      if (done) break;
+      partes.push(value);
+      lidos += value.length;
+      if (lidos > MAX_ZIP) throw new Error('zip grande demais');
+      if (aoAndar) aoAndar(total ? Math.round((lidos / total) * 100) : null);
+    }
+    const buf = new Uint8Array(lidos);
+    let o = 0;
+    for (const x of partes) { buf.set(x, o); o += x.length; }
+    return buf.buffer;
   }
 
   async function gravarArquivo(pasta, caminho, conteudo) {
@@ -115,19 +131,29 @@
 
   // Baixa o zip, confere que é esta extensão numa versão mais nova e grava na pasta autorizada.
   // O manifest.json vai por último: se algo falhar antes, a versão antiga continua valendo.
-  async function aplicar({ zipUrl, versao, nome, versaoAtual, maior }) {
+  async function aplicar({ zipUrl, versao, nome, versaoAtual, maior, onProgresso }) {
+    const andou = (fase, pct) => { try { if (onProgresso) onProgresso({ fase, pct }); } catch { /* o progresso não pode derrubar a atualização */ } };
     const pasta = await lerPasta();
     if (!pasta) return { ok: false, motivo: 'sem-pasta' };
     if ((await pasta.queryPermission({ mode: 'readwrite' })) !== 'granted') return { ok: false, motivo: 'permissao' };
-    const arquivos = limparCaminhos(await lerZip(await baixarZip(zipUrl)));
+    andou('baixando', 0);
+    const zip = await baixarZip(zipUrl, (pct) => andou('baixando', pct));
+    andou('extraindo', null);
+    const arquivos = limparCaminhos(await lerZip(zip));
     const man = arquivos.find((a) => a.caminho.length === 1 && a.caminho[0] === 'manifest.json');
     if (!man) return { ok: false, motivo: 'sem manifest.json no zip' };
     const m = JSON.parse(new TextDecoder().decode(man.conteudo));
     if (!NOMES.includes(m.name)) return { ok: false, motivo: 'o zip não é desta extensão' };
     if (String(m.version) !== String(versao)) return { ok: false, motivo: `o zip é da versão ${m.version}, não da ${versao}` };
     if (!maior(m.version, versaoAtual)) return { ok: false, motivo: 'a versão do zip não é mais nova' };
-    for (const a of arquivos) if (a !== man) await gravarArquivo(pasta, a.caminho, a.conteudo);
+    let feitos = 0;
+    for (const a of arquivos) {
+      if (a === man) continue;
+      await gravarArquivo(pasta, a.caminho, a.conteudo);
+      andou('gravando', Math.round((++feitos / arquivos.length) * 100));
+    }
     await gravarArquivo(pasta, man.caminho, man.conteudo);
+    andou('gravando', 100);
     return { ok: true, arquivos: arquivos.length, versao: m.version };
   }
 

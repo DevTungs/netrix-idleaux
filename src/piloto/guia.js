@@ -96,16 +96,20 @@
         </span>`;
     } else if (quadro.tipo === 'versao') {
       const itens = mudancasDaVersao();
-      const msg = updStatus && U.updMsg ? U.updMsg[updStatus] || '' : '';
+      const msg = (updStatus && U.updMsg ? U.updMsg[updStatus] || '' : '') + (updStatus === 'erro' && upd.autoErro ? ` (${upd.autoErro})` : '');
+      const pr = upd.progresso;
+      const fase = pr && U.updFase && Date.now() - (pr.em || 0) < 120_000 ? U.updFase[pr.fase] : '';
+      const pct = pr && Number.isFinite(pr.pct) ? Math.max(0, Math.min(100, pr.pct)) : null;
+      const barra = fase ? `<div class="plt-prog" role="progressbar" aria-valuemin="0" aria-valuemax="100"${pct != null ? ` aria-valuenow="${pct}"` : ''}><i class="${pct == null ? 'ind' : ''}"${pct != null ? ` style="width:${pct}%"` : ''}></i></div><small class="plt-prog-t">${esc(fase)}${pct != null ? ` ${pct}%` : ''}</small>` : '';
       titulo = fmt(urgente() ? (U.versaoUrgente || 'Atualização urgente v{v}') : (U.novaVersao || 'Nova versão v{v}'), { v: upd.ultima || '?' });
       if (urgente() && PIH.pausarUrgente) PIH.pausarUrgente(String(upd.ultima || '?'));
       corpo = `<p class="plt-guia-de">${esc(fmt(U.voceTem || 'Você está na v{v}.', { v: versao() || upd.atual || '?' }))}</p>
         ${itens.length ? `<ul class="plt-guia-lista">${itens.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
         ${urgente() ? `<p class="plt-guia-msg">${esc(U.urgentePausado || 'O Piloto está pausado até você atualizar.')}</p>` : ''}
-        ${msg ? `<p class="plt-guia-msg">${esc(msg)}</p>` : ''}`;
+        ${msg ? `<p class="plt-guia-msg">${esc(msg)}</p>` : ''}${barra}`;
       rodape = `<span class="plt-guia-bts plt-guia-bts-fim">
           ${upd.pagina ? `<a class="cfg-escala-bt plt-guia-link" href="${esc(upd.pagina)}" target="_blank" rel="noopener noreferrer">${esc(U.verNoGithub || 'GitHub')}</a>` : ''}
-          <button type="button" class="cfg-escala-bt on" data-guia="atualizar"${updStatus === 'aplicando' ? ' disabled' : ''}>${esc(U.atualizar || 'Atualizar')}</button>
+          <button type="button" class="cfg-escala-bt on" data-guia="atualizar"${updStatus === 'aplicando' || fase ? ' disabled' : ''}>${esc(U.atualizar || 'Atualizar')}</button>
         </span>`;
     } else {
       const v = versao();

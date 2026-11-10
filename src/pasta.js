@@ -18,6 +18,18 @@ async function pastaCerta(h) {
   } catch { return false; }
 }
 
+// barra de progresso: o service worker grava piloto:update.progresso enquanto baixa e instala
+const FASES = { baixando: 'Baixando a versão nova', extraindo: 'Abrindo o pacote', gravando: 'Instalando', pronto: 'Pronto: recarregando a extensão…' };
+chrome.storage.onChanged.addListener((m, area) => {
+  const pr = area === 'local' && m['piloto:update'] && m['piloto:update'].newValue && m['piloto:update'].newValue.progresso;
+  if (!pr || !FASES[pr.fase]) return;
+  const pct = Number.isFinite(pr.pct) ? Math.max(0, Math.min(100, pr.pct)) : null;
+  $('prog').style.display = 'block';
+  $('progi').className = pct == null ? 'ind' : '';
+  $('progi').style.width = pct == null ? '' : pct + '%';
+  msg(FASES[pr.fase] + (pct == null ? '' : ' ' + pct + '%'), 'ok');
+});
+
 $('bt').addEventListener('click', async () => {
   try {
     let h = await NetrixAuto.lerPasta();
@@ -29,9 +41,10 @@ $('bt').addEventListener('click', async () => {
       if ((await h.requestPermission({ mode: 'readwrite' })) !== 'granted') return msg('Acesso negado.', 'erro');
       await NetrixAuto.guardarPasta(h);
     }
-    msg('Pronto. Procurando atualização…', 'ok');
+    msg('Pasta autorizada. Procurando atualização…', 'ok');
     const r = (await chrome.runtime.sendMessage({ tipo: 'upd:aplicar' })).dados;
-    msg(r && r.status === 'aplicando' ? 'Atualizando agora: a extensão vai recarregar sozinha.' : 'Pasta autorizada. Você já está na versão mais nova (ou ela chega na próxima checagem).', 'ok');
+    if (r && r.status === 'erro') msg('Não deu para atualizar: ' + (r.motivo || 'erro desconhecido'), 'erro');
+    else msg(r && r.status === 'aplicando' ? 'Atualizada: a extensão recarrega sozinha em instantes.' : 'Pasta autorizada. Você já está na versão mais nova (ou ela chega na próxima checagem).', 'ok');
     mostrar();
   } catch (e) { msg(String((e && e.message) || e), 'erro'); }
 });

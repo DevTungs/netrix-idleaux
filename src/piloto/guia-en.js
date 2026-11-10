@@ -9,6 +9,7 @@
       comoUsar: 'How to use the Pilot', pular: 'Skip', voltar: 'Back', proximo: 'Next', entendi: 'Got it', fechar: 'Close (Esc)',
       passo: 'Step {n} of {t}', novidades: "What's new in v{v}", verGuia: 'See the guide', eMais: 'and {n} more — the full list is on GitHub',
       versaoUrgente: 'Urgent update v{v}', urgentePausado: 'The Pilot is paused until you update.', novaVersao: 'New version v{v}', voceTem: "You're on v{v}. What changed:", atualizar: 'Update', verNoGithub: 'See on GitHub',
+      updFase: { baixando: 'Downloading the new version', extraindo: 'Opening the package', gravando: 'Installing', pronto: 'Done: reloading the extension…' },
       updMsg: {
         aplicando: 'Updating…',
         'precisa-pasta': "Authorize the extension folder once (a tab opened) and future versions install themselves.",

@@ -544,23 +544,33 @@ async function mudancasAte(ultima, cur) {
 // autorização: sozinha só uma vez por versão; pelo botão Atualizar, sempre.
 let aplicandoPasta = false;
 async function autoAplicar(upd, manual) {
-  if (NO_FIREFOX || !self.NetrixAuto || aplicandoPasta || !upd || !upd.disponivel || !upd.zipUrl) return null;
+  if (NO_FIREFOX || !self.NetrixAuto || !upd || !upd.disponivel || !upd.zipUrl) return null;
   if (await tipoInstalacao() !== 'development') return null;
+  if (aplicandoPasta) return { modo: 'pasta', status: 'aplicando' }; // já está baixando: o painel só acompanha a barra
   aplicandoPasta = true;
+  // progresso para a barra do painel (storage.local → ponte → painel); grava no máximo a cada 250 ms
+  let ultimoProg = 0;
+  const onProgresso = ({ fase, pct }) => {
+    const agora = Date.now();
+    if (agora - ultimoProg < 250 && pct !== 100) return;
+    ultimoProg = agora;
+    gravarUpd({ progresso: { fase, pct, em: agora } }).catch(erro);
+  };
   try {
-    const r = await self.NetrixAuto.aplicar({ zipUrl: upd.zipUrl, versao: upd.ultima, nome: chrome.runtime.getManifest().name, versaoAtual: versaoAtual(), maior: (a, b) => cmpVer(a, b) > 0 });
-    if (r.ok) { await gravarUpd({ autoErro: null }); setTimeout(() => chrome.runtime.reload(), 1500); return { modo: 'pasta', status: 'aplicando' }; }
+    const r = await self.NetrixAuto.aplicar({ zipUrl: upd.zipUrl, versao: upd.ultima, nome: chrome.runtime.getManifest().name, versaoAtual: versaoAtual(), maior: (a, b) => cmpVer(a, b) > 0, onProgresso });
+    if (r.ok) { await gravarUpd({ autoErro: null, progresso: { fase: 'pronto', pct: 100, em: Date.now() } }); setTimeout(() => chrome.runtime.reload(), 1500); return { modo: 'pasta', status: 'aplicando' }; }
     if (r.motivo === 'sem-pasta' || r.motivo === 'permissao') {
+      await gravarUpd({ progresso: null });
       if (manual || upd.pastaPediuVersao !== upd.ultima) {
         await gravarUpd({ pastaPediuVersao: upd.ultima });
         await chrome.tabs.create({ url: chrome.runtime.getURL('src/pasta.html'), active: true });
       }
       return { modo: 'pasta', status: 'precisa-pasta' };
     }
-    await gravarUpd({ autoErro: r.motivo });
+    await gravarUpd({ autoErro: r.motivo, progresso: null });
     return { modo: 'pasta', status: 'erro', motivo: r.motivo };
   } catch (e) {
-    erro(e); await gravarUpd({ autoErro: String((e && e.message) || e) });
+    erro(e); await gravarUpd({ autoErro: String((e && e.message) || e), progresso: null });
     return { modo: 'pasta', status: 'erro' };
   } finally { aplicandoPasta = false; }
 }
@@ -582,6 +592,17 @@ async function aplicarUpd() {
   }
   const auto = await autoAplicar(st, true);
   if (auto) return auto;
+  // instalada por pasta no Chromium: nunca abre o GitHub para baixar na mão. Sem dados da versão nova
+  // (a procura falhou ou o estado está velho), procura de novo e tenta uma vez
+  if (await tipoInstalacao() === 'development') {
+    const novo = await checarUpd();
+    const de_novo = await autoAplicar(novo, true);
+    if (de_novo) return de_novo;
+    if (novo && !novo.erro && !novo.disponivel) return { modo: 'pasta', status: 'atualizado' };
+    const motivo = (novo && novo.erro) || 'não achei uma versão nova para instalar';
+    await gravarUpd({ autoErro: motivo });
+    return { modo: 'pasta', status: 'erro', motivo };
+  }
   const url = st.zip || st.pagina || `https://github.com/${REPO}/releases/latest`;
   await chrome.tabs.create({ url, active: false });
   await gravarUpd({ baixadoEm: Date.now() });
@@ -648,7 +669,7 @@ chrome.runtime.onInstalled.addListener(async (d) => {
   agendarUpd();
   if (d.reason === 'install' && !NO_FIREFOX && await tipoInstalacao() === 'development') chrome.tabs.create({ url: chrome.runtime.getURL('src/pasta.html'), active: true }).catch(erro);
   if (d.reason === 'update') {
-    await gravarUpd({ acabouDe: { de: d.previousVersion || null, para: versaoAtual(), em: Date.now() }, disponivel: false, atual: versaoAtual() });
+    await gravarUpd({ acabouDe: { de: d.previousVersion || null, para: versaoAtual(), em: Date.now() }, disponivel: false, progresso: null, autoErro: null, atual: versaoAtual() });
     // as abas do jogo ainda rodam a versão antiga: recarregar põe a nova
     try { for (const t of await chrome.tabs.query({ url: 'https://pokeidle.io/app*' })) chrome.tabs.reload(t.id); } catch (e) { erro(e); }
   }

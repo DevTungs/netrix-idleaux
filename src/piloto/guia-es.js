@@ -9,6 +9,7 @@
       comoUsar: 'Cómo usar el Piloto', pular: 'Saltar', voltar: 'Atrás', proximo: 'Siguiente', entendi: 'Entendido', fechar: 'Cerrar (Esc)',
       passo: 'Paso {n} de {t}', novidades: 'Novedades de la v{v}', verGuia: 'Ver la guía', eMais: 'y {n} más — la lista completa está en GitHub',
       versaoUrgente: 'Actualización urgente v{v}', urgentePausado: 'El Piloto está en pausa hasta que actualices.', novaVersao: 'Nueva versión v{v}', voceTem: 'Estás en la v{v}. Qué cambió:', atualizar: 'Actualizar', verNoGithub: 'Ver en GitHub',
+      updFase: { baixando: 'Descargando la versión nueva', extraindo: 'Abriendo el paquete', gravando: 'Instalando', pronto: 'Listo: recargando la extensión…' },
       updMsg: {
         aplicando: 'Actualizando…',
         'precisa-pasta': "Autoriza la carpeta de la extensión una vez (se abrió una pestaña) y las próximas versiones se instalan solas.",

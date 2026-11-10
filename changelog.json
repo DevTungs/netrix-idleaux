@@ -1,5 +1,19 @@
 {
   "versoes": {
+    "2.0.7": {
+      "pt": [
+        "Atualização automática: ao clicar em Atualizar, a extensão baixa e instala sozinha, com barra de progresso, sem abrir o GitHub nem pedir download manual.",
+        "Se a atualização falhar, o painel mostra o motivo."
+      ],
+      "en": [
+        "Automatic update: clicking Update now downloads and installs by itself, with a progress bar, without opening GitHub or asking for a manual download.",
+        "If the update fails, the panel shows the reason."
+      ],
+      "es": [
+        "Actualización automática: al hacer clic en Actualizar, la extensión descarga e instala sola, con barra de progreso, sin abrir GitHub ni pedir descarga manual.",
+        "Si la actualización falla, el panel muestra el motivo."
+      ]
+    },
     "2.0.6": {
       "pt": [
         "A Plateia (Twitch e Kick, do Dreds) agora vem dentro desta extensão: não precisa instalar à parte. Se você ainda tem a Plateia avulsa, remova-a (o Piloto avisa). A extensão passa a pedir acesso a twitch.tv e kick.com.",

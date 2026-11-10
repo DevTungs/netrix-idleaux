@@ -27,7 +27,7 @@
     let d = {};
     try { d = JSON.parse(ev.detail) || {}; } catch { return; }
     if (d.acao === 'checar') status = d.erro ? 'erro' : (d.r && d.r.erro ? 'erro' : (d.r && d.r.disponivel ? null : 'nenhuma'));
-    if (d.acao === 'aplicar') status = d.erro ? 'erro' : d.r && d.r.modo === 'firefox' ? 'firefox' : d.r && d.r.modo === 'firefox-temporario' ? 'firefox-temporario' : d.r && d.r.status === 'baixado' ? 'baixado' : d.r && d.r.modo === 'pasta' ? (d.r.status === 'aplicando' || d.r.status === 'precisa-pasta' ? d.r.status : 'erro') : d.r && d.r.modo === 'loja' ? (d.r.status === 'aplicando' ? 'aplicando' : 'loja') : 'erro';
+    if (d.acao === 'aplicar') status = d.erro ? 'erro' : d.r && d.r.modo === 'firefox' ? 'firefox' : d.r && d.r.modo === 'firefox-temporario' ? 'firefox-temporario' : d.r && d.r.status === 'baixado' ? 'baixado' : d.r && d.r.modo === 'pasta' ? (d.r.status === 'aplicando' || d.r.status === 'precisa-pasta' ? d.r.status : d.r.status === 'atualizado' ? 'nenhuma' : 'erro') : d.r && d.r.modo === 'loja' ? (d.r.status === 'aplicando' ? 'aplicando' : 'loja') : 'erro';
     pintar();
   });
   const pedir = (acao, extra = {}) => document.dispatchEvent(new CustomEvent('piloto:upd-pedir', { detail: JSON.stringify({ acao, ...extra }) }));
@@ -87,6 +87,14 @@
   const itensDasNotas = (md) => String(md || '').replace(/^\s*###\s*(Install|Instalar)[\s\S]*?\n\s*\n\s*\n/i, '').split(/\r?\n/).filter((l) => !/^\s*#/.test(l)).map((l) => l.replace(/^\s*([-*+]|\d+\.)\s*/, '').replace(/[*_`]/g, '').trim())
     .filter((l) => l && !/^(install|instalar|download|baixe|open `chrome|abra `chrome|drag the zip|arraste o zip|chrome, edge|firefox 128|step by step|passo a passo)/i.test(l)).flatMap((l) => (l.length > 160 ? l.split(/(?<=[.!?])\s+/) : [l])).filter(Boolean).slice(0, 6);
 
+  // barra de progresso da atualização por pasta (o service worker grava upd.progresso)
+  const FASES = { baixando: 'Baixando a versão nova', extraindo: 'Abrindo o pacote', gravando: 'Instalando', pronto: 'Pronto: recarregando a extensão…' };
+  function barraUpd() {
+    const pr = upd.progresso;
+    if (!pr || !FASES[pr.fase] || Date.now() - (pr.em || 0) > 120_000) return '';
+    const pct = Number.isFinite(pr.pct) ? Math.max(0, Math.min(100, pr.pct)) : null;
+    return `<div class="plt-prog" role="progressbar" aria-valuemin="0" aria-valuemax="100"${pct != null ? ` aria-valuenow="${pct}"` : ''}><i class="${pct == null ? 'ind' : ''}"${pct != null ? ` style="width:${pct}%"` : ''}></i></div><small class="plt-prog-t">${esc(tr(FASES[pr.fase]))}${pct != null ? ` ${pct}%` : ''}</small>`;
+  }
   function htmlBotoes() {
     const procurando = status === 'procurando';
     const st = procurando ? 'procurando…' : upd.disponivel ? `v${upd.ultima} disponível` : status === 'nenhuma' ? 'você está na última versão' : status === 'aplicando' ? 'atualizando… a extensão vai recarregar' : status === 'precisa-pasta' ? 'autorize a pasta na aba que abriu' : /HTTP 404/.test(upd.erro || '') ? 'não achei os Releases no GitHub (404)' : status === 'erro' || (status && upd.erro) ? (upd.autoErro ? 'não deu para atualizar: ' + upd.autoErro : 'não deu para procurar agora') : '';
@@ -109,8 +117,9 @@
       out += `<div class="plt-sup-upd">
         <div class="plt-sup-h"><span class="plt-sup-ic">${ICO_UPD}</span><span><b>${esc(tr('Atualização disponível'))}</b><small>v${esc(upd.atual || '?')} → <i>v${esc(upd.ultima)}</i></small></span></div>
         ${itens.length ? `<ul>${itens.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
-        ${msg ? `<p class="plt-sup-msg">${esc(tr(msg))}</p>` : ''}
-        <div class="plt-sup-acoes"><button type="button" class="cfg-escala-bt on" data-sup="aplicar"${status === 'aplicando' ? ' disabled' : ''}>${esc(tr('Atualizar'))}</button><button type="button" class="cfg-escala-bt" data-sup="depois">${esc(tr('Depois'))}</button>${upd.pagina ? `<a class="plt-sup-link" href="${esc(upd.pagina)}" target="_blank" rel="noopener noreferrer">${esc(tr('Ver no GitHub'))}</a>` : ''}</div>
+        ${msg ? `<p class="plt-sup-msg">${esc(tr(msg))}${status === 'erro' && upd.autoErro ? ` (${esc(upd.autoErro)})` : ''}</p>` : ''}
+        ${barraUpd()}
+        <div class="plt-sup-acoes"><button type="button" class="cfg-escala-bt on" data-sup="aplicar"${status === 'aplicando' || barraUpd() ? ' disabled' : ''}>${esc(tr('Atualizar'))}</button><button type="button" class="cfg-escala-bt" data-sup="depois">${esc(tr('Depois'))}</button>${upd.pagina ? `<a class="plt-sup-link" href="${esc(upd.pagina)}" target="_blank" rel="noopener noreferrer">${esc(tr('Ver no GitHub'))}</a>` : ''}</div>
       </div>`;
     }
     if (bugAberto) {
