@@ -373,7 +373,8 @@
   // Manual (os interruptores e todos os ajustes de cada um).
   const ABAS = [
     ['resumo', 'Resumo', 'resumo', 'Como está a conta agora'],
-    ['hunts', 'Caçar', 'cacar', 'Troca de hunt, rodízio, reposição e onde render mais'],
+    ['hunts', 'Caçar', 'cacar', 'Troca de hunt, rodízio e onde render mais'],
+    ['reposicao', 'Reposição', 'repor', 'Bola, poção e revive: o que repor, quanto e quando'],
     ['meta', 'Nível', 'nivel', 'Quanto falta e quando chega'],
     ['rotina', 'Rotina', 'rotina', 'Passe, XP Share, PvP, Depot e o resto'],
     ['mercado', 'Mercado', 'mercado', 'O Radar: compra, sorteios e revenda'],
@@ -455,7 +456,7 @@
     relogio = setInterval(() => {
       if (!painel || digitando() || document.hidden) return; // aba escondida: nada para ver
       voltas++;
-      if (['resumo', 'hunts', 'rotina', 'cofre'].includes(prefs.aba)) desenhar();
+      if (['resumo', 'hunts', 'reposicao', 'rotina', 'cofre'].includes(prefs.aba)) desenhar();
       else if (prefs.aba === 'meta' && voltas % 10 === 0) desenhar();
       else if (prefs.aba === 'extrato' && voltas % 15 === 0) desenhar();
       else pintarMoldura();
@@ -1107,6 +1108,7 @@
     if (aba === 'mercado') { ultimaAba = 'mercado'; ultimoHtml = ''; montarMercado(alvo); return; }
     if (aba === 'resumo') { pintarSeMudou(alvo, aba, topo + blocoResumo()); return; }
     if (aba === 'rotina') { pintarSeMudou(alvo, aba, topo + (PIH.rotina ? PIH.rotina.html(layout) : '') + (PIH.avisos ? PIH.avisos.linha(layout) : '') + (PIH.plateia ? PIH.plateia.linha(layout) : '') + (PIH.torneio ? PIH.torneio.linha(layout) : '') + (PIH.vendaNota ? PIH.vendaNota.linha(layout) : '')); return; }
+    if (aba === 'reposicao') { pintarSeMudou(alvo, aba, topo + (PIH.auto?.htmlReposicao ? PIH.auto.htmlReposicao(layout) : '')); return; }
     if (aba === 'cofre') { pintarSeMudou(alvo, aba, topo + (PIH.cofre ? PIH.cofre.html(layout) : '')); return; }
     if (aba === 'duvidas') { pintarSeMudou(alvo, aba, topo + (PIH.testeDuvidas ? PIH.testeDuvidas.html(layout) : '')); return; }
     if (aba === 'extrato') { if (pintarSeMudou(alvo, aba, topo + (PIH.extrato ? PIH.extrato.html(layout) : ''))) PIH.extrato?.hidratar?.(alvo); return; }

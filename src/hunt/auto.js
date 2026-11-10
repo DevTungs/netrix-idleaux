@@ -936,19 +936,9 @@
     const h = cfg.hunt;
     const p = cfg.repor;
     const agora = Date.now();
-    const itens = eu ? itensVigiados() : [];
-    const baixos = itens.filter((it) => it.tem < alvoDe(it).min);
     const castigos = Object.entries(cfg.castigo).filter(([, ate]) => ate > agora);
     const stHunt = h.ligado ? [`top 1 em ${criterioDaLista() === 'ouro' ? 'Ouro/h' : 'XP/h'} · análise contínua`, ultimoResultado ? esc(ultimoResultado) : '',
       castigos.length ? `de castigo: ${castigos.map(([sl]) => esc(nomeHunt(sl))).join(', ')}` : '', rotina ? esc(rotina.motivo) : ''].filter(Boolean).join(' · ') : '';
-    const stRepor = p.ligado ? (itens.length ? (baixos.length ? `baixo: ${baixos.map((x) => esc(x.nome)).join(', ')}` : `${itens.length} itens em dia`) : 'marque bolas e poções nas Automações do jogo') : '';
-    const tabela = itens.length
-      ? `<table class="plt-tab"><thead><tr><th>Item</th><th>Tem</th><th>Mínimo</th><th>Repõe até</th><th>Preço</th></tr></thead><tbody>${itens.map((it) => {
-        const a = alvoDe(it);
-        return `<tr><td>${esc(it.nome)}</td><td class="${it.tem < a.min ? 'pih-alerta' : ''}">${nf.format(it.tem)}</td>
-          <td>${K.numero(`auto:alvo.${it.chave}.min`, a.min, 0, null, 1, trava)}</td><td>${K.numero(`auto:alvo.${it.chave}.alvo`, a.alvo, 0, null, 1, trava)}</td><td>${nf.format(it.preco)}</td></tr>`;
-      }).join('')}</tbody></table>`
-      : '<p class="plt-nota">Marque bolas, poções e revives nas Automações do jogo.</p>';
     return K.linha({ icone: 'cacar', nome: 'Troca de hunt', alvo: 'auto:hunt.ligado', on: h.ligado, trava, status: stHunt,
       dica: 'Vai sempre para o 👑 do ranking lá embaixo — o top 1 do pokémon em campo. Analisa o tempo todo (a cada 20 s, e na hora em que o pokémon em campo ou a hunt mudam); trocou de pokémon, vai para o top 1 dele. Espera sair de combate (trava de 3 s do jogo) antes de mudar. Para caçar uma hunt específica (capturar um pokémon), desligue: ao religar, ele volta para a melhor na hora.',
       ajustes: (manual ? `${K.fcampo('Top 1 por', K.escala('ui:ordem', criterioDaLista(), [['xp', 'XP/h'], ['ouro', 'Ouro/h']], trava), 'O mesmo "Ordenar por" do ranking lá embaixo: o 👑 é o destino')}
@@ -956,17 +946,57 @@
         ${K.mini('auto:hunt.curar', h.curar, 'Curar antes', 'Passa no Centro e cura antes de ir', trava)}
         ${K.mini('auto:hunt.evitarRisco', h.evitarRisco, 'Evitar risco', 'Fora hunts com 1 hit, mortes estimadas ou golpe que tira 50%+ do HP', trava)}
         ${K.acao('Analisar agora', 'data-acao="testar-hunt"', 'cacar', trava)}` : '')
-          + K.mini('auto:hunt.outland', h.outland !== false, 'Incluir Outland', 'Deixa a Outland entrar na disputa: se for a melhor hunt para o pokémon em campo, o Piloto vai para lá. Desligado, só as hunts normais.', trava) })
-      + K.linha({ icone: 'repor', nome: 'Reposição', alvo: 'auto:repor.ligado', on: p.ligado, trava, status: stRepor,
-        dica: 'Repõe as bolas, poções e revives marcados nas Automações do jogo, sempre dentro do cofre. Com "Escolher os itens pela conta" (ligado no Auto), o Piloto deixa marcado um de cada (uma bola, uma poção e um revive) e troca conforme a conta e o ouro sobem: a poção de menor ouro por HP que cura de verdade, o revive pelo custo e a bola pelo ouro/h e pelo saldo. As quantidades também vêm da conta: o mínimo é 1 h do que você gasta de cada item e o alvo, 6 h. Conta nova compra o primeiro lote assim que tiver o ouro.',
-        ajustes: (manual ? `${K.fcampo('Guardar (ouro)', K.numero('auto:repor.reservaOuro', p.reservaOuro, 0, null, 100000, trava), 'Nunca gasta abaixo disso')}
-          ${K.fcampo('A cada (min)', K.numero('auto:repor.intervaloMin', p.intervaloMin, 1, 60, 1, trava))}
-          ${K.mini('auto:repor.irAoCentro', p.irAoCentro, 'Ir ao Centro', 'Se o jogo só vender no Centro: vai, compra, cura e volta', trava)}
-          ${K.mini('auto:repor.kitAuto', p.kitAuto !== false, 'Escolher os itens pela conta', 'Deixa marcado nas Automações do jogo uma bola, uma poção e um revive, troca conforme a conta sobe e compra pelo que a conta gasta', trava)}
-          ${K.acao('Conferir agora', 'data-acao="testar-repor"', 'repor', trava)}
-          <div class="plt-f-largo">${tabela}</div>` : '')
-          // a bola aparece também no Auto (lá o módulo calcula, aqui dá para ver a sugestão ou fixar uma)
-          + (p.kitAuto !== false ? seletoresKit(K, p, trava) : '') });
+          + K.mini('auto:hunt.outland', h.outland !== false, 'Incluir Outland', 'Deixa a Outland entrar na disputa: se for a melhor hunt para o pokémon em campo, o Piloto vai para lá. Desligado, só as hunts normais.', trava) });
+  }
+
+
+  // ---- a aba Reposição (2.0.17): bola, poção e revive num lugar só, com tudo o que é dinâmico à vista ------
+  // Manual: você ajusta mínimo, alvo e orçamento. Auto: o Piloto calcula, e você vê o porquê e pode fixar um item.
+  const duraDe = (it) => {
+    const c = consumoPorHora(it.chave);
+    if (c == null || c <= 0) return '—';
+    const h = it.tem / c;
+    return h >= 48 ? `${Math.round(h / 24)} d` : h >= 1 ? `${h.toFixed(h < 10 ? 1 : 0).replace('.', ',')} h` : `${Math.round(h * 60)} min`;
+  };
+  function htmlReposicao(modo = 'manual') {
+    const K = PIH.kit;
+    const manual = modo === 'manual';
+    const trava = modo === 'desligado';
+    const ro = trava || !manual; // fora do Manual os números são do Piloto: só leitura
+    const p = cfg.repor;
+    const itens = eu ? itensVigiados() : [];
+    const baixos = itens.filter((it) => it.tem < alvoDe(it).min);
+    let kit = null;
+    try { kit = escolherKit(); } catch { /* o jogo ainda não mandou tudo */ }
+    const livre = Math.max(0, Math.floor(Math.min((Number(eu?.gold) || 0) - (Number(p.reservaOuro) || 0), PIH.cofre ? PIH.cofre.livre('repor') : Infinity)));
+    const gastoHoje = Math.round(Number(PIH.cofre?.resumo?.()?.gastoPorCategoria?.repor) || 0);
+    const status = p.ligado ? (itens.length ? (baixos.length ? `baixo: ${baixos.map((x) => esc(x.nome)).join(', ')}` : `${itens.length} itens em dia`) : 'marque bolas e poções nas Automações do jogo') : '';
+    const chip = (rotulo, valor, dica = '') => `<span class="plt-chip" title="${esc(dica)}"><small>${rotulo}</small><b>${valor}</b></span>`;
+    const chips = `<div class="plt-chips">
+      ${chip('Livre para repor', `${nf.format(livre)} ouro`, 'O que o Cofre e a reserva deixam gastar agora')}
+      ${chip('Gasto hoje', `${nf.format(gastoHoje)} ouro`, 'Quanto a reposição já gastou hoje')}
+      ${kit ? chip('Orçamento por bola', `${nf.format(kit.porBola)} ouro`, `Dividido por ~${nf.format(kit.lancamentosH)} lançamentos por hora`) : ''}
+    </div>`;
+    const celula = (chave, campo, v) => (ro ? nf.format(v) : K.numero(`auto:alvo.${chave}.${campo}`, v, 0, null, 1, false));
+    const tabela = itens.length
+      ? `<table class="plt-tab plt-tab-repor"><thead><tr><th>Item</th><th>Tem</th><th>Dura</th><th>Mínimo</th><th>Repõe até</th><th>Preço</th></tr></thead><tbody>${itens.map((it) => {
+        const a = alvoDe(it);
+        const baixo = it.tem < a.min;
+        return `<tr class="${baixo ? 'plt-baixo' : ''}"><td>${esc(it.nome)}${baixo ? ' <i class="pih-alerta" title="Abaixo do mínimo: vai repor">↓</i>' : ''}</td><td class="${baixo ? 'pih-alerta' : ''}">${nf.format(it.tem)}</td><td>${duraDe(it)}</td>
+          <td>${celula(it.chave, 'min', a.min)}</td><td>${celula(it.chave, 'alvo', a.alvo)}</td><td>${nf.format(it.preco)}</td></tr>`;
+      }).join('')}</tbody></table>`
+      : '<p class="plt-nota">Marque bolas, poções e revives nas Automações do jogo, ou ligue "Escolher os itens pela conta".</p>';
+    const campos = `${K.fcampo('Guardar (ouro)', K.numero('auto:repor.reservaOuro', p.reservaOuro, 0, null, 100000, ro), 'Nunca gasta abaixo disso')}
+      ${K.fcampo('A cada (min)', K.numero('auto:repor.intervaloMin', p.intervaloMin, 1, 60, 1, ro))}
+      ${K.mini('auto:repor.irAoCentro', p.irAoCentro, 'Ir ao Centro', 'Se o jogo só vender no Centro: vai, compra, cura e volta', ro)}
+      ${K.mini('auto:repor.kitAuto', p.kitAuto !== false, 'Escolher os itens pela conta', 'Deixa marcado nas Automações do jogo uma bola, uma poção e um revive, troca conforme a conta sobe e compra pelo que a conta gasta', trava)}`;
+    return K.linha({ icone: 'repor', nome: 'Reposição', alvo: 'auto:repor.ligado', on: p.ligado, trava, status,
+      dica: 'Repõe as bolas, poções e revives marcados nas Automações do jogo, sempre dentro do cofre. Com "Escolher os itens pela conta", o Piloto deixa marcado um de cada (uma bola, uma poção e um revive) e troca conforme a conta e o ouro sobem: a poção de menor ouro por HP que cura de verdade, o revive pelo custo e a bola pelo ouro/h e pelo saldo. As quantidades também vêm da conta: o mínimo é 1 h do que você gasta de cada item e o alvo, 6 h. Conta nova compra o primeiro lote assim que tiver o ouro.',
+      ajustes: chips })
+      + (p.kitAuto !== false ? `${K.grupo('Itens')}<div class="plt-caixa plt-repor-itens">${seletoresKit(K, p, trava)}</div>` : '')
+      + `${K.grupo('Estoque')}<div class="plt-caixa">${tabela}</div>`
+      + `${K.grupo('Orçamento e ritmo')}<div class="plt-caixa plt-repor-campos">${campos}</div>`
+      + `<div class="plt-caixa plt-sem-borda">${K.acao('Conferir agora', 'data-acao="testar-repor"', 'repor', trava)}</div>`;
   }
 
   // Bola, poção e revive da Reposição: Automático (mostra o que o módulo sugere agora) ou um item fixo
@@ -1040,5 +1070,5 @@
     if (m?.repor) Object.assign(cfg.repor, { ligado: !!m.repor.ligado });
     gravar();
   }
-  PIH.auto = { html, ligar, aplicar, linhas, definir, acoes, farmDe, irParaHunt, melhorDe, irAoCentroEVoltar, irAoCentroEFicar, caronaNoCentro, liberarCentro, melhorHuntPara, cancelarIdaManual, rotinaAtual: () => (rotina ? { etapa: rotina.etapa, manual: !!rotina.manual, desde: rotina.desde, motivo: rotina.motivo } : null), diario: () => diario.slice(), proximaAnalise: () => ultimaAnalise + CONTINUO_MS, ultimoResultado: () => ultimoResultado, alvoDe, _interno: { alvoAuto, consumoPorHora, registrarConsumo, consumo: () => consumo, kphCache: () => kphCache, comprasPendentes, itensVigiados, escolherKit, conferirKit, cfg: () => cfg, passo, rotina: () => rotina, vigiaCentro, centro: () => ({ ultimaHunt, centroDesde, centroFalhou }), forcarCentro: (o) => { if ('centroDesde' in o) centroDesde = o.centroDesde; if ('mexeuEm' in o) mexeuEm = o.mexeuEm; } } };
+  PIH.auto = { html, ligar, aplicar, linhas, htmlReposicao, definir, acoes, farmDe, irParaHunt, melhorDe, irAoCentroEVoltar, irAoCentroEFicar, caronaNoCentro, liberarCentro, melhorHuntPara, cancelarIdaManual, rotinaAtual: () => (rotina ? { etapa: rotina.etapa, manual: !!rotina.manual, desde: rotina.desde, motivo: rotina.motivo } : null), diario: () => diario.slice(), proximaAnalise: () => ultimaAnalise + CONTINUO_MS, ultimoResultado: () => ultimoResultado, alvoDe, _interno: { alvoAuto, consumoPorHora, registrarConsumo, consumo: () => consumo, kphCache: () => kphCache, comprasPendentes, itensVigiados, escolherKit, conferirKit, cfg: () => cfg, passo, rotina: () => rotina, vigiaCentro, centro: () => ({ ultimaHunt, centroDesde, centroFalhou }), forcarCentro: (o) => { if ('centroDesde' in o) centroDesde = o.centroDesde; if ('mexeuEm' in o) mexeuEm = o.mexeuEm; } } };
 })(globalThis);

@@ -1,5 +1,19 @@
 {
   "versoes": {
+    "2.0.17": {
+      "pt": [
+        "Nova aba Reposição, só para bola, poção e revive: escolha cada item (ou deixe no Automático, que mostra a sugestão), veja o estoque com quanto tempo dura, o que está livre para gastar, o gasto de hoje e o orçamento por bola. Manual ajusta mínimo, alvo e reserva; Auto mostra os números do Piloto.",
+        "A Reposição saiu da aba Caçar, que ficou só com a Troca de hunt."
+      ],
+      "en": [
+        "New Restock tab, just for balls, potions and revives: pick each item (or leave it on Automatic, which shows the suggestion), see the stock and how long it lasts, what is free to spend, today's spending and the budget per ball. Manual adjusts minimum, target and reserve; Auto shows the Pilot's numbers.",
+        "Restock moved out of the Hunt tab, which now only has the hunt switch."
+      ],
+      "es": [
+        "Nueva pestaña Reposición, solo para bola, poción y revive: elige cada ítem (o déjalo en Automático, que muestra la sugerencia), mira las existencias y cuánto duran, lo que está libre para gastar, el gasto de hoy y el presupuesto por bola. Manual ajusta mínimo, objetivo y reserva; Auto muestra los números del Piloto.",
+        "La Reposición salió de la pestaña Cazar, que ahora solo tiene el cambio de hunt."
+      ]
+    },
     "2.0.16": {
       "pt": [
         "Lista de caça: cada hunt ganhou um botão \"Ir\" no fim da linha (o mesmo destino de clicar no retrato).",
