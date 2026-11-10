@@ -971,8 +971,8 @@
     const livre = Math.max(0, Math.floor(Math.min((Number(eu?.gold) || 0) - (Number(p.reservaOuro) || 0), PIH.cofre ? PIH.cofre.livre('repor') : Infinity)));
     const gastoHoje = Math.round(Number(PIH.cofre?.resumo?.()?.gastoPorCategoria?.repor) || 0);
     const status = p.ligado ? (itens.length ? (baixos.length ? `baixo: ${baixos.map((x) => esc(x.nome)).join(', ')}` : `${itens.length} itens em dia`) : 'marque bolas e poções nas Automações do jogo') : '';
-    const chip = (rotulo, valor, dica = '') => `<span class="plt-chip" title="${esc(dica)}"><small>${rotulo}</small><b>${valor}</b></span>`;
-    const chips = `<div class="plt-chips">
+    const chip = (rotulo, valor, dica = '') => `<span class="plt-rp-num" title="${esc(dica)}"><small>${rotulo}</small><b>${valor}</b></span>`;
+    const chips = `<div class="plt-rp-nums">
       ${chip('Livre para repor', `${nf.format(livre)} ouro`, 'O que o Cofre e a reserva deixam gastar agora')}
       ${chip('Gasto hoje', `${nf.format(gastoHoje)} ouro`, 'Quanto a reposição já gastou hoje')}
       ${kit ? chip('Orçamento por bola', `${nf.format(kit.porBola)} ouro`, `Dividido por ~${nf.format(kit.lancamentosH)} lançamentos por hora`) : ''}
@@ -992,7 +992,8 @@
       ${K.mini('auto:repor.kitAuto', p.kitAuto !== false, 'Escolher os itens pela conta', 'Deixa marcado nas Automações do jogo uma bola, uma poção e um revive, troca conforme a conta sobe e compra pelo que a conta gasta', trava)}`;
     return K.linha({ icone: 'repor', nome: 'Reposição', alvo: 'auto:repor.ligado', on: p.ligado, trava, status,
       dica: 'Repõe as bolas, poções e revives marcados nas Automações do jogo, sempre dentro do cofre. Com "Escolher os itens pela conta", o Piloto deixa marcado um de cada (uma bola, uma poção e um revive) e troca conforme a conta e o ouro sobem: a poção de menor ouro por HP que cura de verdade, o revive pelo custo e a bola pelo ouro/h e pelo saldo. As quantidades também vêm da conta: o mínimo é 1 h do que você gasta de cada item e o alvo, 6 h. Conta nova compra o primeiro lote assim que tiver o ouro.',
-      ajustes: chips })
+    })
+      + chips
       + (p.kitAuto !== false ? `${K.grupo('Itens')}<div class="plt-caixa plt-repor-itens">${seletoresKit(K, p, trava)}</div>` : '')
       + `${K.grupo('Estoque')}<div class="plt-caixa">${tabela}</div>`
       + `${K.grupo('Orçamento e ritmo')}<div class="plt-caixa plt-repor-campos">${campos}</div>`

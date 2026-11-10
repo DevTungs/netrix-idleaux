@@ -1,5 +1,16 @@
 {
   "versoes": {
+    "2.0.18": {
+      "pt": [
+        "Reposição: corrigido o visual dos números no topo (livre para repor, gasto hoje, orçamento por bola), que saíam amassados."
+      ],
+      "en": [
+        "Restock: fixed the look of the numbers at the top (free to restock, spent today, budget per ball), which were squashed."
+      ],
+      "es": [
+        "Reposición: corregido el aspecto de los números de arriba (libre para reponer, gasto hoy, presupuesto por bola), que salían aplastados."
+      ]
+    },
     "2.0.17": {
       "pt": [
         "Nova aba Reposição, só para bola, poção e revive: escolha cada item (ou deixe no Automático, que mostra a sugestão), veja o estoque com quanto tempo dura, o que está livre para gastar, o gasto de hoje e o orçamento por bola. Manual ajusta mínimo, alvo e reserva; Auto mostra os números do Piloto.",
