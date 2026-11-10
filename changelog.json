@@ -1,5 +1,19 @@
 {
   "versoes": {
+    "2.0.16": {
+      "pt": [
+        "Lista de caça: cada hunt ganhou um botão \"Ir\" no fim da linha (o mesmo destino de clicar no retrato).",
+        "Aviso de shiny: o texto agora diz \"Apareceu um shiny em <hunt> e o pokémon que derrotou foi <seu pokémon> (Nv X)\"."
+      ],
+      "en": [
+        "Hunt list: every hunt now has a \"Go\" button at the end of its row (same destination as clicking the portrait).",
+        "Shiny alert: the text now reads \"A shiny showed up in <hunt> and the Pokémon that defeated it was <your Pokémon> (Lv X)\"."
+      ],
+      "es": [
+        "Lista de caza: cada hunt tiene ahora un botón \"Ir\" al final de la fila (el mismo destino que hacer clic en el retrato).",
+        "Aviso de shiny: el texto ahora dice \"Apareció un shiny en <hunt> y el pokémon que lo derrotó fue <tu pokémon> (Nv X)\"."
+      ]
+    },
     "2.0.15": {
       "pt": [
         "Troca de hunt: a linha agora mostra por que está parada. Se o jogo recusar entrar numa hunt, ela fica de fora por 30 min e a Troca segue para a próxima melhor.",

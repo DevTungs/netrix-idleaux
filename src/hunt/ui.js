@@ -514,6 +514,7 @@
       const r = PIH.auto?.irParaHunt?.(t.dataset.irHunt) || { ok: false, motivo: 'a automação de hunt não carregou' };
       t.classList.add(r.ok ? 'indo' : 'recusado');
       t.title = r.ok ? 'Indo…' : `Não deu: ${r.motivo}`;
+      if (t.classList.contains('plt-ir')) t.textContent = r.ok ? 'Indo…' : 'Não deu';
       setTimeout(() => { ultimoHtml = ''; desenhar(); }, r.ok ? 1500 : 2500);
       return;
     }
@@ -962,6 +963,14 @@
       : `Ir para ${l.nome} (espera sair de combate)`;
     return `<button type="button" class="pih-retrato${aqui ? ' aqui' : ''}" data-ir-hunt="${esc(l.slug)}" title="${esc(dica)}" aria-label="${esc(dica)}"${pode ? '' : ' disabled'}>${img || `<span class="pih-retrato-ini">${esc(String(l.nome || '?').slice(0, 1))}</span>`}</button>`;
   }
+  // botão "Ir" no fim da linha: o mesmo destino do retrato (espera sair de combate; a Troca de hunt, se ligada, volta para a melhor)
+  function botaoIr(l) {
+    const aqui = l.slug === eu?.huntSlug && !eu?.noCentro;
+    const off = modoAtual() === 'desligado';
+    const pode = l.liberada && !aqui && !off;
+    const dica = aqui ? 'Você está aqui' : !l.liberada ? 'Hunt ainda bloqueada para o seu nível' : off ? 'Com o Piloto em Off, use o mapa do jogo' : `Ir para ${l.nome} (espera sair de combate)`;
+    return `<button type="button" class="cfg-escala-bt plt-ir" data-ir-hunt="${esc(l.slug)}" title="${esc(dica)}" aria-label="${esc(dica)}"${pode ? '' : ' disabled'}>${aqui ? 'Aqui' : 'Ir'}</button>`;
+  }
   const cfgAuto = () => { try { return PIH.auto?._interno?.cfg?.(); } catch { return null; } };
   let topSlug = null;
   function linhaHtml(l, i) {
@@ -976,7 +985,7 @@
     if (l.inviavel) {
       return `<tr class="${cls}"><td class="pih-pos">${i + 1}</td>
         <td class="pih-hunt"><b>${esc(l.nome)}</b><small>${regiao(l.regiao)} · Nv ${num(l.nivel)}</small></td>
-        <td colspan="5"><span class="pih-perigo">${l.motivo === 'morre antes de matar' ? 'morre antes de matar' : 'não mata o selvagem'}</span></td></tr>`;
+        <td colspan="5"><span class="pih-perigo">${l.motivo === 'morre antes de matar' ? 'morre antes de matar' : 'não mata o selvagem'}</span></td><td class="pih-ir"></td></tr>`;
     }
     return `<tr class="${cls}" title="${esc(golpe)}">
       <td class="pih-pos">${i + 1}</td>
@@ -986,6 +995,7 @@
       <td>${segundos(l.ttk)}</td>
       <td>${risco(l)}</td>
       <td>${curto(prefs.ordem === 'ouro' ? l.xpPokemonH : l.ouroH)}</td>
+      <td class="pih-ir">${botaoIr(l)}</td>
     </tr>`;
   }
 
@@ -1010,7 +1020,7 @@
       </div>` : '';
     return `${melhor}
       <div class="plt-caixa pih-lista"><table class="plt-tab pih-tab">
-        <thead><tr><th>#</th><th>Hunt</th><th>${prefs.ordem === 'ouro' ? 'Ouro/h' : 'XP/h'}</th><th>Abates/h</th><th>Mata em</th><th>Risco</th><th>${outro}</th></tr></thead>
+        <thead><tr><th>#</th><th>Hunt</th><th>${prefs.ordem === 'ouro' ? 'Ouro/h' : 'XP/h'}</th><th>Abates/h</th><th>Mata em</th><th>Risco</th><th>${outro}</th><th></th></tr></thead>
         <tbody>${linhas.slice(0, limite).map(linhaHtml).join('')}</tbody>
       </table>
       ${manual && linhas.length > mostrando ? `<button type="button" class="cfg-escala-bt plt-mais" data-acao="mais">mostrar mais (${linhas.length - mostrando})</button>` : ''}

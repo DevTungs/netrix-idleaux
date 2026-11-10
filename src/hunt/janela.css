@@ -700,3 +700,8 @@ html[data-piloto-tema="claro"] .plt-janela .plt-tab tbody tr:hover td { backgrou
   .plt-janela, .plt-janela.plt-fechando, .plt-troca, .plt-novo { animation: none; }
   .plt-janela .cfg-linha, .plt-janela .cfg-toggle, .plt-janela .cfg-toggle::after, .plt-janela .cfg-cat, .plt-janela .cfg-escala-bt, .plt-janela .plt-bt, .plt-janela .plt-modo-bt, .plt-medidor > span { transition: none; }
 }
+
+/* botão Ir no fim de cada linha da lista de caça */
+.pih-ir { text-align: right; white-space: nowrap; }
+.plt-ir { min-width: 48px; padding: 4px 10px; font-size: 12px; }
+.plt-ir.recusado { filter: saturate(.5) brightness(.9); }

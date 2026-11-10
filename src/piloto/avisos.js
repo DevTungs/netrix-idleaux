@@ -48,7 +48,8 @@
   const L = () => { try { const l = PIH.idioma && PIH.idioma.atual ? PIH.idioma.atual() : 'pt'; return ['pt', 'en', 'es'].includes(l) ? l : 'pt'; } catch { return 'pt'; } };
   const T = {
     shinyVisto: { pt: 'Shiny na hunt!', en: 'Shiny in the hunt!', es: '¡Shiny en la hunt!' },
-    shinyVistoTxt: { pt: '{nome} shiny (Nv {nv}) apareceu{onde}.', en: 'A shiny {nome} (Lv {nv}) showed up{onde}.', es: '¡Apareció un {nome} shiny (Nv {nv}){onde}!' },
+    // {nome} e {nv} são do pokémon do jogador que derrotou o shiny (não do shiny); {onde} é a hunt
+    shinyVistoTxt: { pt: 'Apareceu um shiny{onde} e o pokémon que derrotou foi {nome} (Nv {nv}).', en: 'A shiny showed up{onde} and the Pokémon that defeated it was {nome} (Lv {nv}).', es: 'Apareció un shiny{onde} y el pokémon que lo derrotó fue {nome} (Nv {nv}).' },
     shinyPego: { pt: 'Shiny capturado!', en: 'Shiny caught!', es: '¡Shiny capturado!' },
     shinyPegoTxt: { pt: '{nome} Nv {nv}{depot}.', en: '{nome} Lv {nv}{depot}.', es: '{nome} Nv {nv}{depot}.' },
     depot: { pt: ' (foi para o Depot)', en: ' (sent to the Depot)', es: ' (fue al Depot)' },
@@ -56,7 +57,6 @@
     especialTxt: { pt: '{nome} Nv {nv} com Potência P5.', en: '{nome} Lv {nv} with P5 Potency.', es: '{nome} Nv {nv} con Potencia P5.' },
     drop: { pt: 'Drop raro', en: 'Rare drop', es: 'Drop raro' },
     em: { pt: ' em {h}', en: ' in {h}', es: ' en {h}' },
-    naHunt: { pt: ' na hunt {h}', en: ' in the {h} hunt', es: ' en la hunt {h}' },
     prefixo: { pt: 'achado', en: 'find', es: 'hallazgo' },
   };
   const tx = (k, v = {}) => String(T[k][L()] || T[k].pt).replace(/\{(\w+)\}/g, (_, n) => (v[n] == null ? '' : String(v[n])));
@@ -102,7 +102,7 @@
     virarDia(); dia.shinyVisto++; gravarDia();
     if (!cfg.ligado || !cfg.shiny) return;
     const h = nomeHunt();
-    avisar({ titulo: tx('shinyVisto'), linha: tx('shinyVistoTxt', { nome: nome || '?', nv: nv || '?', onde: h ? tx('naHunt', { h }) : '' }), categoria: 'pokemon', nome: String(nome || 'Shiny'), tag: 'Shiny' });
+    avisar({ titulo: tx('shinyVisto'), linha: tx('shinyVistoTxt', { nome: nome || '?', nv: nv || '?', onde: h ? tx('em', { h }) : '' }), categoria: 'pokemon', nome: String(nome || 'Shiny'), tag: 'Shiny' });
   }
   PIH.on('campo', verCampo);
   PIH.on('campo.init', verCampo);
