@@ -1,5 +1,25 @@
 {
   "versoes": {
+    "2.0.20": {
+      "pt": [
+        "Novo botão Apoiar ♥ no rodapé do menu, opcional: mostra o QR Code e a chave Pix para ajudar a manter a extensão, com botões de copiar. Não muda nada no Netrix Hub.",
+        "Removido o aviso \"Shiny na hunt!\" (o que dizia que um shiny apareceu no mapa). Continuam os avisos de shiny capturado, captura P5 e drop raro.",
+        "Menos travadas: a análise de hunts é calculada uma vez e reaproveitada, o Netrix Hub parou de vigiar o jogo inteiro e a aba Caçar atualiza a cada 3 s.",
+        "Textos revisados: restos do nome antigo (\"Piloto\") e do nome \"Netrix IdleAux\" corrigidos, e traduções que faltavam em inglês e espanhol."
+      ],
+      "en": [
+        "New optional Support ♥ button in the menu footer: shows the Pix QR Code and key to help keep the extension going, with copy buttons. It changes nothing in the Netrix Hub.",
+        "Removed the \"Shiny in the hunt!\" alert (the one saying a shiny appeared on the map). Alerts for a shiny caught, a P5 catch and a rare drop stay.",
+        "Fewer freezes: the hunt analysis is computed once and reused, the Netrix Hub no longer watches the whole game, and the Hunt tab refreshes every 3 s.",
+        "Texts reviewed: leftovers of the old name (\"Piloto\") and of the name \"Netrix IdleAux\" fixed, and missing English and Spanish translations added."
+      ],
+      "es": [
+        "Nuevo botón opcional Apoyar ♥ en el pie del menú: muestra el código QR y la clave Pix para ayudar a mantener la extensión, con botones de copiar. No cambia nada en el Netrix Hub.",
+        "Quitado el aviso \"¡Shiny en la hunt!\" (el que decía que apareció un shiny en el mapa). Siguen los avisos de shiny capturado, captura P5 y drop raro.",
+        "Menos congelamientos: el análisis de hunts se calcula una vez y se reutiliza, el Netrix Hub dejó de vigilar todo el juego y la pestaña Cazar se actualiza cada 3 s.",
+        "Textos revisados: restos del nombre anterior (\"Piloto\") y del nombre \"Netrix IdleAux\" corregidos, y traducciones que faltaban en inglés y español."
+      ]
+    },
     "2.0.19": {
       "pt": [
         "O painel \"Piloto\" agora se chama Netrix Hub, com o logo da Netrix no lugar do ícone antigo: na barra do jogo, no título da janela, nos avisos, nas notificações e nos guias.",
@@ -27,7 +47,7 @@
     },
     "2.0.17": {
       "pt": [
-        "Nova aba Reposição, só para bola, poção e revive: escolha cada item (ou deixe no Automático, que mostra a sugestão), veja o estoque com quanto tempo dura, o que está livre para gastar, o gasto de hoje e o orçamento por bola. Manual ajusta mínimo, alvo e reserva; Auto mostra os números do Piloto.",
+        "Nova aba Reposição, só para bola, poção e revive: escolha cada item (ou deixe no Automático, que mostra a sugestão), veja o estoque com quanto tempo dura, o que está livre para gastar, o gasto de hoje e o orçamento por bola. Manual ajusta mínimo, alvo e reserva; Auto mostra os números do Netrix Hub.",
         "A Reposição saiu da aba Caçar, que ficou só com a Troca de hunt."
       ],
       "en": [
@@ -35,7 +55,7 @@
         "Restock moved out of the Hunt tab, which now only has the hunt switch."
       ],
       "es": [
-        "Nueva pestaña Reposición, solo para bola, poción y revive: elige cada ítem (o déjalo en Automático, que muestra la sugerencia), mira las existencias y cuánto duran, lo que está libre para gastar, el gasto de hoy y el presupuesto por bola. Manual ajusta mínimo, objetivo y reserva; Auto muestra los números del Piloto.",
+        "Nueva pestaña Reposición, solo para bola, poción y revive: elige cada ítem (o déjalo en Automático, que muestra la sugerencia), mira las existencias y cuánto duran, lo que está libre para gastar, el gasto de hoy y el presupuesto por bola. Manual ajusta mínimo, objetivo y reserva; Auto muestra los números del Netrix Hub.",
         "La Reposición salió de la pestaña Cazar, que ahora solo tiene el cambio de hunt."
       ]
     },
@@ -72,7 +92,7 @@
     },
     "2.0.14": {
       "pt": [
-        "Janela do Piloto com animações: abre e fecha suave, troca de aba com fade, e o ON/OFF e as barras agora animam de verdade (o painel atualiza só o que mudou).",
+        "Janela do Netrix Hub com animações: abre e fecha suave, troca de aba com fade, e o ON/OFF e as barras agora animam de verdade (o painel atualiza só o que mudou).",
         "Reposição: agora dá para escolher também a poção e o revive (ou deixar no Automático, que mostra a sugestão do módulo), além da bola."
       ],
       "en": [
@@ -80,41 +100,41 @@
         "Restock: you can now also pick the potion and the revive (or leave them on Automatic, which shows the module's suggestion), besides the ball."
       ],
       "es": [
-        "Animaciones en la ventana del Piloto: abre y cierra suave, fade al cambiar de pestaña, y los ON/OFF y las barras ahora se animan de verdad (el panel actualiza solo lo que cambió).",
+        "Animaciones en la ventana del Netrix Hub: abre y cierra suave, fade al cambiar de pestaña, y los ON/OFF y las barras ahora se animan de verdad (el panel actualiza solo lo que cambió).",
         "Reposición: ahora también puedes elegir la poción y el revive (o dejarlos en Automático, que muestra la sugerencia del módulo), además de la bola."
       ]
     },
     "2.0.13": {
       "pt": [
-        "Janela do Piloto: o efeito gelatina foi removido; ao arrastar, ela agora acompanha o mouse de forma suave e direta."
+        "Janela do Netrix Hub: o efeito gelatina foi removido; ao arrastar, ela agora acompanha o mouse de forma suave e direta."
       ],
       "en": [
         "Pilot window: the jelly effect was removed; dragging now follows the mouse smoothly and directly."
       ],
       "es": [
-        "Ventana del Piloto: se quitó el efecto gelatina; al arrastrar, ahora sigue al ratón de forma suave y directa."
+        "Ventana del Netrix Hub: se quitó el efecto gelatina; al arrastrar, ahora sigue al ratón de forma suave y directa."
       ]
     },
     "2.0.12": {
       "pt": [
-        "Janela do Piloto com efeito gelatina ao arrastar (como as janelas wobbly do KDE): segue o mouse numa mola, balança e assenta. Respeita a opção de reduzir movimento do sistema."
+        "Janela do Netrix Hub com efeito gelatina ao arrastar (como as janelas wobbly do KDE): segue o mouse numa mola, balança e assenta. Respeita a opção de reduzir movimento do sistema."
       ],
       "en": [
         "The Pilot window has a jelly effect when dragged (like KDE's wobbly windows): it follows the mouse on a spring, wobbles and settles. It respects the system's reduce-motion setting."
       ],
       "es": [
-        "La ventana del Piloto tiene efecto gelatina al arrastrar (como las ventanas wobbly de KDE): sigue al ratón con un muelle, se balancea y se asienta. Respeta la opción de reducir movimiento del sistema."
+        "La ventana del Netrix Hub tiene efecto gelatina al arrastrar (como las ventanas wobbly de KDE): sigue al ratón con un muelle, se balancea y se asienta. Respeta la opción de reducir movimiento del sistema."
       ]
     },
     "2.0.11": {
       "pt": [
-        "A janela do Piloto agora é móvel: arraste pelo topo. A posição fica guardada e, depois de movida, clicar fora não fecha mais a janela. Duplo clique no topo volta ao lugar de origem."
+        "A janela do Netrix Hub agora é móvel: arraste pelo topo. A posição fica guardada e, depois de movida, clicar fora não fecha mais a janela. Duplo clique no topo volta ao lugar de origem."
       ],
       "en": [
         "The Pilot window is now movable: drag it by the top bar. The position is saved and, once moved, clicking outside no longer closes the window. Double-click the top bar to reset."
       ],
       "es": [
-        "La ventana del Piloto ahora es móvil: arrástrala por la barra superior. La posición se guarda y, una vez movida, hacer clic fuera ya no la cierra. Doble clic en la barra superior para restablecer."
+        "La ventana del Netrix Hub ahora es móvil: arrástrala por la barra superior. La posición se guarda y, una vez movida, hacer clic fuera ya no la cierra. Doble clic en la barra superior para restablecer."
       ]
     },
     "2.0.10": {
@@ -166,7 +186,7 @@
     },
     "2.0.6": {
       "pt": [
-        "A Plateia (Twitch e Kick, do Dreds) agora vem dentro desta extensão: não precisa instalar à parte. Se você ainda tem a Plateia avulsa, remova-a (o Piloto avisa). A extensão passa a pedir acesso a twitch.tv e kick.com.",
+        "A Plateia (Twitch e Kick, do Dreds) agora vem dentro desta extensão: não precisa instalar à parte. Se você ainda tem a Plateia avulsa, remova-a (o Netrix Hub avisa). A extensão passa a pedir acesso a twitch.tv e kick.com.",
         "Reposição: dá para escolher a bola (ou deixar no Automático, que mostra a bola que o módulo sugere)."
       ],
       "en": [
@@ -174,7 +194,7 @@
         "Restock: you can pick the ball (or leave it on Automatic, which shows the ball the module suggests)."
       ],
       "es": [
-        "Plateia (Twitch y Kick, de Dreds) ahora viene dentro de esta extensión: no hace falta instalarla aparte. Si aún tienes la Plateia independiente, quítala (el Piloto avisa). La extensión ahora pide acceso a twitch.tv y kick.com.",
+        "Plateia (Twitch y Kick, de Dreds) ahora viene dentro de esta extensión: no hace falta instalarla aparte. Si aún tienes la Plateia independiente, quítala (el Netrix Hub avisa). La extensión ahora pide acceso a twitch.tv y kick.com.",
         "Reposición: puedes elegir la bola (o dejarla en Automático, que muestra la bola que sugiere el módulo)."
       ]
     },
@@ -241,17 +261,17 @@
     },
     "2.0.0": {
       "pt": [
-        "Nova marca: a extensão agora se chama Netrix IdleAux, com logo nova. A versão recomeça em 2.0.",
+        "Nova marca: a extensão agora se chama Netrix PokeIdle Aux, com logo nova. A versão recomeça em 2.0.",
         "Corrigido: o \"Melhorar o time\" agora mede cada pokémon pela última evolução (um bom Gastly ou Haunter conta como o Gengar que vai virar), em vez de só aceitar um Gengar já pronto.",
         "Atualização automática: a extensão confere os Releases do GitHub (DevTungs/netrix-idleaux) e se atualiza sozinha. Na primeira vez, autorize a pasta da extensão numa aba que abre sozinha."
       ],
       "en": [
-        "New brand: the extension is now called Netrix IdleAux, with a new logo. The version restarts at 2.0.",
+        "New brand: the extension is now called Netrix PokeIdle Aux, with a new logo. The version restarts at 2.0.",
         "Fixed: \"Improve the team\" now rates every Pokémon by its final evolution (a good Gastly or Haunter counts as the Gengar it will become) instead of only accepting an already-evolved Gengar.",
         "Automatic updates: the extension checks the GitHub Releases (DevTungs/netrix-idleaux) and updates itself. The first time, authorize the extension folder in the tab that opens by itself."
       ],
       "es": [
-        "Nueva marca: la extensión ahora se llama Netrix IdleAux, con logo nuevo. La versión vuelve a empezar en 2.0.",
+        "Nueva marca: la extensión ahora se llama Netrix PokeIdle Aux, con logo nuevo. La versión vuelve a empezar en 2.0.",
         "Corregido: \"Mejorar el equipo\" ahora mide cada pokémon por su última evolución (un buen Gastly o Haunter cuenta como el Gengar que será) en vez de aceptar solo un Gengar ya evolucionado.",
         "Actualización automática: la extensión revisa los Releases de GitHub (DevTungs/netrix-idleaux) y se actualiza sola. La primera vez, autoriza la carpeta de la extensión en la pestaña que se abre sola."
       ]
@@ -291,13 +311,13 @@
     },
     "1.51.1": {
       "pt": [
-        "Corrigido: o Piloto não conseguia marcar a Golden Potion nas automações do jogo, e o jogo podia ficar com uma poção sem estoque. Agora ela é marcada de verdade, e o Diário avisa quando uma troca não dá certo."
+        "Corrigido: o Netrix Hub não conseguia marcar a Golden Potion nas automações do jogo, e o jogo podia ficar com uma poção sem estoque. Agora ela é marcada de verdade, e o Diário avisa quando uma troca não dá certo."
       ],
       "en": [
         "Fixed: the Pilot couldn't set the Golden Potion in the game's automations, and the game could stay on a potion you had run out of. It is now really set, and the journal tells you when a switch doesn't go through."
       ],
       "es": [
-        "Corregido: el Piloto no podía marcar la Golden Potion en las automatizaciones del juego, y el juego podía quedarse con una poción sin existencias. Ahora se marca de verdad, y el Diario avisa cuando un cambio no sale."
+        "Corregido: el Netrix Hub no podía marcar la Golden Potion en las automatizaciones del juego, y el juego podía quedarse con una poción sin existencias. Ahora se marca de verdad, y el Diario avisa cuando un cambio no sale."
       ]
     },
     "1.51.0": {
@@ -313,7 +333,7 @@
     },
     "1.50.0": {
       "pt": [
-        "Corrigido: a poção que o Piloto marca no jogo agora é escolhida pelo HP de quem está lutando, não pela média do time. Upando um pokémon fraco num time forte (o Magikarp do relato #5), ele marca a Small Potion em vez da Ultra.",
+        "Corrigido: a poção que o Netrix Hub marca no jogo agora é escolhida pelo HP de quem está lutando, não pela média do time. Upando um pokémon fraco num time forte (o Magikarp do relato #5), ele marca a Small Potion em vez da Ultra.",
         "Corrigido: no Caçar o meta, quando vem um melhor, o anterior de nota baixa sai da Coleção para o Depot e não é guardado de novo. Shiny, P5, quem está no time, nota 3,5+, Nv 50+ e o que a Guarda protege ficam."
       ],
       "en": [
@@ -321,7 +341,7 @@
         "Fixed: in Hunt the meta, when a better one comes, the previous low-grade one leaves the Collection for the Depot and is not kept again. Shiny, P5, team members, grade 3.5+, Lv 50+ and whatever the Guard protects stay."
       ],
       "es": [
-        "Corregido: la poción que el Piloto marca en el juego ahora se elige por el HP de quien está peleando, no por el promedio del equipo. Subiendo uno débil en un equipo fuerte (el Magikarp del reporte #5), marca la Small Potion en vez de la Ultra.",
+        "Corregido: la poción que el Netrix Hub marca en el juego ahora se elige por el HP de quien está peleando, no por el promedio del equipo. Subiendo uno débil en un equipo fuerte (el Magikarp del reporte #5), marca la Small Potion en vez de la Ultra.",
         "Corregido: en Cazar el meta, cuando llega uno mejor, el anterior de nota baja sale de la Colección al Depot y no se guarda de nuevo. Shiny, P5, los del equipo, nota 3,5+, Nv 50+ y lo que protege la Guarda se quedan."
       ]
     },
@@ -338,35 +358,35 @@
     },
     "1.48.0": {
       "pt": [
-        "Novo aviso: se o /hunt ou o Radar do Mercado originais ficarem ligados junto com o Piloto, ele avisa no meio da tela e no Diário e explica como desativar. O Piloto já faz tudo o que eles fazem, e os dois juntos disputam o mesmo lugar na tela."
+        "Novo aviso: se o /hunt ou o Radar do Mercado originais ficarem ligados junto com o Netrix Hub, ele avisa no meio da tela e no Diário e explica como desativar. O Netrix Hub já faz tudo o que eles fazem, e os dois juntos disputam o mesmo lugar na tela."
       ],
       "en": [
         "New notice: if the original /hunt or Market Radar stay on together with the Pilot, it warns you in the middle of the screen and in the Log and explains how to turn them off. The Pilot already does everything they do, and running both makes them fight over the same spot on screen."
       ],
       "es": [
-        "Nuevo aviso: si el /hunt o el Radar del Mercado originales siguen activados junto con el Piloto, avisa en el centro de la pantalla y en el Diario y explica cómo desactivarlos. El Piloto ya hace todo lo que ellos hacen, y los dos juntos se disputan el mismo lugar en la pantalla."
+        "Nuevo aviso: si el /hunt o el Radar del Mercado originales siguen activados junto con el Netrix Hub, avisa en el centro de la pantalla y en el Diario y explica cómo desactivarlos. El Netrix Hub ya hace todo lo que ellos hacen, y los dos juntos se disputan el mismo lugar en la pantalla."
       ]
     },
     "1.47.1": {
       "pt": [
-        "Novo botão Apoiar ♥ no rodapé, opcional: Pix (Brasil) ou GitHub Sponsors (outros países). Não muda nada no Piloto."
+        "Novo botão Apoiar ♥ no rodapé, opcional: Pix (Brasil) ou GitHub Sponsors (outros países). Não muda nada no Netrix Hub."
       ],
       "en": [
         "New Support ♥ button in the footer, optional: Pix (Brazil) or GitHub Sponsors (other countries). It changes nothing in the Pilot."
       ],
       "es": [
-        "Nuevo botón Apoyar ♥ en el pie, opcional: Pix (Brasil) o GitHub Sponsors (otros países). No cambia nada en el Piloto."
+        "Nuevo botón Apoyar ♥ en el pie, opcional: Pix (Brasil) o GitHub Sponsors (otros países). No cambia nada en el Netrix Hub."
       ]
     },
     "1.47.0": {
       "pt": [
-        "Novo Modo farm (aba Caçar): o Piloto calcula qual pokémon rende mais XP no seu nível, de treinador e do próprio pokémon, e farma com ele sem parar. Se você não tem, ele captura um, que entra na hora e evolui sozinho até o escolhido. Recalcula 1x por dia e quando abre hunt nova."
+        "Novo Modo farm (aba Caçar): o Netrix Hub calcula qual pokémon rende mais XP no seu nível, de treinador e do próprio pokémon, e farma com ele sem parar. Se você não tem, ele captura um, que entra na hora e evolui sozinho até o escolhido. Recalcula 1x por dia e quando abre hunt nova."
       ],
       "en": [
         "New Farm mode (Hunt tab): the Pilot works out which Pokémon earns the most XP at your level, for the trainer and for itself, and farms with it nonstop. If you don't have it, it catches one, which steps in right away and evolves by itself into the chosen one. Recalculates once a day and when a new hunt unlocks."
       ],
       "es": [
-        "Nuevo Modo farm (pestaña Cazar): el Piloto calcula qué pokémon rinde más XP en tu nivel, del entrenador y del propio pokémon, y farmea con él sin parar. Si no lo tienes, captura uno, que entra al momento y evoluciona solo hasta el elegido. Recalcula 1 vez al día y cuando se abre una hunt nueva."
+        "Nuevo Modo farm (pestaña Cazar): el Netrix Hub calcula qué pokémon rinde más XP en tu nivel, del entrenador y del propio pokémon, y farmea con él sin parar. Si no lo tienes, captura uno, que entra al momento y evoluciona solo hasta el elegido. Recalcula 1 vez al día y cuando se abre una hunt nueva."
       ]
     },
     "1.46.0": {
@@ -382,29 +402,29 @@
     },
     "1.45.0": {
       "pt": [
-        "Caçar o meta ganhou a opção \"Só aceitar um bom\" (desligada de fábrica): o Piloto fica em cada alvo até capturar um com a nota do jogo acima do corte que você escolher (3,5+, 4,0+ ou 5,0+; shiny e P5 passam sempre) e só então vai para o próximo."
+        "Caçar o meta ganhou a opção \"Só aceitar um bom\" (desligada de fábrica): o Netrix Hub fica em cada alvo até capturar um com a nota do jogo acima do corte que você escolher (3,5+, 4,0+ ou 5,0+; shiny e P5 passam sempre) e só então vai para o próximo."
       ],
       "en": [
         "Hunt the meta has a new \"Only accept a good one\" option (off by default): the Pilot stays on each target until it catches one with the game grade above the cut you pick (3.5+, 4.0+ or 5.0+; shiny and P5 always pass), and only then moves to the next."
       ],
       "es": [
-        "Cazar el meta tiene la opción nueva \"Solo aceptar uno bueno\" (apagada de fábrica): el Piloto se queda en cada objetivo hasta capturar uno con la nota del juego por encima del corte que elijas (3,5+, 4,0+ o 5,0+; shiny y P5 pasan siempre) y recién entonces va al siguiente."
+        "Cazar el meta tiene la opción nueva \"Solo aceptar uno bueno\" (apagada de fábrica): el Netrix Hub se queda en cada objetivo hasta capturar uno con la nota del juego por encima del corte que elijas (3,5+, 4,0+ o 5,0+; shiny y P5 pasan siempre) y recién entonces va al siguiente."
       ]
     },
     "1.44.0": {
       "pt": [
-        "O Piloto agora percebe sozinho quando o PokeIdle publica versão nova do jogo (confere a cada 30 min e quando você volta para a aba) e mostra no meio da tela \"O PokeIdle atualizou o jogo, dê F5\", com o botão para recarregar."
+        "O Netrix Hub agora percebe sozinho quando o PokeIdle publica versão nova do jogo (confere a cada 30 min e quando você volta para a aba) e mostra no meio da tela \"O PokeIdle atualizou o jogo, dê F5\", com o botão para recarregar."
       ],
       "en": [
         "The Pilot now notices by itself when PokeIdle publishes a new game version (it checks every 30 min and when you come back to the tab) and shows \"PokeIdle updated the game, press F5\" in the middle of the screen, with a button to reload."
       ],
       "es": [
-        "El Piloto ahora detecta solo cuando PokeIdle publica una versión nueva del juego (revisa cada 30 min y cuando vuelves a la pestaña) y muestra en el centro de la pantalla \"PokeIdle actualizó el juego, pulsa F5\", con el botón para recargar."
+        "El Netrix Hub ahora detecta solo cuando PokeIdle publica una versión nueva del juego (revisa cada 30 min y cuando vuelves a la pestaña) y muestra en el centro de la pantalla \"PokeIdle actualizó el juego, pulsa F5\", con el botón para recargar."
       ]
     },
     "1.43.1": {
       "pt": [
-        "Corrigido: a poção e o revive custavam bem mais na loja do jogo do que o Piloto contava, então o Cofre deixava gastar muito além do teto. Agora a conta usa o preço que a loja cobra, e a escolha da poção e as quantidades também.",
+        "Corrigido: a poção e o revive custavam bem mais na loja do jogo do que o Netrix Hub contava, então o Cofre deixava gastar muito além do teto. Agora a conta usa o preço que a loja cobra, e a escolha da poção e as quantidades também.",
         "Corrigido: pokémon do time que não luta com segurança em nenhuma hunt (um Magikarp, por exemplo) fica fora do rodízio, em vez de entrar e ficar morrendo."
       ],
       "en": [
@@ -412,19 +432,19 @@
         "Fixed: a team Pokémon that can't fight safely in any hunt (a Magikarp, for example) is left out of the rotation instead of stepping in and fainting over and over."
       ],
       "es": [
-        "Corregido: la poción y el revive costaban mucho más en la tienda del juego de lo que contaba el Piloto, así que el Cofre dejaba gastar muy por encima del tope. Ahora la cuenta usa el precio que cobra la tienda, y también la elección de la poción y las cantidades.",
+        "Corregido: la poción y el revive costaban mucho más en la tienda del juego de lo que contaba el Netrix Hub, así que el Cofre dejaba gastar muy por encima del tope. Ahora la cuenta usa el precio que cobra la tienda, y también la elección de la poción y las cantidades.",
         "Corregido: un pokémon del equipo que no lucha con seguridad en ninguna hunt (un Magikarp, por ejemplo) queda fuera de la rotación, en vez de entrar y desmayarse una y otra vez."
       ]
     },
     "1.43.0": {
       "pt": [
-        "Atualizar o time pelo meta ganhou \"Fazer sozinho\" (janela Time, aba Meta): quando a diferença para o meta fica 30 min sem mudar, o Piloto atualiza o time sozinho; se faltar pokémon do meta, liga o Caçar o meta sozinho e, depois da caça, troca o time no Centro e religa a Troca de hunt e o rodízio."
+        "Atualizar o time pelo meta ganhou \"Fazer sozinho\" (janela Time, aba Meta): quando a diferença para o meta fica 30 min sem mudar, o Netrix Hub atualiza o time sozinho; se faltar pokémon do meta, liga o Caçar o meta sozinho e, depois da caça, troca o time no Centro e religa a Troca de hunt e o rodízio."
       ],
       "en": [
         "Update the team by the meta got \"Do it myself\" (Team window, Meta tab): once the difference from the meta stays the same for 30 min, the Pilot updates the team by itself; if a meta Pokémon is missing, it turns on Hunt the meta by itself and, after the hunt, swaps the team at the Center and turns hunt switching and the rotation back on."
       ],
       "es": [
-        "Actualizar el equipo por el meta ganó \"Hacerlo solo\" (ventana Equipo, pestaña Meta): cuando la diferencia con el meta se mantiene 30 min, el Piloto actualiza el equipo solo; si falta un pokémon del meta, enciende Cazar el meta solo y, después de la caza, cambia el equipo en el Centro y vuelve a encender el cambio de hunt y la rotación."
+        "Actualizar el equipo por el meta ganó \"Hacerlo solo\" (ventana Equipo, pestaña Meta): cuando la diferencia con el meta se mantiene 30 min, el Netrix Hub actualiza el equipo solo; si falta un pokémon del meta, enciende Cazar el meta solo y, después de la caza, cambia el equipo en el Centro y vuelve a encender el cambio de hunt y la rotación."
       ]
     },
     "1.42.0": {
@@ -454,13 +474,13 @@
     },
     "1.40.0": {
       "pt": [
-        "Manter o PC acordado (aba Caçar): com o jogo aberto e o Piloto em Manual ou Auto, o computador não entra em suspensão; a tela pode apagar normalmente. Não funciona no Firefox. E quando o \"Voltar sozinho\" recarrega o jogo que caiu, chega uma notificação."
+        "Manter o PC acordado (aba Caçar): com o jogo aberto e o Netrix Hub em Manual ou Auto, o computador não entra em suspensão; a tela pode apagar normalmente. Não funciona no Firefox. E quando o \"Voltar sozinho\" recarrega o jogo que caiu, chega uma notificação."
       ],
       "en": [
         "Keep the PC awake (Hunt tab): with the game open and the Pilot in Manual or Auto, the computer doesn't go to sleep; the screen can still turn off. Doesn't work on Firefox. And when \"Come back on its own if the game drops\" reloads the game, you get a notification."
       ],
       "es": [
-        "Mantener el PC despierto (pestaña Cazar): con el juego abierto y el Piloto en Manual o Auto, el ordenador no entra en suspensión; la pantalla puede apagarse normalmente. No funciona en Firefox. Y cuando \"Volver solo si el juego se cae\" recarga el juego, llega una notificación."
+        "Mantener el PC despierto (pestaña Cazar): con el juego abierto y el Netrix Hub en Manual o Auto, el ordenador no entra en suspensión; la pantalla puede apagarse normalmente. No funciona en Firefox. Y cuando \"Volver solo si el juego se cae\" recarga el juego, llega una notificación."
       ]
     },
     "1.39.0": {
@@ -476,13 +496,13 @@
     },
     "1.38.0": {
       "pt": [
-        "Parada de emergência: Alt+Shift+P põe o Piloto em Off na hora, de qualquer aba do navegador. Um quadro confirma e tem o botão para voltar ao modo de antes. A tecla pode ser trocada em chrome://extensions/shortcuts."
+        "Parada de emergência: Alt+Shift+P põe o Netrix Hub em Off na hora, de qualquer aba do navegador. Um quadro confirma e tem o botão para voltar ao modo de antes. A tecla pode ser trocada em chrome://extensions/shortcuts."
       ],
       "en": [
         "Emergency stop: Alt+Shift+P switches the Pilot Off at once, from any browser tab. A box confirms it and has a button to go back to the previous mode. You can change the key at chrome://extensions/shortcuts."
       ],
       "es": [
-        "Parada de emergencia: Alt+Shift+P pone el Piloto en Off al instante, desde cualquier pestaña del navegador. Un cuadro lo confirma y tiene el botón para volver al modo anterior. La tecla se puede cambiar en chrome://extensions/shortcuts."
+        "Parada de emergencia: Alt+Shift+P pone el Netrix Hub en Off al instante, desde cualquier pestaña del navegador. Un cuadro lo confirma y tiene el botón para volver al modo anterior. La tecla se puede cambiar en chrome://extensions/shortcuts."
       ]
     },
     "1.37.1": {
@@ -498,13 +518,13 @@
     },
     "1.37.0": {
       "pt": [
-        "Nova aba Dúvidas: o Piloto pode responder sozinho perguntas no canal Dúvidas do chat, com 53 respostas tiradas da Pokepédia do jogo. Vem desligado; ligue na aba se quiser. Ele espera 20 s, não responde se alguém já ajudou e fala no máximo 1 vez a cada 5 min."
+        "Nova aba Dúvidas: o Netrix Hub pode responder sozinho perguntas no canal Dúvidas do chat, com 53 respostas tiradas da Pokepédia do jogo. Vem desligado; ligue na aba se quiser. Ele espera 20 s, não responde se alguém já ajudou e fala no máximo 1 vez a cada 5 min."
       ],
       "en": [
-        "New Questions tab: the Piloto can answer questions in the chat's Questions channel by itself, with 53 answers taken from the game's Pokepedia. It comes off; turn it on in the tab if you want. It waits 20 s, stays quiet if someone already helped and speaks at most once every 5 min."
+        "New Questions tab: the Netrix Hub can answer questions in the chat's Questions channel by itself, with 53 answers taken from the game's Pokepedia. It comes off; turn it on in the tab if you want. It waits 20 s, stays quiet if someone already helped and speaks at most once every 5 min."
       ],
       "es": [
-        "Nueva pestaña Dudas: el Piloto puede responder solo preguntas en el canal Dudas del chat, con 53 respuestas sacadas de la Pokepedia del juego. Viene apagado; actívalo en la pestaña si quieres. Espera 20 s, no responde si alguien ya ayudó y habla como máximo 1 vez cada 5 min."
+        "Nueva pestaña Dudas: el Netrix Hub puede responder solo preguntas en el canal Dudas del chat, con 53 respuestas sacadas de la Pokepedia del juego. Viene apagado; actívalo en la pestaña si quieres. Espera 20 s, no responde si alguien ya ayudó y habla como máximo 1 vez cada 5 min."
       ]
     },
     "1.36.2": {
@@ -524,37 +544,37 @@
     "1.36.1": {
       "pt": [
         "Reposição: revive e poção vêm sempre antes da bola, e a bola só usa o ouro que sobra depois de garantir a próxima reposição de poção — conta com pouco ouro não fica mais sem poção.",
-        "Reposição: quando a poção (ou bola, ou revive) escolhida muda, o Piloto troca e compra na hora, em vez de passar até 40 min sem comprar nenhuma das duas; e não desce para uma poção mais fraca só porque acabou de gastar.",
+        "Reposição: quando a poção (ou bola, ou revive) escolhida muda, o Netrix Hub troca e compra na hora, em vez de passar até 40 min sem comprar nenhuma das duas; e não desce para uma poção mais fraca só porque acabou de gastar.",
         "Evoluir: se o cofre não libera ouro para a pedra (conta com pouco ouro), tenta de novo em 30 min, sem ficar insistindo."
       ],
       "en": [
         "Restock: revive and potion always come before balls, and balls only use the gold left after the next potion restock is secured — low-gold accounts no longer run out of potions.",
-        "Restock: when the chosen potion (or ball, or revive) changes, the Piloto switches and buys right away instead of going up to 40 min without buying either; and it no longer drops to a weaker potion just because it just spent gold.",
+        "Restock: when the chosen potion (or ball, or revive) changes, the Netrix Hub switches and buys right away instead of going up to 40 min without buying either; and it no longer drops to a weaker potion just because it just spent gold.",
         "Evolve: if the vault won't release gold for the stone (low-gold account), it tries again in 30 min instead of retrying nonstop."
       ],
       "es": [
         "Reposición: revive y poción siempre van antes que la bola, y la bola solo usa el oro que sobra después de asegurar la próxima reposición de pociones — una cuenta con poco oro ya no se queda sin pociones.",
-        "Reposición: cuando cambia la poción (o bola, o revive) elegida, el Piloto la cambia y compra al momento, en vez de pasar hasta 40 min sin comprar ninguna; y no baja a una poción más débil solo porque acaba de gastar.",
+        "Reposición: cuando cambia la poción (o bola, o revive) elegida, el Netrix Hub la cambia y compra al momento, en vez de pasar hasta 40 min sin comprar ninguna; y no baja a una poción más débil solo porque acaba de gastar.",
         "Evolucionar: si la bóveda no libera oro para la piedra (cuenta con poco oro), lo intenta de nuevo en 30 min, sin insistir."
       ]
     },
     "1.36.0": {
       "pt": [
-        "Evoluir: o time evolui na hora em que chega no nível — qualquer pokémon, o inicial também. Sem a pedra, o Piloto compra na hora no Mercado (em ouro) e ela nunca vai para a revenda.",
+        "Evoluir: o time evolui na hora em que chega no nível — qualquer pokémon, o inicial também. Sem a pedra, o Netrix Hub compra na hora no Mercado (em ouro) e ela nunca vai para a revenda.",
         "Evoluir: corrigido o que travava a evolução — a leitura da pedra perdia a vez para o Radar, a segunda pedra do mesmo vendedor era recusada e um comando perdido segurava o pokémon por 24 h.",
-        "Plateia: opção \"Reabrir se fechar\" — se a janela da Twitch ou da Kick fechar ou for descartada da memória, o Piloto reabre em até 1 min.",
+        "Plateia: opção \"Reabrir se fechar\" — se a janela da Twitch ou da Kick fechar ou for descartada da memória, o Netrix Hub reabre em até 1 min.",
         "PvP ao vivo: os 6 de cada lado aparecem desde o começo, numa lista vertical em cada canto — moldura em quem está lutando, apagando conforme perde HP e cinza quando cai."
       ],
       "en": [
-        "Evolve: the team evolves the moment it reaches the level — any Pokémon, the starter too. Without the stone, the Piloto buys one on the Market right away (for gold) and it never goes to resale.",
+        "Evolve: the team evolves the moment it reaches the level — any Pokémon, the starter too. Without the stone, the Netrix Hub buys one on the Market right away (for gold) and it never goes to resale.",
         "Evolve: fixed what blocked evolutions — the stone lookup lost its turn to the Radar, a second stone from the same seller was refused and a lost command held the Pokémon for 24 h.",
-        "Plateia: \"Reopen if it closes\" option — if the Twitch or Kick window closes or is discarded from memory, the Piloto reopens it within 1 min.",
+        "Plateia: \"Reopen if it closes\" option — if the Twitch or Kick window closes or is discarded from memory, the Netrix Hub reopens it within 1 min.",
         "Live PvP: all 6 on each side show from the start, in a vertical list in each corner — a frame on whoever is fighting, fading as they lose HP and grey when they faint."
       ],
       "es": [
-        "Evolucionar: el equipo evoluciona en cuanto llega al nivel — cualquier pokémon, el inicial también. Sin la piedra, el Piloto la compra al momento en el Mercado (con oro) y nunca va a la reventa.",
+        "Evolucionar: el equipo evoluciona en cuanto llega al nivel — cualquier pokémon, el inicial también. Sin la piedra, el Netrix Hub la compra al momento en el Mercado (con oro) y nunca va a la reventa.",
         "Evolucionar: corregido lo que trababa la evolución — la consulta de la piedra perdía el turno frente al Radar, la segunda piedra del mismo vendedor era rechazada y un comando perdido retenía al pokémon por 24 h.",
-        "Plateia: opción \"Reabrir si se cierra\" — si la ventana de Twitch o Kick se cierra o se descarta de la memoria, el Piloto la reabre en hasta 1 min.",
+        "Plateia: opción \"Reabrir si se cierra\" — si la ventana de Twitch o Kick se cierra o se descarta de la memoria, el Netrix Hub la reabre en hasta 1 min.",
         "PvP en vivo: los 6 de cada lado aparecen desde el inicio, en una lista vertical en cada esquina — marco en quien está luchando, apagándose al perder HP y gris cuando cae."
       ]
     },
@@ -578,10 +598,10 @@
     "1.34.1": {
       "pt": [
         "Coleção: o pokémon que o Auto Coleção guardou abaixo do Nv 50 (o Mercado só aceita a partir dele) e que não serve para o time, o PvP ou o meta volta para o Depot e é vendido, em vez de ficar parado.",
-        "A versão do Piloto aparece, discreta, ao lado do nome na barra do Em campo.",
+        "A versão do Netrix Hub aparece, discreta, ao lado do nome na barra do Em campo.",
         "Botão Time: fica dourado, com um ponto vermelho, quando o meta muda e você ainda não viu; abrir já mostra a aba Meta.",
         "Ao lado do seu rank aparece o resultado da última ranqueada: ▲ os PR que ganhou ou ▼ os que perdeu.",
-        "Passe de Batalha: quando o Piloto recolhe o prêmio do dia, ele mesmo fecha o \"Incrível!\" e a janela do Passe.",
+        "Passe de Batalha: quando o Netrix Hub recolhe o prêmio do dia, ele mesmo fecha o \"Incrível!\" e a janela do Passe.",
         "Compra automática que não saiu porque a conexão do jogo caiu tenta de novo sozinha quando a conexão volta."
       ],
       "en": [
@@ -594,16 +614,16 @@
       ],
       "es": [
         "Colección: el pokémon que la Auto Colección guardó por debajo del Nv 50 (el Mercado solo lo acepta desde ahí) y que no sirve para el equipo, el PvP ni el meta vuelve al Depot y se vende, en vez de quedarse parado.",
-        "La versión del Piloto aparece, discreta, al lado del nombre en la barra de En campo.",
+        "La versión del Netrix Hub aparece, discreta, al lado del nombre en la barra de En campo.",
         "Botón Equipo: se pone dorado, con un punto rojo, cuando el meta cambia y aún no lo viste; al abrirlo va directo a la pestaña Meta.",
         "Al lado de tu rango aparece el resultado de la última clasificatoria: ▲ los PR que ganaste o ▼ los que perdiste.",
-        "Pase de Batalla: cuando el Piloto recoge el premio del día, él mismo cierra el \"¡Increíble!\" y la ventana del Pase.",
+        "Pase de Batalla: cuando el Netrix Hub recoge el premio del día, él mismo cierra el \"¡Increíble!\" y la ventana del Pase.",
         "La compra automática que no salió porque se cayó la conexión del juego lo intenta de nuevo sola cuando la conexión vuelve."
       ]
     },
     "1.34.0": {
       "pt": [
-        "Versão nova: o Piloto procura sozinho ao abrir o jogo, a cada 30 min e quando você volta para a aba, e mostra o aviso na hora, sem recarregar. O X só adia por 1 h; atualização urgente pausa o Piloto até você atualizar.",
+        "Versão nova: o Netrix Hub procura sozinho ao abrir o jogo, a cada 30 min e quando você volta para a aba, e mostra o aviso na hora, sem recarregar. O X só adia por 1 h; atualização urgente pausa o Netrix Hub até você atualizar.",
         "Modo Manual: aba Alvos no Mercado — para cada item, o teto em ouro e quantas unidades comprar; o Radar compra sozinho quando aparece no teto ou abaixo. Também alvos de pokémon em ouro (P5 e nota mínima).",
         "Modo Manual: com \"Calcular os limites sozinho\" desligado, os limites do Mercado viram campos para você digitar, e o F5 não desfaz mais o que você ajustou.",
         "Reposição: o revive, a poção ou a bola que a conta escolheu volta a ser comprado quando acaba, mesmo que o jogo o desmarque por estar zerado.",
@@ -617,7 +637,7 @@
         "Rotation: if the turn ends during a trip to the Center (a restock, for example), the swap happens on that same trip, without going back to the hunt first."
       ],
       "es": [
-        "Versión nueva: el Piloto busca solo al abrir el juego, cada 30 min y cuando vuelves a la pestaña, y muestra el aviso al instante, sin recargar. La X solo lo pospone 1 h; una actualización urgente pausa el Piloto hasta que actualices.",
+        "Versión nueva: el Netrix Hub busca solo al abrir el juego, cada 30 min y cuando vuelves a la pestaña, y muestra el aviso al instante, sin recargar. La X solo lo pospone 1 h; una actualización urgente pausa el Netrix Hub hasta que actualices.",
         "Modo Manual: pestaña Objetivos en el Mercado — para cada ítem, el tope en oro y cuántas unidades comprar; el Radar compra solo cuando aparece en el tope o por debajo. También objetivos de pokémon en oro (P5 y nota mínima).",
         "Modo Manual: con \"Calcular los límites solo\" apagado, los límites del Mercado se vuelven campos para escribir, y el F5 ya no deshace lo que ajustaste.",
         "Reposición: el revive, la poción o la ball elegidos para la cuenta se vuelven a comprar cuando se acaban, aunque el juego los desmarque por estar en cero.",
@@ -691,7 +711,7 @@
     "1.33.3": {
       "pt": [
         "A compra automática do Mercado agora vai pelo seu dinheiro: compra o que dá lucro enquanto o estoque do radar mais a compra não passar de metade do que você tem; vendeu, libera de novo. Saiu do teto do dia.",
-        "Quando o jogo avisa \"Devagar aí — muitas mensagens\", o radar e o Piloto diminuem o ritmo sozinhos e voltam a subir aos poucos.",
+        "Quando o jogo avisa \"Devagar aí — muitas mensagens\", o radar e o Netrix Hub diminuem o ritmo sozinhos e voltam a subir aos poucos.",
         "A bola leva em conta o saldo: conta com muito ouro usa a Ultra Ball mesmo enquanto sobe um pokémon fraco."
       ],
       "en": [
@@ -701,13 +721,13 @@
       ],
       "es": [
         "La compra automática del Mercado ahora va por tu dinero: compra lo que da ganancia mientras el stock del radar más la compra no pase de la mitad de lo que tienes; al vender, se libera de nuevo. Salió del tope del día.",
-        "Cuando el juego avisa \"Devagar aí — muitas mensagens\" (demasiados mensajes), el radar y el Piloto bajan el ritmo solos y vuelven a subir de a poco.",
+        "Cuando el juego avisa \"Devagar aí — muitas mensagens\" (demasiados mensajes), el radar y el Netrix Hub bajan el ritmo solos y vuelven a subir de a poco.",
         "La bola tiene en cuenta el saldo: una cuenta con mucho oro usa la Ultra Ball aunque esté subiendo un pokémon débil."
       ]
     },
     "1.33.0": {
       "pt": [
-        "Reposição para conta nova: o Piloto marca uma bola, uma poção e um revive na hora e compra o primeiro lote assim que tiver o ouro (guarda só 10% do saldo).",
+        "Reposição para conta nova: o Netrix Hub marca uma bola, uma poção e um revive na hora e compra o primeiro lote assim que tiver o ouro (guarda só 10% do saldo).",
         "As quantidades da reposição vêm do que a sua conta gasta de verdade (mínimo de 1 h, alvo de 6 h), e a poção é a de menor ouro por HP que cura.",
         "Aba Caçar: o ouro/h já desconta as poções, e hunt em que os desmaios levam mais XP do que dão fica marcada como risco.",
         "Caçar o meta não pula mais ninguém: testa cada pokémon do time e, sem hunt segura, espera farmando XP até o treinador subir de nível."
@@ -719,7 +739,7 @@
         "Hunt the meta no longer skips anyone: it tries every team Pokémon and, with no safe hunt, waits while farming XP until the trainer levels up."
       ],
       "es": [
-        "Reposición para cuenta nueva: el Piloto marca una bola, una poción y un revivir al instante y compra el primer lote en cuanto hay oro (guarda solo el 10% del saldo).",
+        "Reposición para cuenta nueva: el Netrix Hub marca una bola, una poción y un revivir al instante y compra el primer lote en cuanto hay oro (guarda solo el 10% del saldo).",
         "Las cantidades de la reposición salen de lo que tu cuenta gasta de verdad (mínimo de 1 h, objetivo de 6 h), y la poción es la de menos oro por HP que cura.",
         "Pestaña Cazar: el oro/h ya descuenta las pociones, y la hunt donde los desmayos quitan más XP de lo que dan queda marcada como riesgo.",
         "Cazar el meta ya no salta a nadie: prueba cada pokémon del equipo y, sin hunt segura, espera farmeando XP hasta que el entrenador suba de nivel."
@@ -727,17 +747,17 @@
     },
     "1.32.3": {
       "pt": [
-        "A Plateia também não abre sala repetida depois de atualizar o Piloto ou com a escala do Windows (adota a janela que já está aberta).",
+        "A Plateia também não abre sala repetida depois de atualizar o Netrix Hub ou com a escala do Windows (adota a janela que já está aberta).",
         "Aba Caçar: hunt em que o pokémon morre antes de terminar um abate sai do ranking (ex.: Larvitar Nv 20 na Ledyba Nv 230), e com \"Evitar risco\" as arriscadas ficam depois das seguras.",
-        "Na primeira vez, o Piloto já abre no idioma do navegador (português, inglês ou espanhol); o seletor PT · EN · ES continua no painel.",
+        "Na primeira vez, o Netrix Hub já abre no idioma do navegador (português, inglês ou espanhol); o seletor PT · EN · ES continua no painel.",
         "Versão nova, novidades e o guia aparecem sozinhos no meio da tela do jogo, sem abrir o painel. O X ou o Esc fecham.",
         "As salas da Plateia não abrem de novo quando o jogo ou a extensão reinicia: só abre a que estiver faltando.",
         "O rodízio religado começa pelo pokémon mais fraco e deixa o mais forte por último.",
         "Caçar o meta desliga também o rodízio do time; ele volta junto com a Troca de hunt.",
-        "Torneios: o Piloto inscreve você sozinho no Mundial, no Amador e no Showdown assim que as inscrições abrem (aba Rotina)."
+        "Torneios: o Netrix Hub inscreve você sozinho no Mundial, no Amador e no Showdown assim que as inscrições abrem (aba Rotina)."
       ],
       "en": [
-        "Plateia also stops opening a duplicate room after a Piloto update or with Windows display scaling (it adopts the window that is already open).",
+        "Plateia also stops opening a duplicate room after a Netrix Hub update or with Windows display scaling (it adopts the window that is already open).",
         "Hunt tab: a hunt where your Pokémon dies before finishing a single kill leaves the ranking (e.g. Larvitar Lv 20 at Ledyba Lv 230), and with \"Avoid risk\" the risky ones come after the safe ones.",
         "The first time, the Pilot opens in your browser language (Portuguese, English or Spanish); the PT · EN · ES picker is still in the panel.",
         "New version, what is new and the guide show up by themselves in the middle of the game screen, without opening the panel. X or Esc closes them.",
@@ -747,14 +767,14 @@
         "Tournaments: the Pilot signs you up for the World, the Amateur and the Showdown as soon as registration opens (Routine tab)."
       ],
       "es": [
-        "La Plateia tampoco abre una sala repetida después de actualizar el Piloto o con la escala de Windows (adopta la ventana que ya está abierta).",
+        "La Plateia tampoco abre una sala repetida después de actualizar el Netrix Hub o con la escala de Windows (adopta la ventana que ya está abierta).",
         "Pestaña Cazar: la hunt donde el pokémon muere antes de terminar un abate sale del ranking (ej.: Larvitar Nv 20 en la Ledyba Nv 230), y con \"Evitar riesgo\" las arriesgadas quedan después de las seguras.",
-        "La primera vez, el Piloto abre en el idioma del navegador (portugués, inglés o español); el selector PT · EN · ES sigue en el panel.",
+        "La primera vez, el Netrix Hub abre en el idioma del navegador (portugués, inglés o español); el selector PT · EN · ES sigue en el panel.",
         "Versión nueva, novedades y la guía aparecen solas en el medio de la pantalla del juego, sin abrir el panel. La X o el Esc las cierran.",
         "Las salas de Plateia ya no se abren de nuevo cuando el juego o la extensión se reinicia: solo se abre la que falta.",
         "La rotación, al volver a encenderse, empieza por el pokémon más débil y deja el más fuerte para el final.",
         "Cazar el meta también apaga la rotación del equipo; vuelve junto con el Cambio de hunt.",
-        "Torneos: el Piloto te inscribe solo en el Mundial, el Amateur y el Showdown en cuanto abren las inscripciones (pestaña Rutina)."
+        "Torneos: el Netrix Hub te inscribe solo en el Mundial, el Amateur y el Showdown en cuanto abren las inscripciones (pestaña Rutina)."
       ]
     },
     "1.31.1": {

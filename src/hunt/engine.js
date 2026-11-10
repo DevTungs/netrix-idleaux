@@ -521,7 +521,7 @@
    * `ctx`: { mod, especies, precoItem, hunts, consts, eu, geo, ritmoMedido }.
    * `opcoes`: { comPocao = true, ordem = 'xp' | 'ouro', soLiberadas = true }.
    */
-  function analisar(pk, ctx, opcoes = {}) {
+  function calcular(pk, ctx, opcoes = {}) {
     const op = { comPocao: true, ordem: 'xp', soLiberadas: true, ...opcoes };
     // a poção da conta (marcada nas Automações do jogo): quem chama pode passar outra
     if (op.pocao === undefined) { try { op.pocao = PIH.pocaoDaConta ? PIH.pocaoDaConta() : null; } catch { op.pocao = null; } }
@@ -560,6 +560,32 @@
       total: linhas.length,
       ms: Math.round((typeof performance !== 'undefined' ? performance : Date).now() - inicio),
     };
+  }
+
+  // Vários módulos (janela, automação, reposição, rotina, caçadas, farm) pedem o mesmo ranking de todas as
+  // hunts, e cada pedido simulava tudo de novo na thread da página (as "congeladas"). Quem pede o mesmo
+  // (mesmo pokémon, mesmas opções, mesmo contexto) dentro de 3 s recebe o resultado pronto. O resultado é
+  // só lido por quem chama, nunca alterado.
+  // shortcut: o que não entra na chave (itens, boosts, preços) pode demorar até 3 s para refletir; subir
+  // a chave se alguém precisar de resposta na hora.
+  const MEMO_MS = 3000;
+  const memo = new WeakMap(); // ctx.hunts -> Map(chave -> { em, r, especies, mod })
+  function analisar(pk, ctx, opcoes = {}) {
+    const hunts = ctx?.hunts;
+    if (!hunts || typeof hunts !== 'object' || !pk) return calcular(pk, ctx, opcoes);
+    let chave;
+    try {
+      chave = [JSON.stringify(pk), JSON.stringify(opcoes), ctx.eu?.level, ctx.eu?.huntSlug, ctx.eu?.noCentro ? 1 : 0, ctx.bonusLootPct, hunts.length, ctx.precoItem?.size, JSON.stringify(ctx.consts)].join('|');
+    } catch { return calcular(pk, ctx, opcoes); }
+    let m = memo.get(hunts);
+    if (!m) memo.set(hunts, (m = new Map()));
+    const agora = Date.now();
+    const achou = m.get(chave);
+    if (achou && agora - achou.em < MEMO_MS && achou.especies === ctx.especies && achou.mod === ctx.mod) return achou.r;
+    const r = calcular(pk, ctx, opcoes);
+    if (m.size > 30) m.clear();
+    m.set(chave, { em: agora, r, especies: ctx.especies, mod: ctx.mod });
+    return r;
   }
 
   // 1.33: um critério de risco só, para a aba Caçar, a Troca de hunt, o rodízio e o Caçar o meta.

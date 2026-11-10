@@ -372,12 +372,21 @@
     });
   }
 
+  // Só o #p-ativo é observado (o <body> inteiro mudaria o tempo todo no jogo); se ele ainda não
+  // existe, o relógio abaixo liga o observador quando aparecer e cobre o que não passa por ele.
+  let observado = null;
+  const obsLugar = new MutationObserver(posicionarBarra);
+  function ligarObservador() {
+    const alvo = document.getElementById('p-ativo');
+    if (alvo === observado) return;
+    obsLugar.disconnect();
+    observado = alvo;
+    if (alvo) obsLugar.observe(alvo, { childList: true, subtree: true });
+  }
   function vigiarLugar() {
-    const alvo = document.getElementById('p-ativo') || document.body;
-    new MutationObserver(posicionarBarra).observe(alvo, { childList: true, subtree: true });
-    addEventListener('resize', posicionarBarra);
-    // Rede de segurança para mudanças de layout que não passam pelo #p-ativo.
-    setInterval(posicionarBarra, 1500);
+    ligarObservador();
+    addEventListener('resize', posicionarBarra, { passive: true });
+    setInterval(() => { ligarObservador(); posicionarBarra(); }, 1500);
     posicionarBarra();
   }
 

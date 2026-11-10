@@ -29,11 +29,17 @@
       { t: 'Ayuda siempre a mano', x: 'El ? de cada fila explica lo que hace. Debajo del menú están Reportar error, Buscar actualización y el idioma. Esta guía vuelve con el botón ? de arriba.' },
     ],
     novidades: {
+      '2.0.20': [
+        "Nuevo botón opcional Apoyar ♥ en el pie del menú: muestra el código QR y la clave Pix para ayudar a mantener la extensión, con botones de copiar. No cambia nada en el Netrix Hub.",
+        "Quitado el aviso \"¡Shiny en la hunt!\" (el que decía que apareció un shiny en el mapa). Siguen los avisos de shiny capturado, captura P5 y drop raro.",
+        "Menos congelamientos: el análisis de hunts se calcula una vez y se reutiliza, el Netrix Hub dejó de vigilar todo el juego y la pestaña Cazar se actualiza cada 3 s.",
+        "Textos revisados: restos del nombre anterior (\"Piloto\") y del nombre \"Netrix PokeIdle Aux\" corregidos, y traducciones que faltaban en inglés y español.",
+      ],
       '1.31.1': [
         "Corregido: el Ancient Pupitar (y las otras variantes de la Outland) ya no cuenta como \"ya tenía\" en Cazar el meta: no evolucionan.",
       ],
       '2.0.0': [
-        "Nueva marca: la extensión ahora se llama Netrix IdleAux, con logo nuevo. La versión vuelve a empezar en 2.0.",
+        "Nueva marca: la extensión ahora se llama Netrix PokeIdle Aux, con logo nuevo. La versión vuelve a empezar en 2.0.",
         "Corregido: \"Mejorar el equipo\" ahora mide cada pokémon por su última evolución (un buen Gastly o Haunter cuenta como el Gengar que será) en vez de aceptar solo un Gengar ya evolucionado.",
         "Actualización automática: la extensión revisa los Releases de GitHub (DevTungs/netrix-idleaux) y se actualiza sola. La primera vez, autoriza la carpeta de la extensión en la pestaña que se abre sola.",
       ],

@@ -5,11 +5,9 @@
 // (`batalha.achados`), com os mesmos campos que o cliente do jogo usa (lidos no app.js e no
 // sessao-hunt.mjs em 29/10):
 // - `capturado` { pokemon: { id, nome, level, shiny, speciesId, quality, potencia }, paraDepot }
-// - `bola` { shiny } — a bola revelou um shiny (o contador "shinies vistos" do jogo)
 // - `morte` (selvagem) e `bossMorto` { drops: [{ itemId, nome, qtd }] }
-// E do campo, o corpo com `sh` (shiny) e o nome.
 //
-// Avisa: shiny no campo, shiny capturado, captura P5 e drop raro (os 11 da prancheta do jogo:
+// Avisa: shiny capturado, captura P5 e drop raro (os 11 da prancheta do jogo:
 // Boss Token, fragmentos, peças de TM, tickets). Com a aba do jogo à vista, um cartãozinho no canto;
 // com ela escondida (outra aba, outra janela, PC bloqueado), a notificação do sistema. Drop raro
 // junta o que cair em 1 min num aviso só, e no máximo um aviso de drop a cada 10 min. Tudo entra
@@ -40,33 +38,24 @@
   document.addEventListener('piloto:notif-estado', (ev) => { try { chromeLigado = JSON.parse(ev.detail).ligado !== false; } catch { /* ignora */ } });
   try { document.dispatchEvent(new CustomEvent('piloto:notif-ler', { detail: '{}' })); } catch { /* sem ponte */ }
   const hojeBr = () => new Date(Date.now() - 3 * 3_600_000).toISOString().slice(0, 10);
-  let dia =(() => { try { const d = JSON.parse(localStorage.getItem(CHAVE_DIA) || 'null'); return d && d.dia === hojeBr() ? d : null; } catch { return null; } })() || { dia: hojeBr(), shinyVisto: 0, shiny: 0, especial: 0, drops: {} };
+  let dia =(() => { try { const d = JSON.parse(localStorage.getItem(CHAVE_DIA) || 'null'); return d && d.dia === hojeBr() ? d : null; } catch { return null; } })() || { dia: hojeBr(), shiny: 0, especial: 0, drops: {} };
   const gravarDia = () => { try { localStorage.setItem(CHAVE_DIA, JSON.stringify(dia)); } catch { /* sem armazenamento */ } };
-  const virarDia = () => { if (dia.dia !== hojeBr()) dia = { dia: hojeBr(), shinyVisto: 0, shiny: 0, especial: 0, drops: {} }; };
+  const virarDia = () => { if (dia.dia !== hojeBr()) dia = { dia: hojeBr(), shiny: 0, especial: 0, drops: {} }; };
 
   // ---- textos (a notificação do sistema sai já no idioma da pessoa) ---------------------------
   const L = () => { try { const l = PIH.idioma && PIH.idioma.atual ? PIH.idioma.atual() : 'pt'; return ['pt', 'en', 'es'].includes(l) ? l : 'pt'; } catch { return 'pt'; } };
   const T = {
-    shinyVisto: { pt: 'Shiny na hunt!', en: 'Shiny in the hunt!', es: '¡Shiny en la hunt!' },
-    // {nome} e {nv} são do pokémon do jogador que derrotou o shiny (não do shiny); {onde} é a hunt
-    shinyVistoTxt: { pt: 'Apareceu um shiny{onde} e o pokémon que derrotou foi {nome} (Nv {nv}).', en: 'A shiny showed up{onde} and the Pokémon that defeated it was {nome} (Lv {nv}).', es: 'Apareció un shiny{onde} y el pokémon que lo derrotó fue {nome} (Nv {nv}).' },
     shinyPego: { pt: 'Shiny capturado!', en: 'Shiny caught!', es: '¡Shiny capturado!' },
     shinyPegoTxt: { pt: '{nome} Nv {nv}{depot}.', en: '{nome} Lv {nv}{depot}.', es: '{nome} Nv {nv}{depot}.' },
     depot: { pt: ' (foi para o Depot)', en: ' (sent to the Depot)', es: ' (fue al Depot)' },
     especial: { pt: 'Captura P5!', en: 'P5 catch!', es: '¡Captura P5!' },
     especialTxt: { pt: '{nome} Nv {nv} com Potência P5.', en: '{nome} Lv {nv} with P5 Potency.', es: '{nome} Nv {nv} con Potencia P5.' },
     drop: { pt: 'Drop raro', en: 'Rare drop', es: 'Drop raro' },
-    em: { pt: ' em {h}', en: ' in {h}', es: ' en {h}' },
     prefixo: { pt: 'achado', en: 'find', es: 'hallazgo' },
   };
   const tx = (k, v = {}) => String(T[k][L()] || T[k].pt).replace(/\{(\w+)\}/g, (_, n) => (v[n] == null ? '' : String(v[n])));
 
   // ---- o que está acontecendo -------------------------------------------------------------------
-  let eu = null;
-  let welcome = null;
-  PIH.on('estado', (e) => { eu = e; });
-  PIH.on('welcome', (w) => { welcome = w; });
-  const nomeHunt = () => { const s = eu && eu.huntSlug; const h = s && ((welcome && welcome.hunts) || []).find((x) => x.slug === s); return h ? h.nome : ''; };
   const aVista = () => document.visibilityState === 'visible' && (typeof document.hasFocus !== 'function' || document.hasFocus());
 
   function sistema(titulo, mensagem) {
@@ -79,33 +68,6 @@
     ultimo = { em: Date.now(), titulo, linha };
   }
   let ultimo = null;
-
-  // shiny no campo (o corpo chega com sh) — um aviso por corpo
-  const vistos = new Map();
-  function verCampo(m) {
-    if (!m) return;
-    const n = Date.now();
-    for (const [k, em] of vistos) if (n - em > 10 * 60_000) vistos.delete(k);
-    for (const [k, c] of corpos) if (n - c.em > 10 * 60_000) corpos.delete(k);
-    for (const x of m.mobs || []) {
-      if (!x || !Number.isInteger(x.s)) continue;
-      if (x.n) corpos.set(x.s, { n: String(x.n).slice(0, 40), nv: Number(x.nv) || null, em: n });
-      if (x.sh) shinyVisto(x.s, x.n, x.nv);
-    }
-  }
-  const corpos = new Map(); // vaga → nome e nível do corpo (para a bola que revela o shiny)
-  function shinyVisto(slot, nome, nv) {
-    const n = Date.now();
-    const chave = `${slot}:${nome || ''}`;
-    if (vistos.has(chave)) return; // o mesmo corpo: um aviso só (some da lista 10 min depois)
-    vistos.set(chave, n);
-    virarDia(); dia.shinyVisto++; gravarDia();
-    if (!cfg.ligado || !cfg.shiny) return;
-    const h = nomeHunt();
-    avisar({ titulo: tx('shinyVisto'), linha: tx('shinyVistoTxt', { nome: nome || '?', nv: nv || '?', onde: h ? tx('em', { h }) : '' }), categoria: 'pokemon', nome: String(nome || 'Shiny'), tag: 'Shiny' });
-  }
-  PIH.on('campo', verCampo);
-  PIH.on('campo.init', verCampo);
 
   // drops raros: junta 1 min, um aviso a cada 10 min no máximo
   let fila = {};
@@ -151,9 +113,6 @@
           virarDia(); dia.especial++; gravarDia();
           if (cfg.ligado && cfg.especial) avisar({ titulo: tx('especial'), linha: tx('especialTxt', { nome: p.nome || '?', nv: p.level || '?' }), categoria: 'pokemon', speciesId: Number(p.speciesId) || null, nome: String(p.nome || 'P5'), tag: 'P5' });
         }
-      } else if (e.k === 'bola' && e.shiny) {
-        const c = corpos.get(e.slot);
-        shinyVisto(e.slot, c && c.n, c && c.nv);
       } else if ((e.k === 'morte' && e.quem === 'selvagem') || e.k === 'bossMorto') {
         anotarDrops(e.drops);
       }
@@ -164,26 +123,25 @@
   function resumoHoje() {
     virarDia();
     const l = L();
-    const W = { pt: ['shiny capturado', 'shinies capturados', 'shiny visto', 'shinies vistos', 'hoje: ', 'nada raro hoje ainda'],
-      en: ['shiny caught', 'shinies caught', 'shiny seen', 'shinies seen', 'today: ', 'nothing rare today yet'],
-      es: ['shiny capturado', 'shinies capturados', 'shiny visto', 'shinies vistos', 'hoy: ', 'nada raro hoy todavía'] }[l];
+    const W = { pt: ['shiny capturado', 'shinies capturados', 'hoje: ', 'nada raro hoje ainda'],
+      en: ['shiny caught', 'shinies caught', 'today: ', 'nothing rare today yet'],
+      es: ['shiny capturado', 'shinies capturados', 'hoy: ', 'nada raro hoy todavía'] }[l];
     const partes = [];
     if (dia.shiny) partes.push(`${dia.shiny} ${dia.shiny === 1 ? W[0] : W[1]}`);
-    if (dia.shinyVisto) partes.push(`${dia.shinyVisto} ${dia.shinyVisto === 1 ? W[2] : W[3]}`);
     if (dia.especial) partes.push(`${dia.especial} P5`);
     for (const [nome, q] of Object.entries(dia.drops)) partes.push(`${q}× ${nome}`);
-    return partes.length ? `${W[4]}${partes.join(' · ')}` : W[5];
+    return partes.length ? `${W[2]}${partes.join(' · ')}` : W[3];
   }
   const linhaChrome = () => K.linha({ id: 'avisos-chrome', icone: 'sino', nome: 'Notificar o Chrome', alvo: 'avisos:chrome', on: chromeLigado,
     dica: 'Desligado, nenhum aviso do Netrix Hub vira notificação do sistema (ofertas, compras, achados, queda e volta). O cartão no jogo continua. É o mesmo interruptor da aba Mercado.' });
   function linha(modo) {
     const ajustes = [
-      K.mini('avisos:shiny', cfg.shiny, 'Shiny', 'Shiny no campo e shiny capturado'),
+      K.mini('avisos:shiny', cfg.shiny, 'Shiny', 'Shiny capturado'),
       K.mini('avisos:especial', cfg.especial, 'Captura P5', 'Pokémon capturado com Potência P5'),
       K.mini('avisos:drop', cfg.drop, 'Drop raro', 'Boss Token, fragmentos (Chave, Shiny Stone, Bicicleta, Mega, Ovo Shiny), peças de TM e tickets. O que cair em 1 min vira um aviso só, no máximo um a cada 10 min.'),
     ].join('');
     return `${K.grupo('Avisos')}${linhaChrome()}${K.linha({ id: 'avisos', icone: 'sino', nome: 'Avisos de achados', alvo: 'avisos:ligado', on: cfg.ligado, status: `<span data-sem-traducao="1">${esc(resumoHoje())}</span>`,
-      dica: 'Avisa quando acontece algo raro: shiny no campo, shiny capturado, captura P5 e drop raro. Com a aba do jogo à vista, um cartãozinho no canto; com ela escondida, a notificação do sistema. Só lê o que o jogo já mostra: não envia nada. Funciona em qualquer modo, até no Off.',
+      dica: 'Avisa quando acontece algo raro: shiny capturado, captura P5 e drop raro. Com a aba do jogo à vista, um cartãozinho no canto; com ela escondida, a notificação do sistema. Só lê o que o jogo já mostra: não envia nada. Funciona em qualquer modo, até no Off.',
       ajustes })}`;
   }
   function definir(caminho, v) {

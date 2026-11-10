@@ -131,12 +131,22 @@
     });
   }
 
+  // Observa só o #p-ativo (nunca o <body> inteiro: o jogo muda o DOM o tempo todo e cada mudança
+  // acordava a conta de posição). Se o #p-ativo ainda não existe, o relógio de 1,5 s liga o observador depois.
+  let observado = null;
+  const obsCard = new MutationObserver(posicionarBotao);
+  function ligarObservador() {
+    const alvo = document.getElementById('p-ativo');
+    if (alvo === observado) return;
+    obsCard.disconnect();
+    observado = alvo;
+    if (alvo) obsCard.observe(alvo, { childList: true, subtree: true });
+  }
   function vigiarCard() {
-    const alvo = document.getElementById('p-ativo') ?? document.body;
-    new MutationObserver(posicionarBotao).observe(alvo, { childList: true, subtree: true });
-    addEventListener('resize', posicionarBotao);
-    addEventListener('scroll', posicionarBotao, true);
-    setInterval(posicionarBotao, 1500);
+    addEventListener('resize', posicionarBotao, { passive: true });
+    addEventListener('scroll', posicionarBotao, { capture: true, passive: true });
+    ligarObservador();
+    setInterval(() => { ligarObservador(); posicionarBotao(); }, 1500);
     setInterval(pintarBarra, 2000);
     posicionarBotao();
   }
@@ -456,7 +466,7 @@
     relogio = setInterval(() => {
       if (!painel || digitando() || document.hidden) return; // aba escondida: nada para ver
       voltas++;
-      if (['resumo', 'hunts', 'reposicao', 'rotina', 'cofre'].includes(prefs.aba)) desenhar();
+      if (['resumo', 'reposicao', 'rotina', 'cofre'].includes(prefs.aba) || (prefs.aba === 'hunts' && voltas % 3 === 0)) desenhar(); // Caçar monta o ranking inteiro: 3 s
       else if (prefs.aba === 'meta' && voltas % 10 === 0) desenhar();
       else if (prefs.aba === 'extrato' && voltas % 15 === 0) desenhar();
       else pintarMoldura();

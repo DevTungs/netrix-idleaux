@@ -29,11 +29,17 @@
       { t: 'Help is always at hand', x: 'The ? on each row explains what it does. Report bug, Check for updates and the language are below the menu. This guide comes back with the ? button at the top.' },
     ],
     novidades: {
+      '2.0.20': [
+        "New optional Support ♥ button in the menu footer: shows the Pix QR Code and key to help keep the extension going, with copy buttons. It changes nothing in the Netrix Hub.",
+        "Removed the \"Shiny in the hunt!\" alert (the one saying a shiny appeared on the map). Alerts for a shiny caught, a P5 catch and a rare drop stay.",
+        "Fewer freezes: the hunt analysis is computed once and reused, the Netrix Hub no longer watches the whole game, and the Hunt tab refreshes every 3 s.",
+        "Texts reviewed: leftovers of the old name (\"Piloto\") and of the name \"Netrix PokeIdle Aux\" fixed, and missing English and Spanish translations added.",
+      ],
       '1.31.1': [
         "Fixed: the Ancient Pupitar (and the other Outland variants) no longer counts as \"already had\" in Hunt the meta: they don't evolve.",
       ],
       '2.0.0': [
-        "New brand: the extension is now called Netrix IdleAux, with a new logo. The version restarts at 2.0.",
+        "New brand: the extension is now called Netrix PokeIdle Aux, with a new logo. The version restarts at 2.0.",
         "Fixed: \"Improve the team\" now rates every Pokémon by its final evolution (a good Gastly or Haunter counts as the Gengar it will become) instead of only accepting an already-evolved Gengar.",
         "Automatic updates: the extension checks the GitHub Releases (DevTungs/netrix-idleaux) and updates itself. The first time, authorize the extension folder in the tab that opens by itself.",
       ],

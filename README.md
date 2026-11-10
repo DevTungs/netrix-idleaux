@@ -43,6 +43,10 @@ Também dá para forçar pelo botão **Procurar atualização** no painel da ext
 
 O código da [Plateia](https://github.com/DredsGG/plateia) (v0.9.4, do **Dreds**, usado com a autorização dele) mora em `src/plateia/`. Não precisa instalar a Plateia separada: se você ainda tem ela instalada, **remova** (duas extensões pegando o mesmo baú e as mesmas lives em duplicidade). O Piloto avisa se achar as duas. Nesta versão a extensão passa a pedir acesso a `twitch.tv` e `kick.com`.
 
+## Apoiar
+
+A extensão é gratuita. Se ela te ajuda, dá para contribuir por Pix (opcional): botão **Apoiar ♥** no rodapé do menu do Netrix Hub (com QR Code e Pix copia e cola), ou direto pela chave aleatória `8726c7c3-30d4-4381-b71d-1241b949fb89`.
+
 ## Créditos
 
 Baseado no trabalho de **Dreds** ([PokeIdle Piloto](https://github.com/DredsGG/pokeidle-piloto)). Mantido por [DevTungs](https://github.com/DevTungs).
