@@ -75,7 +75,7 @@
       const r = PIH.auto?.irAoCentroEVoltar?.() || { ok: false, motivo: 'a automação de hunt não carregou' };
       if (!r.ok) return mostrarErro(r.motivo, modo);
     } else if (PIH.auto?.rotinaAtual?.()) {
-      return mostrarErro('o Piloto já está indo ao Centro', modo);
+      return mostrarErro('o Netrix Hub já está indo ao Centro', modo);
     }
     Object.assign(st, { modo, ultimo: modo, fase: 'fila', desde: Date.now(), clicouEm: 0, cliques: 0, msg: '' });
     PIH.cofre?.diario?.(`centro: na fila (${modo === 'voltar' ? 'ir, curar e voltar' : 'ir e ficar'})`);

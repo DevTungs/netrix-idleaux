@@ -117,7 +117,7 @@
 .plt-barra:hover { filter: brightness(1.1); }
 .plt-barra:focus-visible { outline: 2px solid var(--p-ouro-luz); outline-offset: 2px; }
 .plt-barra .plt-marca {
-  display: inline-flex; align-items: center; gap: 6px; font-size: 12px;
+  display: inline-flex; align-items: center; gap: 6px; font-size: 12px; white-space: nowrap;
   text-shadow: -1px -1px 0 var(--p-rx-esc), 1px -1px 0 var(--p-rx-esc), -1px 1px 0 var(--p-rx-esc), 1px 1px 0 var(--p-rx-esc);
 }
 .plt-barra .plt-marca .plt-ico { color: var(--p-ouro-luz); width: 18px; height: 18px; }

@@ -62,7 +62,7 @@
   function criarBotao() {
     const m = document.createElement('span');
     m.className = 'plt-marca';
-    m.textContent = 'Piloto';
+    m.textContent = 'Netrix Hub';
     return m;
   }
 
@@ -70,7 +70,7 @@
   botao.type = 'button';
   botao.className = 'plt-barra';
   botao.setAttribute('aria-haspopup', 'dialog');
-  botao.innerHTML = `<span class="plt-marca">${ico('leme')}Piloto<small class="plt-ver" aria-hidden="true"></small></span>
+  botao.innerHTML = `<span class="plt-marca">${ico('netrix')}Netrix Hub<small class="plt-ver" aria-hidden="true"></small></span>
     <span class="plt-chips">
       <span class="plt-chip" data-chip="hunt" title="Hunt">${ico('cacar')}</span>
       <span class="plt-chip" data-chip="rotina" title="Rotina">${ico('rotina')}</span>
@@ -183,8 +183,8 @@
     botao.classList.toggle('plt-auto', modoAtual() === 'automatico');
     publicarContexto();
     botao.title = f.cof
-      ? `Piloto ${f.geral ? 'ligado' : 'desligado'} — gasto hoje ${curto(f.cof.gasto)} de ${curto(f.cof.teto)}${radar ? ` · Radar: ${radar.texto}` : ''}`
-      : 'Piloto';
+      ? `Netrix Hub ${f.geral ? 'ligado' : 'desligado'} — gasto hoje ${curto(f.cof.gasto)} de ${curto(f.cof.teto)}${radar ? ` · Radar: ${radar.texto}` : ''}`
+      : 'Netrix Hub';
     if (painel) pintarMoldura();
   }
   // O que a revenda automática do Radar fez (outro mundo da extensão): entra em "Últimas ações".
@@ -234,7 +234,7 @@
     if (verificado || !eu) return;
     const pk = pkAtivo();
     if (!pk) {
-      if (tentativa === 0) mostrarAviso('Coloque um pokémon <b>em campo</b> para usar o <b>Piloto</b>.', { fechaEm: 8000 });
+      if (tentativa === 0) mostrarAviso('Coloque um pokémon <b>em campo</b> para usar o <b>Netrix Hub</b>.', { fechaEm: 8000 });
       setTimeout(() => verificar(1), 3000);
       return;
     }
@@ -243,7 +243,7 @@
     if (a && texto?.includes(pk.nome)) {
       verificado = true;
       posicionarBotao();
-      mostrarAviso(`Pokémon em campo encontrado: <b>${esc(pk.nome)}</b>. O <b>Piloto</b> está logo acima dele.`, { fechaEm: 4500 });
+      mostrarAviso(`Pokémon em campo encontrado: <b>${esc(pk.nome)}</b>. O <b>Netrix Hub</b> está logo acima dele.`, { fechaEm: 4500 });
       return;
     }
     if (tentativa < 12) { setTimeout(() => verificar(tentativa + 1), 500); return; }
@@ -273,7 +273,7 @@
       pararMira();
       verificado = true;
       posicionarBotao();
-      mostrarAviso('Pronto: o <b>Piloto</b> vai ficar logo acima deste ponto.', { fechaEm: 4000 });
+      mostrarAviso('Pronto: o <b>Netrix Hub</b> vai ficar logo acima deste ponto.', { fechaEm: 4000 });
     };
     addEventListener('mouseover', sobre, true);
     addEventListener('click', clique, true);
@@ -348,7 +348,7 @@
     if (MANUAL_BLOQUEADO && modoAtual() === 'manual') {
       const veioDoManual = lerJson(CHAVE_MODO, null) === 'manual'; // instalação nova não tem modo salvo
       definirModo('desligado');
-      if (veioDoManual) PIH.cofre?.diario?.('o modo Manual está bloqueado: o Piloto ficou em Off — escolha Auto para ligar', 'aviso');
+      if (veioDoManual) PIH.cofre?.diario?.('o modo Manual está bloqueado: o Netrix Hub ficou em Off — escolha Auto para ligar', 'aviso');
     }
     publicarContexto(true);
     // O modo é quem manda: no Automático, o Radar volta ao perfil automático a cada carga da página
@@ -383,14 +383,14 @@
   ];
   // 1.33.8: a aba Teste só existe na build de teste do André (o módulo não vai para o Release público).
   // 1.36.2 (pedido do André): virou a aba Dúvidas, entre as principais (ainda só na build dele).
-  if (PIH.testeDuvidas) ABAS.splice(ABAS.findIndex((a) => a[0] === 'cofre'), 0, ['duvidas', 'Dúvidas', 'duvidas', 'O que o Piloto respondeu no canal Dúvidas do chat']);
+  if (PIH.testeDuvidas) ABAS.splice(ABAS.findIndex((a) => a[0] === 'cofre'), 0, ['duvidas', 'Dúvidas', 'duvidas', 'O que o Netrix Hub respondeu no canal Dúvidas do chat']);
   if (prefs.aba === 'teste') prefs.aba = 'duvidas';
   if (prefs.aba === 'auto') prefs.aba = 'hunts'; // a aba "Auto" virou parte de Caçar
   const ICO_CADEADO = '<svg class="plt-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10V7a5 5 0 0 1 10 0v3h1a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1zm2 0h6V7a3 3 0 0 0-6 0zm3 4a1.6 1.6 0 0 0-.8 3V19h1.6v-2a1.6 1.6 0 0 0-.8-3z" fill="currentColor"/></svg>';
   const MODOS = [
     ['desligado', 'Off', 'fechar', 'Desligado: nada automático roda, nem a compra do Radar. Atalho de emergência: Alt+Shift+P'],
     ['manual', 'Manual', 'escudo', 'Manual: você liga e ajusta cada automação'],
-    ['automatico', 'Auto', 'leme', 'Automático: o Piloto lê a conta e calcula tudo; você só liga e desliga'],
+    ['automatico', 'Auto', 'leme', 'Automático: o Netrix Hub lê a conta e calcula tudo; você só liga e desliga'],
   ];
   let painel = null;
   let mostrando = POR_PAGINA;
@@ -404,14 +404,14 @@
     painel = document.createElement('div');
     painel.className = 'plt-janela modal-caixa';
     painel.setAttribute('role', 'dialog');
-    painel.setAttribute('aria-label', 'Piloto');
+    painel.setAttribute('aria-label', 'Netrix Hub');
     painel.innerHTML = `
       <div class="modal-topo plt-topo">
         <div class="modal-topo-esq">
-          <h2 class="plt-h2">${ico('leme', 'plt-h2-ico')}Piloto</h2>
+          <h2 class="plt-h2">${ico('netrix', 'plt-h2-ico')}Netrix Hub</h2>
           <span class="plt-sub" data-sub></span>
         </div>
-        <div class="cfg-escala plt-modos" role="radiogroup" aria-label="Modo do Piloto">
+        <div class="cfg-escala plt-modos" role="radiogroup" aria-label="Modo do Netrix Hub">
           ${MODOS.map(([k, r, i, d]) => { const bloq = k === 'manual' && MANUAL_BLOQUEADO; return `<button type="button" class="cfg-escala-bt plt-modo-bt${bloq ? ' plt-modo-bloq' : ''}" role="radio" data-modo="${k}" title="${d}"${bloq ? ' disabled aria-disabled="true"' : ''}>${bloq ? ICO_CADEADO : ico(i)}<span>${r}</span></button>`; }).join('')}
         </div>
         <div class="modal-acoes">
@@ -674,7 +674,7 @@
     const t = painel.querySelector('[data-titulo]');
     if (t.textContent !== def[1]) { t.textContent = def[1]; painel.querySelector('[data-cab-ico]').innerHTML = ico(def[2], 'dlg-svg'); }
     const modo = modoAtual();
-    const txt = { desligado: 'Off · tudo parado', manual: 'Manual · você ajusta', automatico: 'Auto · o Piloto calcula' }[modo];
+    const txt = { desligado: 'Off · tudo parado', manual: 'Manual · você ajusta', automatico: 'Auto · o Netrix Hub calcula' }[modo];
     const m = painel.querySelector('[data-cab-modo]');
     if (m.textContent !== txt) { m.textContent = txt; m.dataset.modo = modo; }
   }
@@ -696,7 +696,7 @@
   }
 
   // ---- Off: um aviso no topo de cada aba ---------------------------------------------------------
-  const avisoOff = () => K.linha({ id: 'off', icone: 'fechar', nome: 'Piloto desligado', classe: 'plt-l-off', status: 'Nada automático roda. Escolha Manual ou Auto lá em cima para ligar.' });
+  const avisoOff = () => K.linha({ id: 'off', icone: 'fechar', nome: 'Netrix Hub desligado', classe: 'plt-l-off', status: 'Nada automático roda. Escolha Manual ou Auto lá em cima para ligar.' });
 
   // ---- Resumo: a conta inteira numa tela -----------------------------------------------------
   function blocoResumo() {
@@ -959,8 +959,8 @@
     const aqui = l.slug === eu?.huntSlug && !eu?.noCentro;
     const off = modoAtual() === 'desligado';
     const pode = l.liberada && !aqui && !off;
-    const dica = aqui ? 'Você está aqui' : !l.liberada ? 'Hunt ainda bloqueada para o seu nível' : off ? 'Com o Piloto em Off, use o mapa do jogo' : cfgAuto()?.hunt?.ligado
-      ? `Ir para ${l.nome}. Com a Troca de hunt ligada, se esta não for a melhor, o Piloto volta para a melhor.`
+    const dica = aqui ? 'Você está aqui' : !l.liberada ? 'Hunt ainda bloqueada para o seu nível' : off ? 'Com o Netrix Hub em Off, use o mapa do jogo' : cfgAuto()?.hunt?.ligado
+      ? `Ir para ${l.nome}. Com a Troca de hunt ligada, se esta não for a melhor, o Netrix Hub volta para a melhor.`
       : `Ir para ${l.nome} (espera sair de combate)`;
     return `<button type="button" class="pih-retrato${aqui ? ' aqui' : ''}" data-ir-hunt="${esc(l.slug)}" title="${esc(dica)}" aria-label="${esc(dica)}"${pode ? '' : ' disabled'}>${img || `<span class="pih-retrato-ini">${esc(String(l.nome || '?').slice(0, 1))}</span>`}</button>`;
   }
@@ -969,7 +969,7 @@
     const aqui = l.slug === eu?.huntSlug && !eu?.noCentro;
     const off = modoAtual() === 'desligado';
     const pode = l.liberada && !aqui && !off;
-    const dica = aqui ? 'Você está aqui' : !l.liberada ? 'Hunt ainda bloqueada para o seu nível' : off ? 'Com o Piloto em Off, use o mapa do jogo' : `Ir para ${l.nome} (espera sair de combate)`;
+    const dica = aqui ? 'Você está aqui' : !l.liberada ? 'Hunt ainda bloqueada para o seu nível' : off ? 'Com o Netrix Hub em Off, use o mapa do jogo' : `Ir para ${l.nome} (espera sair de combate)`;
     return `<button type="button" class="cfg-escala-bt plt-ir" data-ir-hunt="${esc(l.slug)}" title="${esc(dica)}" aria-label="${esc(dica)}"${pode ? '' : ' disabled'}>${aqui ? 'Aqui' : 'Ir'}</button>`;
   }
   const cfgAuto = () => { try { return PIH.auto?._interno?.cfg?.(); } catch { return null; } };

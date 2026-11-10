@@ -606,7 +606,7 @@
     freioInfo = { leitura: BALDES.leitura.taxa, reclamacoes: freioInfo.reclamacoes + 1 };
     if (n - ultimoAvisoFreio > 600_000) {
       ultimoAvisoFreio = n;
-      try { PIH.cofre && PIH.cofre.diario && PIH.cofre.diario(`o servidor pediu calma ("Devagar aí"): as leituras do radar e do Piloto caem para ${Math.round(BALDES.leitura.taxa * 60)}/min e voltam a subir aos poucos`, 'aviso'); } catch { /* nada */ }
+      try { PIH.cofre && PIH.cofre.diario && PIH.cofre.diario(`o servidor pediu calma ("Devagar aí"): as leituras do radar e do Netrix Hub caem para ${Math.round(BALDES.leitura.taxa * 60)}/min e voltam a subir aos poucos`, 'aviso'); } catch { /* nada */ }
     }
   }
   let ultimoAvisoFreio = 0;

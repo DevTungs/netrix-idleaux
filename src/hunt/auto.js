@@ -201,9 +201,9 @@
   // 1.15: o botão ↩ ao lado do "Ir para o Centro Pokemon" do jogo: vai na primeira brecha, cura e
   // volta para a mesma hunt — a mesma rotina da reposição, marcada como pedido seu.
   function irAoCentroEVoltar() {
-    if (rotina) return { ok: false, motivo: rotina.manual ? 'já na fila' : 'o Piloto já está indo ao Centro' };
+    if (rotina) return { ok: false, motivo: rotina.manual ? 'já na fila' : 'o Netrix Hub já está indo ao Centro' };
     if (!eu || !naHunt()) return { ok: false, motivo: 'só numa hunt' };
-    if (!PIH.cofre?.ligado?.()) return { ok: false, motivo: 'com o Piloto em Off, use a fila simples' };
+    if (!PIH.cofre?.ligado?.()) return { ok: false, motivo: 'com o Netrix Hub em Off, use a fila simples' };
     const ok = iniciarRotina({ destino: eu.huntSlug, curar: true, manual: true, motivo: 'você pediu: Centro, curar e voltar' });
     return { ok, motivo: ok ? null : 'ocupado' };
   }
@@ -211,7 +211,7 @@
   // de combate (a mesma fila do botão do Centro), cura, compra o que faltar e FICA até a janela
   // Time chamar liberarCentro(); aí volta para a hunt de onde saiu.
   function irAoCentroEFicar({ motivo } = {}) {
-    if (rotina) return { ok: false, motivo: 'o Piloto já está indo para outro lugar' };
+    if (rotina) return { ok: false, motivo: 'o Netrix Hub já está indo para outro lugar' };
     if (!eu) return { ok: false, motivo: 'esperando o jogo' };
     const destino = (naHunt() ? eu.huntSlug : null) || ultimaHunt;
     if (!destino) return { ok: false, motivo: 'não sei para qual hunt voltar' };
@@ -277,7 +277,7 @@
     if (analisando) return;
     if (!forcar && c.ligado) {
       // diz no painel por que a Troca de hunt está parada (antes ficava calada)
-      const motivo = ocupado() ? `parada: ${rotina.motivo}` : !naHunt() ? 'esperando você estar numa hunt' : !PIH.cofre?.liberado('hunt') ? 'parada: o Cofre desligou a Troca de hunt (disjuntor ou Piloto em Off)' : '';
+      const motivo = ocupado() ? `parada: ${rotina.motivo}` : !naHunt() ? 'esperando você estar numa hunt' : !PIH.cofre?.liberado('hunt') ? 'parada: o Cofre desligou a Troca de hunt (disjuntor ou Netrix Hub em Off)' : '';
       if (motivo) ultimoResultado = motivo;
     }
     if (!forcar && (!c.ligado || ocupado() || !naHunt() || !PIH.cofre?.liberado('hunt'))) return;
@@ -358,8 +358,8 @@
     const h = (welcome?.hunts ?? []).find((x) => x.slug === slug);
     if (!h) return { ok: false, motivo: 'hunt desconhecida' };
     if (eu?.huntSlug === slug && !eu.noCentro) return { ok: false, motivo: 'você já está nela' };
-    if (!PIH.cofre?.ligado?.()) return { ok: false, motivo: 'com o Piloto em Off, use o mapa do jogo' };
-    if (rotina) { if (rotina.manual && rotina.etapa === 'esperar') encerrar('troca de destino'); else return { ok: false, motivo: 'o Piloto já está indo para outro lugar' }; }
+    if (!PIH.cofre?.ligado?.()) return { ok: false, motivo: 'com o Netrix Hub em Off, use o mapa do jogo' };
+    if (rotina) { if (rotina.manual && rotina.etapa === 'esperar') encerrar('troca de destino'); else return { ok: false, motivo: 'o Netrix Hub já está indo para outro lugar' }; }
     cfg.troca = null; gravar();
     const ok = iniciarRotina({ destino: slug, curar: false, compras: [], manual: true, motivo: `você escolheu ${h.nome}` });
     return { ok, motivo: ok ? null : 'ocupado' };
@@ -946,7 +946,7 @@
         ${K.mini('auto:hunt.curar', h.curar, 'Curar antes', 'Passa no Centro e cura antes de ir', trava)}
         ${K.mini('auto:hunt.evitarRisco', h.evitarRisco, 'Evitar risco', 'Fora hunts com 1 hit, mortes estimadas ou golpe que tira 50%+ do HP', trava)}
         ${K.acao('Analisar agora', 'data-acao="testar-hunt"', 'cacar', trava)}` : '')
-          + K.mini('auto:hunt.outland', h.outland !== false, 'Incluir Outland', 'Deixa a Outland entrar na disputa: se for a melhor hunt para o pokémon em campo, o Piloto vai para lá. Desligado, só as hunts normais.', trava) });
+          + K.mini('auto:hunt.outland', h.outland !== false, 'Incluir Outland', 'Deixa a Outland entrar na disputa: se for a melhor hunt para o pokémon em campo, o Netrix Hub vai para lá. Desligado, só as hunts normais.', trava) });
   }
 
 
@@ -962,7 +962,7 @@
     const K = PIH.kit;
     const manual = modo === 'manual';
     const trava = modo === 'desligado';
-    const ro = trava || !manual; // fora do Manual os números são do Piloto: só leitura
+    const ro = trava || !manual; // fora do Manual os números são do Netrix Hub: só leitura
     const p = cfg.repor;
     const itens = eu ? itensVigiados() : [];
     const baixos = itens.filter((it) => it.tem < alvoDe(it).min);
@@ -991,7 +991,7 @@
       ${K.mini('auto:repor.irAoCentro', p.irAoCentro, 'Ir ao Centro', 'Se o jogo só vender no Centro: vai, compra, cura e volta', ro)}
       ${K.mini('auto:repor.kitAuto', p.kitAuto !== false, 'Escolher os itens pela conta', 'Deixa marcado nas Automações do jogo uma bola, uma poção e um revive, troca conforme a conta sobe e compra pelo que a conta gasta', trava)}`;
     return K.linha({ icone: 'repor', nome: 'Reposição', alvo: 'auto:repor.ligado', on: p.ligado, trava, status,
-      dica: 'Repõe as bolas, poções e revives marcados nas Automações do jogo, sempre dentro do cofre. Com "Escolher os itens pela conta", o Piloto deixa marcado um de cada (uma bola, uma poção e um revive) e troca conforme a conta e o ouro sobem: a poção de menor ouro por HP que cura de verdade, o revive pelo custo e a bola pelo ouro/h e pelo saldo. As quantidades também vêm da conta: o mínimo é 1 h do que você gasta de cada item e o alvo, 6 h. Conta nova compra o primeiro lote assim que tiver o ouro.',
+      dica: 'Repõe as bolas, poções e revives marcados nas Automações do jogo, sempre dentro do cofre. Com "Escolher os itens pela conta", o Netrix Hub deixa marcado um de cada (uma bola, uma poção e um revive) e troca conforme a conta e o ouro sobem: a poção de menor ouro por HP que cura de verdade, o revive pelo custo e a bola pelo ouro/h e pelo saldo. As quantidades também vêm da conta: o mínimo é 1 h do que você gasta de cada item e o alvo, 6 h. Conta nova compra o primeiro lote assim que tiver o ouro.',
     })
       + chips
       + (p.kitAuto !== false ? `${K.grupo('Itens')}<div class="plt-caixa plt-repor-itens">${seletoresKit(K, p, trava)}</div>` : '')

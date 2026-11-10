@@ -73,7 +73,7 @@
     conectadoDesde = null;
     caiuEm ??= Math.max(n, carregouEm);
     if (!cfg.ligado) { motivo = 'desligada'; return; }
-    if (!ligadoNoPiloto()) { motivo = 'Piloto em Off'; return; }
+    if (!ligadoNoPiloto()) { motivo = 'Netrix Hub em Off'; return; }
     if (outraAbaJogando()) { caiuEm = n; motivo = 'outra aba deste navegador está no jogo: espero ela fechar'; return; }
     const falta = caiuEm + esperaMs() - n;
     if (falta > 0) { motivo = `jogo parado: recarrego em ${min(falta)} min`; return; }

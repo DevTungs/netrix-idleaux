@@ -50,9 +50,9 @@
         </div>
         <div class="plt-guia-corpo">
           <p class="plt-guia-de">${t3(
-    `O ${nomes} original está ligado junto com o Piloto. O Piloto já faz tudo o que ele faz: os dois juntos disputam o mesmo lugar na tela e escutam o jogo em dobro.`,
-    `The original ${nomes} is on together with the Pilot. The Pilot already does everything it does: together they fight over the same spot on screen and listen to the game twice.`,
-    `El ${nomes} original está activado junto con el Piloto. El Piloto ya hace todo lo que hace: juntos se disputan el mismo lugar en la pantalla y escuchan el juego dos veces.`)}</p>
+    `O ${nomes} original está ligado junto com o Netrix Hub. O Netrix Hub já faz tudo o que ele faz: os dois juntos disputam o mesmo lugar na tela e escutam o jogo em dobro.`,
+    `The original ${nomes} is on together with the Netrix Hub. The Netrix Hub already does everything it does: together they fight over the same spot on screen and listen to the game twice.`,
+    `El ${nomes} original está activado junto con el Netrix Hub. El Netrix Hub ya hace todo lo que hace: juntos se disputan el mismo lugar en la pantalla y escuchan el juego dos veces.`)}</p>
           <p class="plt-guia-de">${esc(t3(
     'Para resolver: abra chrome://extensions (no Edge, edge://extensions; no Firefox, about:addons), desative o original e dê F5 no jogo.',
     'To fix it: open chrome://extensions (Edge: edge://extensions; Firefox: about:addons), turn the original off and press F5 in the game.',
@@ -83,7 +83,7 @@
     const chave = achadas.join('+');
     if (registradas !== chave) {
       registradas = chave;
-      PIH.cofre?.diario?.(t3(`extensão repetida: o ${achadas.join(' e ')} original está ligado junto com o Piloto — desative o original`, `duplicate extension: the original ${achadas.join(' and ')} is on together with the Pilot — turn the original off`, `extensión repetida: el ${achadas.join(' y ')} original está activado junto con el Piloto — desactiva el original`), 'aviso');
+      PIH.cofre?.diario?.(t3(`extensão repetida: o ${achadas.join(' e ')} original está ligado junto com o Netrix Hub — desative o original`, `duplicate extension: the original ${achadas.join(' and ')} is on together with the Netrix Hub — turn the original off`, `extensión repetida: el ${achadas.join(' y ')} original está activado junto con el Netrix Hub — desactiva el original`), 'aviso');
     }
     if (fechadaNestaAba || Date.now() < lerAdiada()) return;
     mostrar(achadas);

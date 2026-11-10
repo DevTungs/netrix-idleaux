@@ -90,7 +90,7 @@
     const n = Date.now();
     for (const [s, c] of corpos) if (c.ate <= n) corpos.delete(s);
     if (!cfg.ligado) { st.motivo = 'desligado'; return; }
-    if (!PIH.cofre || !PIH.cofre.liberado || !PIH.cofre.liberado('captura')) { st.motivo = 'Piloto desligado (ou o disjuntor da captura caiu)'; return; }
+    if (!PIH.cofre || !PIH.cofre.liberado || !PIH.cofre.liberado('captura')) { st.motivo = 'Netrix Hub desligado (ou o disjuntor da captura caiu)'; return; }
     if (!eu || !catalogo.length) { st.motivo = 'esperando o jogo'; return; }
     if (temVip()) { st.motivo = 'VIP ativo: quem lança é o jogo'; return; }
     const alvos = [...corpos].filter(([, c]) => c.ate - n > 700 && n - c.desde >= 350 && (cfg.modo === 'todos' || c.shiny));

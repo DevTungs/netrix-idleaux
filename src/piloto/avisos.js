@@ -175,7 +175,7 @@
     return partes.length ? `${W[4]}${partes.join(' · ')}` : W[5];
   }
   const linhaChrome = () => K.linha({ id: 'avisos-chrome', icone: 'sino', nome: 'Notificar o Chrome', alvo: 'avisos:chrome', on: chromeLigado,
-    dica: 'Desligado, nenhum aviso do Piloto vira notificação do sistema (ofertas, compras, achados, queda e volta). O cartão no jogo continua. É o mesmo interruptor da aba Mercado.' });
+    dica: 'Desligado, nenhum aviso do Netrix Hub vira notificação do sistema (ofertas, compras, achados, queda e volta). O cartão no jogo continua. É o mesmo interruptor da aba Mercado.' });
   function linha(modo) {
     const ajustes = [
       K.mini('avisos:shiny', cfg.shiny, 'Shiny', 'Shiny no campo e shiny capturado'),

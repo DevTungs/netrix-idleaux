@@ -276,7 +276,7 @@
 
   const barraHost = document.createElement('div');
   barraHost.id = 'radar-mercado-barra';
-  barraHost.dataset.piloto = '1'; // 1.48.0: o aviso de extensão repetida (piloto/duplicada.js) reconhece o do Piloto
+  barraHost.dataset.piloto = '1'; // 1.48.0: o aviso de extensão repetida (piloto/duplicada.js) reconhece o do Netrix Hub
   const barraSombra = barraHost.attachShadow({ mode: 'open' });
   const barraEstilo = el('style');
   barraEstilo.textContent = CSS_BARRA;
@@ -410,7 +410,7 @@
     titulo.append(p.sub);
     p.auto = el('button', 'botao auto', 'Automático: desligado');
     p.auto.type = 'button';
-    p.auto.title = 'Compra automática: compra sozinho dentro do cofre do Piloto';
+    p.auto.title = 'Compra automática: compra sozinho dentro do cofre do Netrix Hub';
     p.alternar = el('button', 'botao alternar', 'Ligar');
     p.alternar.type = 'button';
     const fecharBtn = el('button', 'botao fechar', '×');
@@ -697,7 +697,7 @@
     // O botão liga e desliga o automático inteiro: compra de itens e pokémon e revenda.
     const ligadoAuto = s.cfg.compraAutomatica || s.cfg.compraAutomaticaPokemon;
     p.auto.textContent = ligadoAuto ? 'Auto ✓' : 'Auto';
-    p.auto.title = 'Compra itens e pokémon em ouro e revende os itens sozinho, dentro do cofre do Piloto.';
+    p.auto.title = 'Compra itens e pokémon em ouro e revende os itens sozinho, dentro do cofre do Netrix Hub.';
     p.auto.setAttribute('aria-pressed', String(ligadoAuto));
     const pausadoPorFalha = s.cfg.radarLigado && e && String(e.motivo || '').startsWith(MOTIVO_FALHAS);
     p.alternar.textContent = pausadoPorFalha ? '▶ Retomar' : s.cfg.radarLigado ? '❚❚ Pausar' : '▶ Ligar';
@@ -867,7 +867,7 @@
     const e = s.estado;
     const gasto = e && typeof e.gastoAutoHoje === 'number' ? `comprou ${fmtC(e.gastoAutoHoje)} hoje` : '';
     return linhaR({ nome: 'Radar do Mercado', k: 'radarLigado', on: b.radarLigado, status: statusRadar(), dica: 'Vigia o Mercado sem parar e avisa as oportunidades em ouro. Gema e diamante nunca.' })
-      + linhaR({ nome: 'Comprar itens sozinho', k: 'compraAutomatica', on: b.compraAutomatica, status: b.compraAutomatica ? gasto : '', dica: 'Tudo o que vira aviso é comprado sozinho, se couber no ouro livre do cofre do Piloto. Entra em todos os sorteios que passam nas regras, vários ao mesmo tempo.' })
+      + linhaR({ nome: 'Comprar itens sozinho', k: 'compraAutomatica', on: b.compraAutomatica, status: b.compraAutomatica ? gasto : '', dica: 'Tudo o que vira aviso é comprado sozinho, se couber no ouro livre do cofre do Netrix Hub. Entra em todos os sorteios que passam nas regras, vários ao mesmo tempo.' })
       + linhaR({ nome: 'Comprar pokémon sozinho', k: 'compraAutomaticaPokemon', on: b.compraAutomaticaPokemon, dica: 'Não shiny, em ouro, pelas vendas parecidas dos últimos 30 dias. Com 5 a 7 vendas parecidas, só compra se der lucro mesmo vendendo pelo preço da parecida mais barata. Quanto gastar é o cofre que decide.' })
       + linhaR({ nome: 'Revender sozinho', k: 'revendaAutomatica', on: b.revendaAutomatica, status: b.revendaAutomatica ? 'anuncia, baixa e sobe o preço a cada 2 min' : '', dica: 'Anuncia o que está parado, baixa o preço quando alguém passa na frente e sobe quando você ficou 5% abaixo do próximo. Sempre 1 abaixo do menor anúncio de outro jogador, nunca abaixo do custo + 15%. Pokémon também: só os que não servem para você (fora do time, do PvP e dos que valem treinar), nunca shiny nem lendário, com 5+ vendas parecidas e nunca abaixo do que você pagou; a diária passa pelo cofre.' });
   }
@@ -877,7 +877,7 @@
     p.faixa.hidden = !auto;
     if (!auto) return;
     // No Auto a aba Ajustes não existe: "Notificar o Chrome" também fica aqui, no topo.
-    const html = linhasPrincipais(s.base) + linhaR({ nome: 'Notificar o Chrome', k: 'notificacoes', on: s.base.notificacoes, dica: 'Desligado, nenhum aviso do Piloto vira notificação do sistema (ofertas, compras, achados, queda e volta). O som e o cartão no jogo continuam. É o mesmo interruptor das Configurações.' });
+    const html = linhasPrincipais(s.base) + linhaR({ nome: 'Notificar o Chrome', k: 'notificacoes', on: s.base.notificacoes, dica: 'Desligado, nenhum aviso do Netrix Hub vira notificação do sistema (ofertas, compras, achados, queda e volta). O som e o cartão no jogo continuam. É o mesmo interruptor das Configurações.' });
     if (p.faixa._html !== html) { p.faixa._html = html; p.faixa.innerHTML = html; }
   }
   function aplicarModoTela() {
@@ -945,8 +945,8 @@
       ? `<div class="lims">${[
         ['Lucro mín.', campo('lucroMinimo', b.lucroMinimo, 1000), 'O mesmo para avisar e para comprar sozinho (ouro)'],
         ['Desconto mín. (%)', campo('descontoMinimo', pct(b.descontoMinimo), 1, true), 'Quanto abaixo do preço de revenda, de 16% a 90%'],
-        ['Por compra', campo('gastoMaximoAuto', b.gastoMaximoAuto, 100000), '0 = até o saldo. O cofre do Piloto continua segurando'],
-        ['Teto do dia', campo('gastoMaximoDia', b.gastoMaximoDia, 100000), '0 = sem teto. O cofre do Piloto continua segurando'],
+        ['Por compra', campo('gastoMaximoAuto', b.gastoMaximoAuto, 100000), '0 = até o saldo. O cofre do Netrix Hub continua segurando'],
+        ['Teto do dia', campo('gastoMaximoDia', b.gastoMaximoDia, 100000), '0 = sem teto. O cofre do Netrix Hub continua segurando'],
         ['Pokémon: desconto (%)', campo('descontoMinimoPokemon', pct(b.descontoMinimoPokemon), 1, true), 'De 50% a 90%'],
         ['Pokémon: lucro mín.', campo('lucroMinimoPokemon', b.lucroMinimoPokemon, 10000), 'Depois dos 15% e de um dia de diária'],
       ].map(([k, v, d]) => `<label class="lim editavel" title="${escH(d)}"><small>${k}</small>${v}</label>`).join('')}</div>`
@@ -955,9 +955,9 @@
     const html = `<div class="cfg-linhas r-linhas">
       ${linhasPrincipais(b)}
       ${linhaR({ nome: 'Vigia contínua', k: 'vigiaContinua', on: b.vigiaContinua, dica: 'Uma varredura atrás da outra, sem intervalo. O freio é só o limite de leituras do servidor; se ele reclamar, o radar espaça sozinho até normalizar.' })}
-      ${linhaR({ nome: 'Calcular os limites sozinho', k: 'ajusteAutomatico', on: b.ajusteAutomatico, dica: 'Pelo seu ouro/h e pelo cofre do Piloto. O motivo de não comprar aparece no Resumo.', ajustes: lims })}
+      ${linhaR({ nome: 'Calcular os limites sozinho', k: 'ajusteAutomatico', on: b.ajusteAutomatico, dica: 'Pelo seu ouro/h e pelo cofre do Netrix Hub. O motivo de não comprar aparece no Resumo.', ajustes: lims })}
       ${linhaR({ nome: 'O que vigiar', dica: 'As categorias de itens que o radar olha. Pokémon em ouro: os anúncios de pokémon, não shiny.', ajustes: `${cats}${miniR('pokemon', b.pokemon, 'Pokémon em ouro')}${miniR('revendaSoDoRadar', !b.revendaSoDoRadar, 'Revender também os seus drops', true)}` })}
-      ${linhaR({ nome: 'Notificar o Chrome', k: 'notificacoes', on: b.notificacoes, dica: 'Desligado, nenhum aviso do Piloto vira notificação do sistema (ofertas, compras, achados, queda e volta). O som e o cartão no jogo continuam. É o mesmo interruptor das Configurações.' })}
+      ${linhaR({ nome: 'Notificar o Chrome', k: 'notificacoes', on: b.notificacoes, dica: 'Desligado, nenhum aviso do Netrix Hub vira notificação do sistema (ofertas, compras, achados, queda e volta). O som e o cartão no jogo continuam. É o mesmo interruptor das Configurações.' })}
       ${linhaR({ nome: 'Como avisar', ajustes: `${miniR('som', b.som, 'Som')}${miniR('abrirPainelNoAviso', b.abrirPainelNoAviso, 'Abrir o painel no aviso')}` })}
     </div>`;
     if (alvo._html !== html) { alvo._html = html; alvo.innerHTML = html; }
@@ -1012,7 +1012,7 @@
     }).join('');
     const ap = b.alvosPk || { p5: {}, nota: {} };
     const html = `<div class="cfg-linhas r-linhas">
-      ${linhaR({ nome: 'Alvos de compra', status: `${(b.alvos || []).length} de ${Config.MAX_ALVOS}`, dica: 'Para cada item, o preço máximo em ouro e quantas unidades comprar. Quando aparece um anúncio de outro jogador no teto ou abaixo, o radar compra sozinho (entra no sorteio como sempre), até completar a quantidade. Passa pelo cofre do Piloto. O que um alvo compra é seu: não entra na revenda automática. Gema e diamante nunca. Só funciona no Manual e com o Radar ligado.',
+      ${linhaR({ nome: 'Alvos de compra', status: `${(b.alvos || []).length} de ${Config.MAX_ALVOS}`, dica: 'Para cada item, o preço máximo em ouro e quantas unidades comprar. Quando aparece um anúncio de outro jogador no teto ou abaixo, o radar compra sozinho (entra no sorteio como sempre), até completar a quantidade. Passa pelo cofre do Netrix Hub. O que um alvo compra é seu: não entra na revenda automática. Gema e diamante nunca. Só funciona no Manual e com o Radar ligado.',
     ajustes: `<div class="alv-form" style="width:100%">
           <label class="alv-f"><small>Item</small><input list="alv-itens" data-alvo-campo="item" placeholder="Ex.: Rock Stone" value="${ed ? escH(nomeDe(ed.itemId)) : ''}"${tv ? ' disabled' : ''}><datalist id="alv-itens">${itens.map((i) => `<option value="${escH(i.nome)}"></option>`).join('')}</datalist></label>
           <label class="alv-f"><small>Teto em ouro</small><input type="number" min="2" step="1" data-alvo-campo="teto" placeholder="Ex.: 30000" value="${ed ? ed.teto : ''}"${tv ? ' disabled' : ''}></label>

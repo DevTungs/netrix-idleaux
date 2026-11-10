@@ -731,7 +731,7 @@
     const comNota = !!(ac && ac.nota && ac.nota.on);
     if (!comNota && venceu('depotAvisoNota', 24 * 3_600_000)) {
       marcar('depotAvisoNota');
-      diario('Depot: a regra "Nota mínima" do Auto Coleção está desligada — vendo igual ao botão "Vender todo o Depot" (o Piloto guarda antes na Coleção a equipe do PvP, os shiny e os P5).', 'aviso');
+      diario('Depot: a regra "Nota mínima" do Auto Coleção está desligada — vendo igual ao botão "Vender todo o Depot" (o Netrix Hub guarda antes na Coleção a equipe do PvP, os shiny e os P5).', 'aviso');
     }
     if (c.modo === 'oferenda') {
       if (!comNota) return false; // a Oferenda do jogo só gira com a nota mínima definida
@@ -1006,7 +1006,7 @@
       ${L({ icone: 'ovo', nome: 'Chocadeira', classe: 'plt-l-perigo', alvo: 'rotina:chocadeira.ligado', on: cfg.chocadeira.ligado, dica: 'Põe na chocadeira o ovo que você tem (Shiny, P4, P3, P2).',
         ajustes: K.mini('rotina:chocadeira.comprarP2', cfg.chocadeira.comprarP2, 'Comprar P2 (100 mi)', 'Só com teto da categoria "ovos" no Cofre (padrão 0 = proibido)', trava) })}
       ${L({ icone: 'check', nome: 'Auto Coleção no ponto', alvo: 'rotina:autoColecao.ligado', on: cfg.autoColecao.ligado, status: !cfg.autoColecao.ligado ? (ultimaRegra ? `no jogo: ${resumoRegra(ultimaRegra)}` : '') : autoColecaoOk && ultimaRegra ? `no jogo: ${resumoRegra(ultimaRegra)}` : `vai salvar: Lendário · Shiny · P5+ · Nota ${String(notaMercado ?? 3.5).replace('.', ',')}+`,
-        dica: 'Deixa o Auto Coleção do jogo guardando tudo o que vale mais no Mercado que no NPC: lendário/mítico, shiny, P5 e nota a partir do mínimo que o Mercado aceita (3,5 hoje, lido do jogo). Assim a venda imediata do Depot nunca leva uma oportunidade. Se alguém mudar a regra, o Piloto põe de volta. O que a regra guardou abaixo do Nv 50 (o Mercado só aceita a partir dele) e não serve para o time, o PvP ou o meta volta para o Depot e é vendido.' })}
+        dica: 'Deixa o Auto Coleção do jogo guardando tudo o que vale mais no Mercado que no NPC: lendário/mítico, shiny, P5 e nota a partir do mínimo que o Mercado aceita (3,5 hoje, lido do jogo). Assim a venda imediata do Depot nunca leva uma oportunidade. Se alguém mudar a regra, o Netrix Hub põe de volta. O que a regra guardou abaixo do Nv 50 (o Mercado só aceita a partir dele) e não serve para o time, o PvP ou o meta volta para o Depot e é vendido.' })}
       ${L({ icone: 'depot', nome: 'Limpar o Depot', classe: 'plt-l-perigo', alvo: 'rotina:depot.ligado', on: d.modo !== 'off', dica: 'Na hora: pokémon que entrou no Depot e não foi para a Coleção (pelo Auto Coleção do jogo) é vendido em segundos — igual ao botão "Vender todo o Depot". Antes de vender, guarda na Coleção a equipe do PvP, os shiny, os P5 e quem a janela Time tirou do campo. A Coleção, o ativo e quem segura a Exp. Share nunca vão.',
         status: `${nfR.format(noDepot)} no Depot${d.modo !== 'off' ? ` · ${d.modo === 'oferenda' ? 'oferenda' : 'vende'} assim que entra` : ''}`,
         ajustes: `${K.fcampo('Como', K.escala('rotina:depot.modo', d.modo === 'off' ? (d.ultimoModo || 'vender') : d.modo, [['vender', 'Vender ao NPC'], ['oferenda', 'Oferenda']], trava))}` })}`;

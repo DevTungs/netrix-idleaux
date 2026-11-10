@@ -56,7 +56,7 @@
     let cofre = '';
     try { const c = PIH.cofre.resumo(); cofre = `cofre: teto ${Math.round(c.teto)} · gasto hoje ${Math.round(c.gasto)}${c.desligados.length ? ` · disjuntor: ${c.desligados.join(', ')}` : ''}`; } catch { /* ok */ }
     const meta = [
-      `Piloto: v${versao} (${upd.instalacao || '?'})`,
+      `Netrix Hub: v${versao} (${upd.instalacao || '?'})`,
       `Jogo: ${PIH.versaoDoJogo ? PIH.versaoDoJogo() || '?' : '?'} · página ${location.pathname}`,
       `Navegador: ${navegador} · ${so} · ${navigator.language} · painel ${(PIH.idioma && PIH.idioma.atual && PIH.idioma.atual()) || '?'}`,
       `Modo: ${modo}`,
@@ -117,12 +117,12 @@
   function htmlCartoes() {
     let out = '';
     const ju = upd.acabouDe;
-    if (ju && Date.now() - ju.em < 30 * 60_000) out += `<div class="plt-sup-ok"><span>${esc(tr(`Piloto atualizado: v${ju.de || '?'} → v${ju.para}`))}</span><button type="button" data-sup="visto" aria-label="Fechar">×</button></div>`;
+    if (ju && Date.now() - ju.em < 30 * 60_000) out += `<div class="plt-sup-ok"><span>${esc(tr(`Netrix Hub atualizado: v${ju.de || '?'} → v${ju.para}`))}</span><button type="button" data-sup="visto" aria-label="Fechar">×</button></div>`;
     if (upd.disponivel && upd.dispensada !== upd.ultima) {
       const itens = itensDasNotas(upd.notas);
       const msg = status === 'firefox' ? 'O Firefox vai perguntar se quer instalar a versão nova: clique em Adicionar. As abas do jogo recarregam sozinhas.'
-        : status === 'firefox-temporario' ? 'O zip novo foi baixado. Em about:debugging, remova o Piloto e carregue o zip novo em "Carregar extensão temporária".'
-        : status === 'baixado' ? 'O zip foi baixado (pasta Downloads). Extraia por cima da pasta do Piloto: em até 1 min ele se recarrega sozinho e as abas do jogo recarregam.'
+        : status === 'firefox-temporario' ? 'O zip novo foi baixado. Em about:debugging, remova o Netrix Hub e carregue o zip novo em "Carregar extensão temporária".'
+        : status === 'baixado' ? 'O zip foi baixado (pasta Downloads). Extraia por cima da pasta do Netrix Hub: em até 1 min ele se recarrega sozinho e as abas do jogo recarregam.'
         : status === 'aplicando' ? 'Atualizando…' : status === 'loja' ? 'O navegador ainda não liberou a versão nova: tente de novo daqui a pouco.' : status === 'erro' ? 'Não deu para atualizar agora.' : '';
       out += `<div class="plt-sup-upd">
         <div class="plt-sup-h"><span class="plt-sup-ic">${ICO_UPD}</span><span><b>${esc(tr('Atualização disponível'))}</b><small>v${esc(upd.atual || '?')} → <i>v${esc(upd.ultima)}</i></small></span></div>
@@ -134,7 +134,7 @@
     }
     if (bugAberto) {
       out += `<div class="plt-sup-bug">
-        <div class="plt-sup-h"><span class="plt-sup-ic plt-sup-ic-bug">${ICO_BUG}</span><span><b>${esc(tr('Relatar um bug'))}</b><small>${esc(tr('Vira um relato no GitHub do Piloto; o DevTungs corrige e avisa lá.'))}</small></span><button type="button" class="plt-sup-x" data-sup="bug-fechar" aria-label="Fechar">×</button></div>
+        <div class="plt-sup-h"><span class="plt-sup-ic plt-sup-ic-bug">${ICO_BUG}</span><span><b>${esc(tr('Relatar um bug'))}</b><small>${esc(tr('Vira um relato no GitHub do Netrix Hub; o DevTungs corrige e avisa lá.'))}</small></span><button type="button" class="plt-sup-x" data-sup="bug-fechar" aria-label="Fechar">×</button></div>
         <textarea data-sup-oque rows="3" placeholder="${esc(tr('O que aconteceu? O que você esperava?'))}"></textarea>
         <details><summary>${esc(tr('O que vai junto (sem nada da sua conta)'))}</summary><pre data-sup-diag></pre></details>
         <div class="plt-sup-acoes"><button type="button" class="cfg-escala-bt on" data-sup="bug-gh">${esc(tr('Abrir no GitHub'))}</button><button type="button" class="cfg-escala-bt" data-sup="bug-copiar">${esc(tr('Copiar'))}</button></div>

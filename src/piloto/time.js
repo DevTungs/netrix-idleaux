@@ -56,7 +56,7 @@
   const CHAVE_TURNOS = 'piloto:turnos:v1';
   const turnos = (() => { try { const t = JSON.parse(localStorage.getItem(CHAVE_TURNOS) || 'null'); return t && Array.isArray(t.hist) ? t : { atual: null, hist: [] }; } catch { return { atual: null, hist: [] }; } })();
   const gravarTurnos = () => { try { localStorage.setItem(CHAVE_TURNOS, JSON.stringify(turnos)); } catch { /* sem armazenamento */ } };
-  let envioAtivo = null; // o último team.active que o Piloto mandou: { pokemonId, origem, em }
+  let envioAtivo = null; // o último team.active que o Netrix Hub mandou: { pokemonId, origem, em }
   PIH.on('piloto.enviado', (m) => { if (m && m.t === 'team.active') envioAtivo = { pokemonId: m.pokemonId, origem: m.origem, em: m.em || Date.now() }; });
   // 1.33.4: a ponte da válvula do rodízio (piloto/rotina.js) — entra só para limpar a hunt e não
   // conta como turno: não perde o lugar na fila e, se ficar ativa, o turno dela é curto (2 min).
@@ -64,7 +64,7 @@
   function marcarPonte(pkId) { ponteMarcada = { pkId, em: Date.now() }; }
   function motivoDaTroca(novoId) {
     const e = envioAtivo;
-    if (e && e.pokemonId === novoId && Date.now() - e.em < 60_000) return { rotina: 'rodízio', metacaca: 'Caçar o meta', time: 'troca do time' }[e.origem] || e.origem || 'Piloto';
+    if (e && e.pokemonId === novoId && Date.now() - e.em < 60_000) return { rotina: 'rodízio', metacaca: 'Caçar o meta', time: 'troca do time' }[e.origem] || e.origem || 'Netrix Hub';
     return 'o jogo ou você (desmaiou?)';
   }
   function notarTurno(e) {
@@ -438,7 +438,7 @@
 
   async function tarefaCampo() {
     if (calculando || st.troca || st.sessao || !eu || !campoAuto()) return;
-    if (!PIH.cofre || !PIH.cofre.liberado || !PIH.cofre.liberado('time')) { st.motivo = 'Piloto desligado (ou disjuntor)'; return; }
+    if (!PIH.cofre || !PIH.cofre.liberado || !PIH.cofre.liberado('time')) { st.motivo = 'Netrix Hub desligado (ou disjuntor)'; return; }
     // 1.26.3: time diferente do principal → a troca inteira no Centro (no máximo uma tentativa a cada 10 min)
     try {
       const alvoS = alvoPrincipal();
@@ -727,7 +727,7 @@
     const msg = st.metaMsg && Date.now() - st.metaMsg.em < 120_000 ? st.metaMsg.txt : null;
     const status = !pv.viva.length ? 'a aba Meta ainda não leu times suficientes' : msg ? esc(msg) : pv.entra.length ? `${pv.entra.length} troca${pv.entra.length === 1 ? '' : 's'} para fazer` : 'o time já segue o meta de agora';
     const linha = K.linha({ id: 'atualizar-meta', icone: 'pvp', nome: 'Atualizar o time pelo meta', status,
-      dica: 'Compara o meta de agora com o seu time. Entra o seu melhor de cada família do meta que você já pode usar; sai quem não é do meta (o cadeado segura). A troca é no Centro, como sempre. O que você não tem aparece em "Falta caçar". Com "Fazer sozinho" ligado, o Piloto atualiza o time e liga o Caçar o meta sozinho quando a diferença fica 30 min sem mudar; depois da caça, a troca no Centro e a volta da Troca de hunt e do rodízio também são sozinhas.',
+      dica: 'Compara o meta de agora com o seu time. Entra o seu melhor de cada família do meta que você já pode usar; sai quem não é do meta (o cadeado segura). A troca é no Centro, como sempre. O que você não tem aparece em "Falta caçar". Com "Fazer sozinho" ligado, o Netrix Hub atualiza o time e liga o Caçar o meta sozinho quando a diferença fica 30 min sem mudar; depois da caça, a troca no Centro e a volta da Troca de hunt e do rodízio também são sozinhas.',
       ajustes: K.mini('time:metaAuto', cfg.metaAuto, 'Fazer sozinho', 'Atualiza o time e caça os que faltam sem você clicar', trava),
       direita: `<span class="plt-am-bts">${K.acao('Atualizar time', 'data-acao="atualizar-meta"', 'raio', trava || !pv.viva.length || !!st.sessao)}${pv.falta.length ? K.acao('Caçar os que faltam', 'data-acao="cacar-faltam"', 'cacar', trava || (PIH.metaCaca && PIH.metaCaca.ativo())) : ''}</span>` });
     if (!pv.viva.length) return linha;
@@ -741,7 +741,7 @@
     botao = document.createElement('button');
     botao.type = 'button';
     botao.className = 'plt-time-bt';
-    botao.title = 'Time: o seu time de campo e o do PvP, e a análise dos seus pokémon (Piloto)';
+    botao.title = 'Time: o seu time de campo e o do PvP, e a análise dos seus pokémon (Netrix Hub)';
     // 1.17: a pokébola do próprio jogo (a mesma do título da Equipe), colorida, no lugar do ícone apagado
     botao.innerHTML = `<img class="plt-time-bola" src="/assets/site/assets/ui/ball-poke.png" alt="" width="18" height="18"><span>Time</span>`;
     botao.addEventListener('click', (ev) => { ev.stopPropagation(); alternar(); });
@@ -759,7 +759,7 @@
     if (!botao) return;
     const m = metaNovo();
     botao.classList.toggle('plt-time-novo', !!m);
-    if (!m) { botao.title = 'Time: o seu time de campo e o do PvP, e a análise dos seus pokémon (Piloto)'; return; }
+    if (!m) { botao.title = 'Time: o seu time de campo e o do PvP, e a análise dos seus pokémon (Netrix Hub)'; return; }
     const l = (PIH.idioma && PIH.idioma.atual && PIH.idioma.atual()) || 'pt';
     const ent = (m.entrou || []).join(', ');
     const sai = (m.saiu || []).join(', ');
@@ -862,7 +862,7 @@
       if (!el) {
         el = document.createElement('div');
         el.className = 'plt-eq-turno';
-        el.innerHTML = `<button type="button" class="plt-eq-bt" title="Turnos e rodízio deste pokémon (Piloto)" aria-label="Turnos e rodízio">${ICO_RELOGIO}</button><span class="plt-eq-txt"></span>`;
+        el.innerHTML = `<button type="button" class="plt-eq-bt" title="Turnos e rodízio deste pokémon (Netrix Hub)" aria-label="Turnos e rodízio">${ICO_RELOGIO}</button><span class="plt-eq-txt"></span>`;
         const bt = el.querySelector('button');
         // o clique na linha do jogo troca o ativo: o botão não deixa o clique chegar lá
         for (const tipo of ['pointerdown', 'mousedown']) bt.addEventListener(tipo, (ev) => ev.stopPropagation());
@@ -996,7 +996,7 @@
     janela.style.top = `${top}px`;
   }
 
-  const MODO_TXT = { desligado: 'Off · tudo parado', manual: 'Manual · você ajusta', automatico: 'Auto · o Piloto calcula' };
+  const MODO_TXT = { desligado: 'Off · tudo parado', manual: 'Manual · você ajusta', automatico: 'Auto · o Netrix Hub calcula' };
   function pintar(forcar = false) {
     if (!janela) return;
     const modo = modoPiloto();
@@ -1014,7 +1014,7 @@
     if (sub.textContent !== s) sub.textContent = s;
     const alvo = janela.querySelector('[data-conteudo]');
     dadosArte.clear();
-    const off = modo === 'desligado' ? K.linha({ id: 'off', icone: 'fechar', nome: 'Piloto desligado', classe: 'plt-l-off', status: 'Nada automático roda. O cadeado e a análise continuam.' }) : '';
+    const off = modo === 'desligado' ? K.linha({ id: 'off', icone: 'fechar', nome: 'Netrix Hub desligado', classe: 'plt-l-off', status: 'Nada automático roda. O cadeado e a análise continuam.' }) : '';
     const arteMeta = (d, px, chave) => arte({ ...d, id: chave }, px, 'meta');
     const corpoMeta = () => (PIH.meta ? `${htmlAtualizarMeta(modo, arteMeta)}${PIH.metaCaca ? PIH.metaCaca.html({ modo, arte: arteMeta }) : ''}${PIH.meta.html({ modo, arte: arteMeta })}` : '<div class="pih-erro">O módulo do meta não carregou.</div>');
     const html = !eu ? '<div class="pih-carga">Esperando o jogo conectar…</div>' : off + (aba === 'meta' ? corpoMeta() : corpoTime(modo));

@@ -4,7 +4,7 @@
 // Nada é enviado ao jogo.
 (() => {
   if (window.__netrixPlateiaPonte) return;
-  window.__netrixPlateiaPonte = true; // (a Plateia avulsa marca __plateiaPonte: o Piloto usa isso para avisar da duplicada)
+  window.__netrixPlateiaPonte = true; // (a Plateia avulsa marca __plateiaPonte: o Netrix Hub usa isso para avisar da duplicada)
   const Nativo = window.WebSocket;
   if (!Nativo) return;
   function ouvir(ws) {

@@ -131,9 +131,9 @@
     const status = duplicada() ? 'Plateia avulsa também instalada: remova uma das duas'
       : !ps.length ? 'nenhuma Twitch/Kick vinculada no jogo'
       : `${ps.map((p) => SALAS[p].nome).join(' e ')} · ${cfg.abrirAoEntrar ? 'abre ao entrar no jogo' : 'só no botão'}${cfg.reabrir ? ' · reabre se fechar' : ''}`;
-    const reabrir = K.mini('plateia:reabrir', cfg.reabrir, 'Reabrir se fechar', 'Se a janela da sala fechar ou for descartada da memória (IdleDeck e afins), reabre em até 1 min. Só com o Piloto ligado e o jogo aberto.', modo === 'desligado');
+    const reabrir = K.mini('plateia:reabrir', cfg.reabrir, 'Reabrir se fechar', 'Se a janela da sala fechar ou for descartada da memória (IdleDeck e afins), reabre em até 1 min. Só com o Netrix Hub ligado e o jogo aberto.', modo === 'desligado');
     return `${K.grupo('Bônus de live')}${K.linha({ id: 'plateia', icone: 'xp', nome: 'Plateia (Twitch e Kick)', alvo: 'plateia:abrirAoEntrar', on: cfg.abrirAoEntrar, trava: modo === 'desligado', status: esc(status),
-      dica: 'Liga o Piloto à Plateia (do Dreds, agora dentro desta extensão), que assiste as lives com bônus do PokeIdle. Ao abrir o jogo (uma vez por sessão do navegador), abre a sala da Twitch e/ou da Kick que estiverem vinculadas na sua conta, numa janela à parte. Na janela do bônus da Twitch/Kick do jogo aparece o botão "Abrir a sala".',
+      dica: 'Liga o Netrix Hub à Plateia (do Dreds, agora dentro desta extensão), que assiste as lives com bônus do PokeIdle. Ao abrir o jogo (uma vez por sessão do navegador), abre a sala da Twitch e/ou da Kick que estiverem vinculadas na sua conta, numa janela à parte. Na janela do bônus da Twitch/Kick do jogo aparece o botão "Abrir a sala".',
       ajustes: (modo === 'manual' ? K.acao('Abrir as salas agora', 'data-acao="plateia-abrir"', 'xp', modo === 'desligado') : '') + reabrir })}`;
   }
   function definir(caminho, v) {

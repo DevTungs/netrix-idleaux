@@ -37,14 +37,14 @@
   function status() {
     if (resposta && !resposta.suportado) return 'este navegador não deixa (o Firefox não tem essa função)';
     if (!cfg.ligado) return 'desligado';
-    if (!pilotoLigado()) return 'só com o Piloto em Manual ou Auto';
+    if (!pilotoLigado()) return 'só com o Netrix Hub em Manual ou Auto';
     if (!resposta) return 'conferindo…';
     return resposta.acordado ? 'o PC não vai dormir enquanto o jogo estiver aberto' : 'conferindo…';
   }
   function linha(modo) {
     return K.linha({
       id: 'acordado', icone: 'lua', nome: 'Manter o PC acordado', alvo: 'acordado:ligado', on: cfg.ligado, trava: modo === 'desligado', status: K.esc(status()),
-      dica: 'Enquanto o jogo estiver aberto e o Piloto em Manual ou Auto, o computador não entra em suspensão (a tela pode apagar normalmente). Fechou o jogo, pôs o Piloto em Off ou fechou o navegador: em até 3 min o PC volta a dormir como sempre. Não funciona no Firefox.',
+      dica: 'Enquanto o jogo estiver aberto e o Netrix Hub em Manual ou Auto, o computador não entra em suspensão (a tela pode apagar normalmente). Fechou o jogo, pôs o Netrix Hub em Off ou fechou o navegador: em até 3 min o PC volta a dormir como sempre. Não funciona no Firefox.',
     });
   }
   function definir(caminho, v) {

@@ -116,7 +116,7 @@
       if (urgente() && PIH.pausarUrgente) PIH.pausarUrgente(String(upd.ultima || '?'));
       corpo = `<p class="plt-guia-de">${esc(fmt(U.voceTem || 'Você está na v{v}.', { v: versao() || upd.atual || '?' }))}</p>
         ${itens.length ? `<ul class="plt-guia-lista">${itens.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
-        ${urgente() ? `<p class="plt-guia-msg">${esc(U.urgentePausado || 'O Piloto está pausado até você atualizar.')}</p>` : ''}
+        ${urgente() ? `<p class="plt-guia-msg">${esc(U.urgentePausado || 'O Netrix Hub está pausado até você atualizar.')}</p>` : ''}
         ${msg ? `<p class="plt-guia-msg">${esc(msg)}</p>` : ''}${barra}`;
       rodape = `<span class="plt-guia-bts plt-guia-bts-fim">
           ${upd.pagina ? `<a class="cfg-escala-bt plt-guia-link" href="${esc(upd.pagina)}" target="_blank" rel="noopener noreferrer">${esc(U.verNoGithub || 'GitHub')}</a>` : ''}

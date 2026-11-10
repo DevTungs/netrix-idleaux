@@ -90,7 +90,7 @@
   const pedidoEm = new Map();
   function tique() {
     if (!eu) { st.motivo = 'esperando o jogo'; return; }
-    if (!PIH.cofre || !PIH.cofre.liberado || !PIH.cofre.liberado('meta')) { st.motivo = 'Piloto desligado: o meta fica parado'; return; }
+    if (!PIH.cofre || !PIH.cofre.liberado || !PIH.cofre.liberado('meta')) { st.motivo = 'Netrix Hub desligado: o meta fica parado'; return; }
     const agora = Date.now();
     const placarVelho = !s.placar || agora - s.placar.em > PLACAR_A_CADA_MS;
     if (placarVelho && agora - st.ultimoPlacar > PLACAR_A_CADA_MS) {
@@ -279,7 +279,7 @@
       status: `${lidos}/${alvo || '?'} times lidos · último às ${quando(ultimo)} · ${esc(st.motivo)}`,
       dica: 'O que os jogadores usam de verdade: o time de PvP do perfil público dos 20 primeiros do Ranqueado (Topo) e dos seus últimos adversários (Sua faixa). Um perfil a cada 2 min, em rodízio, e o placar a cada 30 min — leve para o servidor e sempre andando. A comp é a dos 5 pokémon mais usados no recorte; ▲▼ mostra o que mudou desde ontem.',
       direita: K.escala('meta:recorte', ui.recorte, [['topo', 'Topo 20'], ['faixa', 'Sua faixa']], false) });
-    if (!a.n) return `${topo}<div class="pih-carga">${ui.recorte === 'faixa' && !s.faixa.length ? 'Jogue uma partida do Ranqueado (ou espere o placar) para o Piloto conhecer os seus adversários.' : 'Lendo os primeiros times… (um a cada 2 min)'}</div>`;
+    if (!a.n) return `${topo}<div class="pih-carga">${ui.recorte === 'faixa' && !s.faixa.length ? 'Jogue uma partida do Ranqueado (ou espere o placar) para o Netrix Hub conhecer os seus adversários.' : 'Lendo os primeiros times… (um a cada 2 min)'}</div>`;
     const cartao = (x, i, grande) => {
       const meu = seuMelhor(x);
       // 1.26.3 (pedido do André): além do "você tem", se ele já está no time (campo e PvP) ou ainda fora

@@ -298,7 +298,7 @@
       const n = await notaComoMeta(p, a);
       if (n != null && n >= NOTA_ALTA) return fica(`nota alta (${notaTxt(n)})`);
     }
-    if (naColecao(p) && (Number(p.level) || 0) >= COL_NV_DEPOT) return fica(`na Coleção: Nv ${COL_NV_DEPOT}+ (o Piloto só tira da Coleção abaixo do Nv ${COL_NV_DEPOT})`);
+    if (naColecao(p) && (Number(p.level) || 0) >= COL_NV_DEPOT) return fica(`na Coleção: Nv ${COL_NV_DEPOT}+ (o Netrix Hub só tira da Coleção abaixo do Nv ${COL_NV_DEPOT})`);
     cfg.descartados = [...descartadosSet(), p.id].slice(-500);
     if (!naColecao(p)) return tirar(`o anterior ${quem} (veio um melhor) fica no Depot e não é mais guardado`, 'ok');
     const r = PIH.pedir({ t: 'colecao.mover', pokemonId: p.id, para: 'depot' }, 'metacaca');
@@ -372,7 +372,7 @@
   let andando = false;
   async function tique() {
     if (!cfg.ligado || andando || !eu || !welcome) return;
-    if (!PIH.cofre || !PIH.cofre.liberado || !PIH.cofre.liberado('metacaca')) { st.motivo = 'Piloto desligado (ou disjuntor)'; return; }
+    if (!PIH.cofre || !PIH.cofre.liberado || !PIH.cofre.liberado('metacaca')) { st.motivo = 'Netrix Hub desligado (ou disjuntor)'; return; }
     andando = true;
     try {
       await conferirCapturas();
@@ -447,7 +447,7 @@
     // inteiro no Centro (ela religa no fim da troca).
     if (PIH.time && PIH.time.usarMeta) PIH.time.usarMeta('o Caçar o meta completou o time', null, { huntDepois: true });
     else religarHunt();
-    diario(`time do meta completo: ${ids.map((id) => porId(id)?.nome).join(', ')} — agora o Piloto vai ao Centro trocar o time (campo e PvP) e depois religa a Troca de hunt.`, 'ok');
+    diario(`time do meta completo: ${ids.map((id) => porId(id)?.nome).join(', ')} — agora o Netrix Hub vai ao Centro trocar o time (campo e PvP) e depois religa a Troca de hunt.`, 'ok');
     const fora = cfg.alvos.filter((x) => x.semHuntNoJogo && !(x.capturadoId && porId(x.capturadoId))).map((x) => x.meta);
     if (fora.length) diario(`fora do time do meta (não aparecem em hunt): ${fora.join(', ')}`, 'aviso');
   }

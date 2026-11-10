@@ -450,7 +450,7 @@ html[data-piloto-tema="claro"] .plt-janela .plt-tab tbody tr:hover td { backgrou
 .plt-ss-tempo .plt-ss-horas b { overflow: hidden; }
 
 /* ---- 1.31: guia de primeiro uso e novidades (piloto/guia.js) ----
-   Um quadro dentro da janela do Piloto, com a moldura do próprio jogo. A janela continua viva por
+   Um quadro dentro da janela do Netrix Hub, com a moldura do próprio jogo. A janela continua viva por
    trás (escurecida); nada trava a automação. */
 .plt-janela .modal-acoes .plt-guia-bt { color: var(--ouro-luz); }
 .plt-janela .modal-acoes .plt-guia-bt svg { width: 18px; height: 18px; display: block; }

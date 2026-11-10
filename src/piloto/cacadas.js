@@ -323,7 +323,7 @@
   let ultimoTique = 0;
   async function tique() {
     if (!cfg.modo || andando || !eu || !welcome) return;
-    if (!PIH.cofre || !PIH.cofre.liberado || !PIH.cofre.liberado('cacadas')) { st.motivo = t3('Piloto desligado (ou disjuntor)', 'Pilot off (or circuit breaker)', 'Piloto apagado (o disyuntor)'); return; }
+    if (!PIH.cofre || !PIH.cofre.liberado || !PIH.cofre.liberado('cacadas')) { st.motivo = t3('Netrix Hub desligado (ou disjuntor)', 'Netrix Hub off (or circuit breaker)', 'Netrix Hub apagado (o disyuntor)'); return; }
     andando = true;
     const agora = Date.now();
     const passou = ultimoTique ? Math.min(agora - ultimoTique, 60_000) : 0;

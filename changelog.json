@@ -1,5 +1,19 @@
 {
   "versoes": {
+    "2.0.19": {
+      "pt": [
+        "O painel \"Piloto\" agora se chama Netrix Hub, com o logo da Netrix no lugar do ícone antigo: na barra do jogo, no título da janela, nos avisos, nas notificações e nos guias.",
+        "As suas configurações e dados continuam como estavam."
+      ],
+      "en": [
+        "The \"Pilot\" panel is now called Netrix Hub, with the Netrix logo replacing the old icon: in the game bar, the window title, the notices, the notifications and the guides.",
+        "Your settings and data stay as they were."
+      ],
+      "es": [
+        "El panel \"Piloto\" ahora se llama Netrix Hub, con el logo de Netrix en lugar del ícono anterior: en la barra del juego, el título de la ventana, los avisos, las notificaciones y las guías.",
+        "Tus ajustes y datos siguen como estaban."
+      ]
+    },
     "2.0.18": {
       "pt": [
         "Reposição: corrigido o visual dos números no topo (livre para repor, gasto hoje, orçamento por bola), que saíam amassados."

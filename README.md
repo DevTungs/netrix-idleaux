@@ -46,3 +46,5 @@ O código da [Plateia](https://github.com/DredsGG/plateia) (v0.9.4, do **Dreds**
 ## Créditos
 
 Baseado no trabalho de **Dreds** ([PokeIdle Piloto](https://github.com/DredsGG/pokeidle-piloto)). Mantido por [DevTungs](https://github.com/DevTungs).
+
+O painel da extensão, antes chamado "Piloto" (nome herdado do projeto original), agora é o **Netrix Hub**.

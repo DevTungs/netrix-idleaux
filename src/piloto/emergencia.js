@@ -30,11 +30,11 @@
     const volta = !jaEstava && antes && NOME_MODO[antes];
     el.innerHTML = `<div class="plt-guia-caixa modal-caixa plt-emerg-caixa">
         <div class="modal-topo plt-guia-topo">
-          <h3 class="plt-guia-h"><span class="plt-emerg-ico" aria-hidden="true">■</span><span>${jaEstava ? 'O Piloto já estava em Off' : 'Piloto parado'}</span></h3>
+          <h3 class="plt-guia-h"><span class="plt-emerg-ico" aria-hidden="true">■</span><span>${jaEstava ? 'O Netrix Hub já estava em Off' : 'Netrix Hub parado'}</span></h3>
           <button type="button" class="plt-guia-fechar" data-emerg="fechar" aria-label="Fechar" title="Fechar">×</button>
         </div>
         <div class="plt-guia-corpo">
-          <p class="plt-guia-de">${jaEstava ? 'Nada do Piloto está rodando. Para ligar de novo, escolha Manual ou Auto na janela do Piloto.' : 'Tudo do Piloto parou: compras, revenda, reposição, troca de hunt e de time, rotina e Radar. O jogo continua com as automações dele.'}</p>
+          <p class="plt-guia-de">${jaEstava ? 'Nada do Netrix Hub está rodando. Para ligar de novo, escolha Manual ou Auto na janela do Netrix Hub.' : 'Tudo do Netrix Hub parou: compras, revenda, reposição, troca de hunt e de time, rotina e Radar. O jogo continua com as automações dele.'}</p>
         </div>
         <div class="plt-guia-rodape"><span class="plt-guia-bts plt-guia-bts-fim">
           ${volta ? `<button type="button" class="cfg-escala-bt" data-emerg="voltar">${esc(volta === 'Auto' ? 'Voltar ao Auto' : 'Voltar ao Manual')}</button>` : ''}
@@ -68,7 +68,7 @@
     if (atual === 'desligado') { mostrar(true); return true; }
     antes = atual;
     PIH.modo.definir('desligado');
-    PIH.cofre?.diario?.(`PARADA DE EMERGÊNCIA (${origem}): o Piloto foi para Off`, 'aviso');
+    PIH.cofre?.diario?.(`PARADA DE EMERGÊNCIA (${origem}): o Netrix Hub foi para Off`, 'aviso');
     mostrar(false);
     return true;
   }

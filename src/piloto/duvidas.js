@@ -390,7 +390,7 @@
   function porQueNao(nick, idResp, perguntaN) {
     const n = Date.now();
     if (!cfg.ligado) return 'desligado';
-    if (!PIH.cofre || !PIH.cofre.liberado || !PIH.cofre.liberado('duvidas')) return 'Piloto desligado (ou disjuntor)';
+    if (!PIH.cofre || !PIH.cofre.liberado || !PIH.cofre.liberado('duvidas')) return 'Netrix Hub desligado (ou disjuntor)';
     if (st.mutadoAte > n) return 'conta mutada';
     if (n - st.ultimaEm < ENTRE_MS) return 'menos de 5 min da última resposta';
     if (n - (st.porNick.get(nick) || 0) < MESMA_PESSOA_MS) return 'mesma pessoa há menos de 30 min';
@@ -462,7 +462,7 @@
       const resp = String(x.resposta || '').replace(/^@\S+\s*/, '');
       return `<div class="plt-tdu-qa">
         <div class="plt-tdu-q"><span class="plt-tdu-nick">${esc(x.de || '')}</span><span class="plt-tdu-h">${quando(x.em)}</span><p>${esc(x.pergunta || '')}</p></div>
-        <div class="plt-tdu-ans"><span class="plt-tdu-eu">Piloto</span><p>${esc(resp)}</p></div>
+        <div class="plt-tdu-ans"><span class="plt-tdu-eu">Netrix Hub</span><p>${esc(resp)}</p></div>
       </div>`;
     }).join('');
     return `${K.grupo('Dúvidas do chat')}
@@ -470,7 +470,7 @@
     status: `hoje: ${conta('respondi')} respondidas · ${conta('pulou')} puladas · ${conta('sem resposta')} sem resposta · ${BASE.length} respostas na base`,
     dica: 'Desligado de fábrica. Ligado, responde sozinho no canal Dúvidas quando uma resposta da base (tirada da Pokepédia do jogo e dos módulos dele) bate com certeza. Só uma conta por pergunta: espera um tempo aleatório, não responde se outro já respondeu, só uma aba responde, o texto varia e há limite por hora. Aqui aparecem só as respostas; o resto fica guardado para a base crescer.',
     ajustes: `${K.fcampo('Espera mínima (s)', K.numero('teste:atrasoMinS', faixaS().min, 10, 600, 5, trava))}${K.fcampo('Espera máxima (s)', K.numero('teste:atrasoMaxS', faixaS().max, 10, 900, 5, trava))}${K.fcampo('Respostas por hora', K.numero('teste:limiteHora', limiteHora(), 1, 12, 1, trava))}` })}
-      <div class="plt-tdu">${cards || '<p class="plt-tdu-vazio">Nenhuma resposta ainda. Quando o Piloto responder alguém no canal Dúvidas, a pergunta e a resposta aparecem aqui.</p>'}</div>`;
+      <div class="plt-tdu">${cards || '<p class="plt-tdu-vazio">Nenhuma resposta ainda. Quando o Netrix Hub responder alguém no canal Dúvidas, a pergunta e a resposta aparecem aqui.</p>'}</div>`;
   }
   function definir(caminho, v) {
     if (['atrasoMinS', 'atrasoMaxS', 'limiteHora'].includes(caminho)) {

@@ -146,7 +146,7 @@
     observar(rol && rol.isConnected ? rol : null);
     const aberta = !!(rol && rol.isConnected && rol.offsetParent !== null);
     if (aberta) { await moduloRank(); pintar(); }
-    if (!PIH.cofre || !PIH.cofre.ligado || !PIH.cofre.ligado()) return; // Piloto em Off: só o que já sabe
+    if (!PIH.cofre || !PIH.cofre.ligado || !PIH.cofre.ligado()) return; // Netrix Hub em Off: só o que já sabe
     if (!/^\/app\/?$/.test(location.pathname)) return;
     const agora = Date.now();
     // em segundo plano: a lista de amigos a cada 30 min (a primeira, 45 s depois de abrir o jogo)

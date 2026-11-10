@@ -41,9 +41,9 @@
           <button type="button" class="plt-guia-fechar" data-jn="adiar" aria-label="${esc(t3('Lembrar daqui a 1 h', 'Remind me in 1 h', 'Recordar en 1 h'))}" title="${esc(t3('Lembrar daqui a 1 h', 'Remind me in 1 h', 'Recordar en 1 h'))}">×</button>
         </div>
         <div class="plt-guia-corpo">
-          <p class="plt-guia-de">${esc(t3(`Versão ${novo.antes} → ${novo.agora}. Dê F5 para carregar o jogo novo: esta aba ainda roda o antigo. O Piloto volta sozinho no modo em que estava.`,
-    `Version ${novo.antes} → ${novo.agora}. Press F5 to load the new game: this tab still runs the old one. The Pilot comes back by itself in the mode it was in.`,
-    `Versión ${novo.antes} → ${novo.agora}. Pulsa F5 para cargar el juego nuevo: esta pestaña todavía usa el viejo. El Piloto vuelve solo en el modo en que estaba.`))}</p>
+          <p class="plt-guia-de">${esc(t3(`Versão ${novo.antes} → ${novo.agora}. Dê F5 para carregar o jogo novo: esta aba ainda roda o antigo. O Netrix Hub volta sozinho no modo em que estava.`,
+    `Version ${novo.antes} → ${novo.agora}. Press F5 to load the new game: this tab still runs the old one. The Netrix Hub comes back by itself in the mode it was in.`,
+    `Versión ${novo.antes} → ${novo.agora}. Pulsa F5 para cargar el juego nuevo: esta pestaña todavía usa el viejo. El Netrix Hub vuelve solo en el modo en que estaba.`))}</p>
         </div>
         <div class="plt-guia-rodape"><span class="plt-guia-bts plt-guia-bts-fim">
           <button type="button" class="cfg-escala-bt" data-jn="adiar">${esc(t3('Depois', 'Later', 'Después'))}</button>

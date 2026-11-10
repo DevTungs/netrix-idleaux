@@ -389,7 +389,7 @@ async function conferirPermissao() {
   try { semPermissao = !(await chrome.permissions.contains(ORIGENS)); } catch { semPermissao = false; }
   if (semPermissao && !avisouPermissao) {
     avisouPermissao = true;
-    try { await chrome.notifications.create('piloto-permissao', { type: 'basic', iconUrl: chrome.runtime.getURL('icons/icon-128.png'), title: 'Netrix PokeIdle Aux sem acesso ao jogo', message: 'O navegador tirou a permissão do Piloto no pokeidle.io. Clique no ícone do Piloto para permitir de novo.' }); } catch (e) { erro(e); }
+    try { await chrome.notifications.create('piloto-permissao', { type: 'basic', iconUrl: chrome.runtime.getURL('icons/icon-128.png'), title: 'Netrix PokeIdle Aux sem acesso ao jogo', message: 'O navegador tirou a permissão do Netrix Hub no pokeidle.io. Clique no ícone do Netrix Hub para permitir de novo.' }); } catch (e) { erro(e); }
   }
   if (!semPermissao) avisouPermissao = false;
   await atualizarSelo();
@@ -829,7 +829,7 @@ if (chrome.commands && chrome.commands.onCommand) {
       let avisadas = 0;
       for (const a of abas) { try { await chrome.tabs.sendMessage(a.id, { tipo: 'piloto:emergencia' }); avisadas++; } catch { /* aba sem a ponte */ } }
       await chrome.notifications.create('piloto-emergencia', { type: 'basic', iconUrl: chrome.runtime.getURL('icons/icon-128.png'), title: 'Netrix PokeIdle Aux',
-        message: avisadas ? 'Parada de emergência: o Piloto foi para Off.' : 'Parada de emergência: nenhuma aba do jogo aberta.' });
+        message: avisadas ? 'Parada de emergência: o Netrix Hub foi para Off.' : 'Parada de emergência: nenhuma aba do jogo aberta.' });
     } catch (e) { erro(e); }
   });
 }
