@@ -670,3 +670,8 @@ html[data-piloto-tema="claro"] .plt-janela .plt-tab tbody tr:hover td { backgrou
 .plt-prog-t { display: block; font: 600 12px/1.4 "Barlow", sans-serif; opacity: .85; }
 @keyframes plt-prog-corre { from { margin-left: 0; } to { margin-left: 65%; } }
 @media (prefers-reduced-motion: reduce) { .plt-prog > i, .plt-prog > i.ind { transition: none; animation: none; } }
+
+/* janela móvel: arrasta-se pelo topo (os botões continuam clicáveis) */
+.plt-janela:not(.plt-janela-time) .plt-topo { cursor: grab; touch-action: none; }
+.plt-janela.plt-arrastando .plt-topo { cursor: grabbing; }
+.plt-janela.plt-arrastando { user-select: none; }

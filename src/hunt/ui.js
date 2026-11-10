@@ -445,6 +445,7 @@
     pintarBotaoTema();
     pintarMoldura();
     posicionarPainel();
+    ligarArrastar();
     desenhar();
     addEventListener('keydown', aoTeclar, true);
     setTimeout(() => addEventListener('pointerdown', aoClicarFora, true));
@@ -477,7 +478,7 @@
     // 1.32.2: clicar no quadro solto do guia/novidades/versão nova (piloto/guia.js) não fecha o painel
     // 1.47.1: nem o quadro do Apoiar ♥ (nem o fundo dele: clicar fora fecha só o quadro)
     if (caminho.some((el) => el && el.classList && (el.classList.contains('plt-guia-solto') || el.classList.contains('plt-ap-fundo')))) return;
-    if (painel && !caminho.includes(painel) && !caminho.includes(botao)) fecharPainel();
+    if (painel && !prefs.pos && !caminho.includes(painel) && !caminho.includes(botao)) fecharPainel(); // janela movida = fica aberta
   };
 
   // ---- todos os cliques e mudanças do painel passam aqui (um ouvinte só, não se perde ao repintar)
@@ -557,8 +558,55 @@
     rotear(el.dataset.definir, v);
   }
 
+  // Janela móvel: arrastar pelo topo; a posição fica guardada (prefs.pos) e vale nas próximas aberturas.
+  // Duplo clique no topo volta para a posição de origem. Com posição própria, clicar fora não fecha.
+  const dentroDaTela = (x, y) => ({
+    left: Math.min(Math.max(0, x), Math.max(0, innerWidth - (painel?.offsetWidth || 900))),
+    top: Math.min(Math.max(0, y), Math.max(0, innerHeight - 56)),
+  });
+  function aplicarPos(x, y) {
+    const { left, top } = dentroDaTela(x, y);
+    painel.style.left = `${left}px`;
+    painel.style.top = `${top}px`;
+    return { left, top };
+  }
+  function ligarArrastar() {
+    const topo = painel.querySelector('.plt-topo');
+    if (!topo) return;
+    topo.addEventListener('pointerdown', (ev) => {
+      if (ev.button !== 0 || ev.target.closest('button, a, input, select, textarea, .plt-modos')) return;
+      const r = painel.getBoundingClientRect();
+      const dx = ev.clientX - r.left;
+      const dy = ev.clientY - r.top;
+      topo.setPointerCapture(ev.pointerId);
+      painel.classList.add('plt-arrastando');
+      const mover = (e) => { aplicarPos(e.clientX - dx, e.clientY - dy); };
+      const soltar = () => {
+        topo.removeEventListener('pointermove', mover);
+        topo.removeEventListener('pointerup', soltar);
+        topo.removeEventListener('pointercancel', soltar);
+        painel?.classList.remove('plt-arrastando');
+        if (!painel) return;
+        const pos = painel.getBoundingClientRect();
+        prefs.pos = { x: Math.round(pos.left), y: Math.round(pos.top) };
+        gravarJson(CHAVE_PREFS, prefs);
+      };
+      topo.addEventListener('pointermove', mover);
+      topo.addEventListener('pointerup', soltar);
+      topo.addEventListener('pointercancel', soltar);
+      ev.preventDefault();
+    });
+    topo.addEventListener('dblclick', (ev) => {
+      if (ev.target.closest('button, a, input, select, textarea, .plt-modos')) return;
+      prefs.pos = null;
+      gravarJson(CHAVE_PREFS, prefs);
+      posicionarPainel();
+    });
+  }
+  addEventListener('resize', () => { if (painel && prefs.pos) posicionarPainel(); });
   function posicionarPainel() {
     if (!painel) return;
+    if (prefs.pos && Number.isFinite(prefs.pos.x) && Number.isFinite(prefs.pos.y)) { aplicarPos(prefs.pos.x, prefs.pos.y); return; }
     const base = document.getElementById('p-ativo')?.getBoundingClientRect() ?? botao.getBoundingClientRect();
     const larg = painel.offsetWidth || 900;
     let left = base.right + 10;
