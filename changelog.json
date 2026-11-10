@@ -1,5 +1,16 @@
 {
   "versoes": {
+    "2.0.8": {
+      "pt": [
+        "Plateia: as salas da Twitch e da Kick não abrem mais sozinhas ao entrar no jogo. Só abrem quando você pedir (botão Abrir a sala) ou se ligar a opção na aba Rotina."
+      ],
+      "en": [
+        "Plateia: the Twitch and Kick rooms no longer open by themselves when you enter the game. They only open when you ask (Open the room button) or if you turn the option on in the Routine tab."
+      ],
+      "es": [
+        "Plateia: las salas de Twitch y Kick ya no se abren solas al entrar al juego. Solo se abren cuando lo pidas (botón Abrir la sala) o si activas la opción en la pestaña Rutina."
+      ]
+    },
     "2.0.7": {
       "pt": [
         "Atualização automática: ao clicar em Atualizar, a extensão baixa e instala sozinha, com barra de progresso, sem abrir o GitHub nem pedir download manual.",

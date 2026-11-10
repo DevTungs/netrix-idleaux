@@ -20,13 +20,14 @@
   const K = PIH.kit;
   const esc = K.esc;
 
-  const CHAVE = 'piloto:plateia:v1';
+  // v2 (2.0.8): abrir as salas ao entrar no jogo passou a vir DESLIGADO; a chave nova zera quem herdou o padrão antigo (ligado)
+  const CHAVE = 'piloto:plateia:v2';
   const SALAS = {
     twitch: { url: 'https://www.twitch.tv/drops/inventory#plateia', janela: 'plateia', nome: 'Twitch' },
     kick: { url: 'https://kick.com/drops/claimed#plateia', janela: 'plateia-kick', nome: 'Kick' },
   };
 
-  const ler = () => { try { const c = JSON.parse(localStorage.getItem(CHAVE) || 'null') || {}; return { abrirAoEntrar: c.abrirAoEntrar !== false, reabrir: c.reabrir === true }; } catch { return { abrirAoEntrar: true, reabrir: false }; } };
+  const ler = () => { try { const c = JSON.parse(localStorage.getItem(CHAVE) || 'null') || {}; return { abrirAoEntrar: c.abrirAoEntrar === true, reabrir: c.reabrir === true }; } catch { return { abrirAoEntrar: false, reabrir: false }; } };
   const cfg = ler();
   const gravar = () => { try { localStorage.setItem(CHAVE, JSON.stringify(cfg)); } catch { /* sem armazenamento */ } };
   const diario = (txt, tipo) => PIH.cofre?.diario?.(`plateia: ${txt}`, tipo);
