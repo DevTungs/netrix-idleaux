@@ -945,22 +945,23 @@
         ${K.acao('Analisar agora', 'data-acao="testar-hunt"', 'cacar', trava)}` : '' })
       + K.linha({ icone: 'repor', nome: 'Reposição', alvo: 'auto:repor.ligado', on: p.ligado, trava, status: stRepor,
         dica: 'Repõe as bolas, poções e revives marcados nas Automações do jogo, sempre dentro do cofre. Com "Escolher os itens pela conta" (ligado no Auto), o Piloto deixa marcado um de cada (uma bola, uma poção e um revive) e troca conforme a conta e o ouro sobem: a poção de menor ouro por HP que cura de verdade, o revive pelo custo e a bola pelo ouro/h e pelo saldo. As quantidades também vêm da conta: o mínimo é 1 h do que você gasta de cada item e o alvo, 6 h. Conta nova compra o primeiro lote assim que tiver o ouro.',
-        ajustes: manual ? `${K.fcampo('Guardar (ouro)', K.numero('auto:repor.reservaOuro', p.reservaOuro, 0, null, 100000, trava), 'Nunca gasta abaixo disso')}
+        ajustes: (manual ? `${K.fcampo('Guardar (ouro)', K.numero('auto:repor.reservaOuro', p.reservaOuro, 0, null, 100000, trava), 'Nunca gasta abaixo disso')}
           ${K.fcampo('A cada (min)', K.numero('auto:repor.intervaloMin', p.intervaloMin, 1, 60, 1, trava))}
           ${K.mini('auto:repor.irAoCentro', p.irAoCentro, 'Ir ao Centro', 'Se o jogo só vender no Centro: vai, compra, cura e volta', trava)}
           ${K.mini('auto:repor.kitAuto', p.kitAuto !== false, 'Escolher os itens pela conta', 'Deixa marcado nas Automações do jogo uma bola, uma poção e um revive, troca conforme a conta sobe e compra pelo que a conta gasta', trava)}
-          ${p.kitAuto !== false ? K.fcampo('Bola', seletorBola(K, p), 'Automático: o módulo escolhe pela conta e mostra a sugestão. Ou fixe uma bola; o cofre continua limitando o gasto') : ''}
           ${K.acao('Conferir agora', 'data-acao="testar-repor"', 'repor', trava)}
-          <div class="plt-f-largo">${tabela}</div>` : '' });
+          <div class="plt-f-largo">${tabela}</div>` : '')
+          // a bola aparece também no Auto (lá o módulo calcula, aqui dá para ver a sugestão ou fixar uma)
+          + (p.kitAuto !== false ? K.fcampo('Bola', seletorBola(K, p, trava), 'Automático: o módulo escolhe pela conta e mostra a sugestão. Ou fixe uma bola; o cofre continua limitando o gasto') : '') });
   }
 
   // Bola da Reposição: Automático (mostra o que o módulo sugere agora) ou uma bola fixa do catálogo
-  function seletorBola(K, p) {
+  function seletorBola(K, p, trava = false) {
     let sug = null;
     try { sug = escolherKit()?.bolaSugerida || null; } catch { /* sem sugestão ainda */ }
     const bolas = (welcome?.catalogoBolas ?? []).filter((b) => b && b.compravel !== false && Number(b.priceGold) > 0 && !/beast|master/i.test(String(b.nome || ''))).sort((a, b) => a.priceGold - b.priceGold);
     const opcoes = [['', `Automático${sug ? ` (sugere: ${K.esc(sug.nome)})` : ''}`], ...bolas.map((b) => [String(b.id), `${K.esc(b.nome)} · ${Number(b.priceGold).toLocaleString('pt-BR')} ouro`])];
-    return K.selecao('auto:repor.bolaId', p.bolaId == null ? '' : String(p.bolaId), opcoes);
+    return K.selecao('auto:repor.bolaId', p.bolaId == null ? '' : String(p.bolaId), opcoes, trava);
   }
 
   // Mudança vinda do painel. "alvo.<chave>.<campo>" são os mínimos e alvos da reposição.

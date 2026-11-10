@@ -1,5 +1,16 @@
 {
   "versoes": {
+    "2.0.10": {
+      "pt": [
+        "Reposição: o campo Bola agora aparece também no modo Auto (mostra a bola que o módulo sugere e deixa fixar outra)."
+      ],
+      "en": [
+        "Restock: the Ball field now also shows in Auto mode (it shows the ball the module suggests and lets you lock another)."
+      ],
+      "es": [
+        "Reposición: el campo Bola ahora también aparece en modo Auto (muestra la bola que sugiere el módulo y permite fijar otra)."
+      ]
+    },
     "2.0.9": {
       "pt": [
         "Atualização automática: a barra de progresso não pisca mais durante a instalação."
