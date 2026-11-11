@@ -1,5 +1,16 @@
 {
   "versoes": {
+    "2.0.24": {
+      "pt": [
+        "Removido o respondedor automático do canal Dúvidas do chat (e a aba Dúvidas). O Netrix Hub não escreve mais no chat."
+      ],
+      "en": [
+        "Removed the automatic answering in the chat's Questions channel (and the Questions tab). The Netrix Hub no longer writes in the chat."
+      ],
+      "es": [
+        "Se quitó el respondedor automático del canal Dudas del chat (y la pestaña Dudas). El Netrix Hub ya no escribe en el chat."
+      ]
+    },
     "2.0.23": {
       "pt": [
         "Caçar o meta: arraste os pokémons para escolher a ordem em que são caçados. A ordem fica salva, mesmo desligando e ligando de novo."

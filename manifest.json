@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Netrix PokeIdle Aux",
-  "version": "2.0.23",
+  "version": "2.0.24",
   "author": "DevTungs",
   "description": "Auxiliar não oficial para o pokeidle.io: Radar do Mercado + /hunt numa extensão só. Onde caçar, troca de hunt, rotina diária, XP Share, revenda e compra no Mercado em ouro, com cofre de orçamento. Nunca gasta Gema nem diamante.",
   "minimum_chrome_version": "121",
@@ -85,7 +85,6 @@
         "src/piloto/rotina.js",
         "src/piloto/captura.js",
         "src/piloto/centro.js",
-        "src/piloto/duvidas.js",
         "src/hunt/ui.js",
         "src/piloto/emergencia.js",
         "src/piloto/jogo-novo.js",
