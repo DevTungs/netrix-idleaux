@@ -1,5 +1,16 @@
 {
   "versoes": {
+    "2.0.23": {
+      "pt": [
+        "Caçar o meta: arraste os pokémons para escolher a ordem em que são caçados. A ordem fica salva, mesmo desligando e ligando de novo."
+      ],
+      "en": [
+        "Hunt the meta: drag the Pokémon to pick the order they're hunted in. The order is saved, even when you turn it off and on again."
+      ],
+      "es": [
+        "Cazar el meta: arrastra los Pokémon para elegir el orden en que se cazan. El orden se guarda, incluso si lo apagas y lo vuelves a encender."
+      ]
+    },
     "2.0.22": {
       "pt": [
         "Menos engasgos: o Netrix Hub lê cada mensagem de estado do jogo uma vez só (antes lia duas) e o relógio da sessão em dias deixou de varrer cada elemento novo da tela.",

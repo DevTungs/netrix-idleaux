@@ -118,6 +118,9 @@
     try { if (PIH.cacadas && PIH.cacadas.ativo()) PIH.cacadas.desligar('ligou o Caçar o meta'); } catch { /* sem caçadas */ }
     // 1.47.0: o Modo farm também (ele devolve o rodízio e a Troca de hunt antes; daqui o Caçar o meta cuida)
     try { if (PIH.farm && PIH.farm.ativo()) PIH.farm.desligar('ligou o Caçar o meta'); } catch { /* sem farm */ }
+    // 1.48.0: a ordem que você arrastou sobrevive a desligar e religar
+    const antes = cfg.alvos.map((x) => x.metaId);
+    alvos.sort((x, y) => { const i = antes.indexOf(x.metaId), j = antes.indexOf(y.metaId); return (i < 0 ? 99 : i) - (j < 0 ? 99 : j); });
     cfg = { ...cfg, ligado: true, alvos, vistos: meus().map((p) => p.id), desde: Date.now(), fim: null };
     gravar();
     // os dois não andam juntos: a Troca de hunt levaria o Piloto para longe do alvo
@@ -480,12 +483,12 @@
     const feitos = cfg.alvos.filter(ok).length;
     const status = cfg.ligado ? `${feitos}/${cfg.alvos.length} · ${esc(st.motivo || 'começando…')}` : cfg.fim ? `último: time completo em ${new Date(cfg.fim.em).toLocaleDateString('pt-BR')}` : 'desligado';
     const linha = K.linha({ id: 'metacaca', icone: 'cacar', nome: 'Caçar o meta', alvo: 'metacaca:ligado', on: cfg.ligado, trava, status,
-      dica: 'Vai buscar os 5 da comp do meta, um por um: o mais forte do time luta na hunt onde a família aparece com mais frequência (a base ou já evoluído) até capturar. Capturado vai para a Coleção e nunca é vendido. Se vier um melhor, ele fica no lugar. Com os 5, viram o time principal (campo e PvP) e este modo se desliga. Ligar desliga a Troca de hunt; ligar a Troca de hunt desliga este. Precisa de bola: VIP (Lançar sem Parar) ou a Pokébola automática.',
+      dica: 'Vai buscar os 5 da comp do meta, um por um: o mais forte do time luta na hunt onde a família aparece com mais frequência (a base ou já evoluído) até capturar. Capturado vai para a Coleção e nunca é vendido. Se vier um melhor, ele fica no lugar. Com os 5, viram o time principal (campo e PvP) e este modo se desliga. Arraste os alvos para escolher a ordem. Ligar desliga a Troca de hunt; ligar a Troca de hunt desliga este. Precisa de bola: VIP (Lançar sem Parar) ou a Pokébola automática.',
       direita: cfg.ligado ? '' : K.escala('metacaca:recorte', cfg.recorte, [['topo', 'Topo 20'], ['faixa', 'Sua faixa']], trava),
       // 1.45.0: a opção nova fica embaixo e começa desligada (desligada = tudo como antes)
       ajustes: `${K.mini('metacaca:soBom', cfg.soBom, t3('Só aceitar um bom', 'Only accept a good one', 'Solo aceptar uno bueno'), t3('Fica em cada alvo até capturar um com a nota do jogo acima do corte (a nota de quando ele evoluir até o do meta; shiny e P5 passam sempre). Os de nota baixa ficam de reserva até vir o bom. Só então vai para o próximo. Desligado: aceita o primeiro, como sempre.', 'Stays on each target until it catches one with the game grade above the cut (the grade once it evolves into the meta one; shiny and P5 always pass). Low-grade ones are kept as backup until the good one comes. Only then it moves to the next. Off: takes the first one, as always.', 'Se queda en cada objetivo hasta capturar uno con la nota del juego por encima del corte (la nota cuando evolucione al del meta; shiny y P5 pasan siempre). Los de nota baja quedan de reserva hasta que llegue el bueno. Recién entonces va al siguiente. Apagado: acepta el primero, como siempre.'), trava)}${K.escala('metacaca:notaMin', String(cfg.notaMin), NOTAS.map((n) => [String(n), `${t3('nota', 'grade', 'nota')} ${notaTxt(n)}+`, ({ 3.5: t3('o mínimo do Mercado', 'the Market minimum', 'el mínimo del Mercado'), 4: t3('a faixa "bom" do jogo', 'the game\'s "good" band', 'la franja "bueno" del juego'), 5: t3('a faixa "forte" do jogo', 'the game\'s "strong" band', 'la franja "fuerte" del juego') })[n]]), trava || !cfg.soBom)}` });
     if (!cfg.alvos.length) return linha;
-    const linhas = cfg.alvos.map((a) => {
+    const linhas = cfg.alvos.map((a, i) => {
       const p = ok(a) ? porId(a.capturadoId) : null;
       const atual = cfg.ligado && st.alvoAtual && st.alvoAtual.raiz === a.raiz;
       const reserva = !p && cfg.soBom && a.capturadoId ? porId(a.capturadoId) : null; // 1.45.0: tem, mas não é bom
@@ -495,9 +498,17 @@
         : a.semHuntNoJogo ? '<span class="plt-meta-tem plt-meta-falta">não aparece em hunt</span>'
           : a.espera && !podeTentar(a) ? '<span class="plt-meta-tem plt-meta-falta">esperando hunt segura</span>'
           : atual ? `<span class="plt-meta-tem plt-meta-cacando">caçando${st.escolha ? ` ${esc(st.escolha.especie.nome)} em ${esc(nomeHunt(st.escolha.slug))}` : ''}</span>` : '<span class="plt-meta-tem">na fila</span>';
-      return `<div class="plt-an-l"><span class="plt-an-arte">${arte({ speciesId: a.metaId, shiny: false, nome: a.meta }, 34, `caca:${a.raiz}`)}</span><span class="plt-an-nome"><b>${esc(a.meta)}</b><small>${esc(a.membros.map((m) => m.nome).join(' → '))}</small></span><span class="plt-an-acoes">${estado}</span></div>`;
+      return `<div class="plt-an-l" data-ordem="${i}" draggable="${trava ? 'false' : 'true'}" title="Arraste para mudar a ordem"><span class="plt-an-arte">${arte({ speciesId: a.metaId, shiny: false, nome: a.meta }, 34, `caca:${a.raiz}`)}</span><span class="plt-an-nome"><b>${esc(a.meta)}</b><small>${esc(a.membros.map((m) => m.nome).join(' → '))}</small></span><span class="plt-an-acoes">${estado}</span></div>`;
     }).join('');
     return `${linha}<div class="plt-an">${linhas}</div>`;
+  }
+  // 1.48.0: arrastar um alvo na lista (vale já na próxima volta da caça)
+  function ordenar(de, para) {
+    const [x] = cfg.alvos.splice(de, 1);
+    if (!x) return false;
+    cfg.alvos.splice(para, 0, x);
+    gravar();
+    return true;
   }
   async function definir(caminho, v) {
     if (caminho === 'recorte' && !cfg.ligado && (v === 'topo' || v === 'faixa')) { cfg.recorte = v; gravar(); return null; }
@@ -511,5 +522,5 @@
     return null;
   }
 
-  PIH.metaCaca = { html, definir, desligar, religarRodizio, ativo: () => cfg.ligado, protegidos, especiesAlvo, descartados: () => [...descartadosSet()], _interno: { cfg: () => cfg, st, tique, notaComoMeta, pego, escolherHunt, podeTentar, conferirCapturas, sanear, descartarUm, refazer: () => { saneado = false; } } };
+  PIH.metaCaca = { html, definir, ordenar, desligar, religarRodizio, ativo: () => cfg.ligado, protegidos, especiesAlvo, descartados: () => [...descartadosSet()], _interno: { cfg: () => cfg, st, tique, notaComoMeta, pego, escolherHunt, podeTentar, conferirCapturas, sanear, descartarUm, refazer: () => { saneado = false; } } };
 })(globalThis);

@@ -271,6 +271,8 @@ html[data-piloto-tema="claro"] .plt-janela .plt-tab tbody tr:hover td { backgrou
 .plt-pk-vazio { padding: 14px; text-align: center; border-radius: 6px; font: 600 12.5px/1.3 "Barlow", sans-serif; color: var(--vao-dim); box-shadow: inset 0 0 0 2px var(--vao-luz); background: repeating-linear-gradient(135deg, transparent 0 8px, rgba(255, 255, 255, .02) 8px 16px); }
 
 .plt-an { display: flex; flex-direction: column; gap: 5px; }
+.plt-an-l[data-ordem] { cursor: grab; }
+.plt-an-l.arrastando { opacity: .45; }
 .plt-an-l { display: grid; grid-template-columns: 42px minmax(0, 1fr) auto auto; align-items: center; gap: 10px; padding: 6px 10px; border-radius: 6px; background: var(--vao2); box-shadow: inset 0 0 0 2px var(--mad-linha); }
 .plt-an-arte { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 6px; background: var(--vao); box-shadow: inset 0 0 0 1px var(--mad-linha); overflow: hidden; }
 .plt-an-nome { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 7px; min-width: 0; }

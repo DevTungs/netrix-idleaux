@@ -966,6 +966,18 @@
       </div></div></div>`;
     document.body.append(janela);
     janela.addEventListener('click', aoClicar);
+    // 1.48.0: arrastar os alvos do Caçar o meta para mudar a ordem
+    let arrastado = null;
+    janela.addEventListener('dragstart', (ev) => { const l = ev.target.closest?.('.plt-an-l[data-ordem]'); if (!l) return; arrastado = Number(l.dataset.ordem); ev.dataTransfer.effectAllowed = 'move'; ev.dataTransfer.setData('text/plain', ''); l.classList.add('arrastando'); });
+    janela.addEventListener('dragover', (ev) => { if (arrastado == null || !ev.target.closest?.('.plt-an-l[data-ordem]')) return; ev.preventDefault(); ev.dataTransfer.dropEffect = 'move'; });
+    janela.addEventListener('drop', (ev) => {
+      const l = arrastado == null ? null : ev.target.closest?.('.plt-an-l[data-ordem]');
+      if (!l) return;
+      ev.preventDefault();
+      const de = arrastado; arrastado = null;
+      if (de !== Number(l.dataset.ordem) && PIH.metaCaca?.ordenar(de, Number(l.dataset.ordem))) pintar(true);
+    });
+    janela.addEventListener('dragend', () => { arrastado = null; janela.querySelectorAll('.arrastando').forEach((el) => el.classList.remove('arrastando')); });
     posicionar();
     ultimoHtml = '';
     pintar(true);
