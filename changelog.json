@@ -866,6 +866,17 @@
         "La reposición elige sola una bola, una poción y un revivir según tu cuenta y los cambia a medida que sube.",
         "El equipo solo recibe pokémon del meta; el meta que sigue solo cambia después de 24 h."
       ]
+    },
+    "2.0.25": {
+      "pt": [
+        "Sem notificações do Chrome: a extensão não manda mais aviso do sistema (ofertas, compras, revenda, pausas, parada de emergência). Os avisos seguem no jogo e no diário."
+      ],
+      "en": [
+        "No Chrome notifications: the extension no longer sends system notices (offers, purchases, resale, pauses, emergency stop). Notices stay in the game and in the diary."
+      ],
+      "es": [
+        "Sin notificaciones de Chrome: la extensión ya no envía avisos del sistema (ofertas, compras, reventa, pausas, parada de emergencia). Los avisos siguen en el juego y en el diario."
+      ]
     }
   }
 }

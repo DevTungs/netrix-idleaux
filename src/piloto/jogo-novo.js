@@ -19,11 +19,9 @@
   const ADIA_MS = 60 * 60_000;
   const L = () => { try { const l = PIH.idioma && PIH.idioma.atual ? PIH.idioma.atual() : 'pt'; return ['pt', 'en', 'es'].includes(l) ? l : 'pt'; } catch { return 'pt'; } };
   const t3 = (pt, en, es) => ({ pt, en, es })[L()] || pt;
-  const aVista = () => document.visibilityState === 'visible' && (typeof document.hasFocus !== 'function' || document.hasFocus());
 
   let novo = null; // { antes, agora, em }
   let adiadoAte = 0;
-  let notificada = '';
   let caixa = null;
 
   function fechar() { if (caixa) { caixa.remove(); caixa = null; } }
@@ -75,10 +73,6 @@
     if (primeira) {
       adiadoAte = 0;
       PIH.cofre?.diario?.(t3(`jogo novo: o PokeIdle atualizou de ${antes} para ${agora} — dê F5`, `new game: PokeIdle updated from ${antes} to ${agora} — press F5`, `juego nuevo: PokeIdle se actualizó de ${antes} a ${agora} — pulsa F5`), 'aviso');
-    }
-    if (!aVista() && notificada !== agora) {
-      notificada = agora;
-      try { document.dispatchEvent(new CustomEvent('piloto:notificar', { detail: JSON.stringify({ titulo: `Netrix PokeIdle Aux · ${t3('O PokeIdle atualizou o jogo', 'PokeIdle updated the game', 'PokeIdle actualizó el juego')}`, mensagem: t3(`Versão ${antes} → ${agora}. Dê F5 na aba do jogo.`, `Version ${antes} → ${agora}. Press F5 on the game tab.`, `Versión ${antes} → ${agora}. Pulsa F5 en la pestaña del juego.`) }) })); } catch { /* sem ponte */ }
     }
     mostrar();
   });

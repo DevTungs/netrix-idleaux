@@ -109,7 +109,6 @@
     leituras: [], // { t, em } dos últimos pedidos de leitura do radar (para o rastro)
     falhasSeguidas: 0,
     gastoDia: null, // { dia, total } do que o automático comprou
-    tetoAvisado: null, // dia em que já avisou o teto
     ultimoCiclo: null,
     proximoCiclo: null,
     itensCobertos: 0,
@@ -324,7 +323,6 @@
     s.retomaEm = Date.now() + A.RETOMADA_MS;
     s.timerRetomada = setTimeout(retomarDepoisDaPausa, A.RETOMADA_MS);
     s.motivo = A.motivoDePausa(contextoDePausa());
-    sw({ tipo: 'notificar', titulo: 'Radar pausado', mensagem: `O servidor não respondeu 5 vezes seguidas. O radar tenta de novo sozinho às ${hora(s.retomaEm)}.` });
   }
 
   function cancelarRetomada() {
@@ -521,14 +519,12 @@
       }
       if (novo && (av.alerta || auto.comprar)) await alertar(c.a, av, auto.comprar ? auto : null);
       else if (ehQuaseAviso(av)) await registrarQuase(c.a, av);
-      if (novo && auto && auto.motivo === 'teto do dia atingido') avisarTeto();
     }
   }
 
   // ---- aviso ---------------------------------------------------------------------------------
 
   const fmtN = (v) => (typeof v === 'number' ? Math.round(v).toLocaleString('pt-BR') : '-');
-  const fmtPct = (v) => `${Math.round(v * 100)}%`;
 
   // Quase aviso: o anúncio dá lucro depois da taxa (desconto de pelo menos 16% sobre a
   // revenda), mas alguma regra segurou (desconto abaixo do mínimo, lucro, liquidez, pouco
@@ -705,17 +701,6 @@
     paraPiloto({ tipo: 'aviso', ...resumoParaPiloto(alerta), auto: Boolean(auto) });
     if (auto) iniciarCompra({ anuncioId: alerta.anuncioId, qtd: auto.qtd, auto: true });
     if (s.config.som) bipe();
-    if (s.config.notificacoes) {
-      const marcas = [alerta.iliquido ? 'ilíquido' : null, alerta.poucoConfiavel ? 'pouco confiável' : null].filter(Boolean);
-      sw({
-        tipo: 'notificar',
-        anuncioId: alerta.anuncioId,
-        titulo: `${alerta.nome}: ${fmtPct(alerta.desconto)} abaixo`,
-        mensagem: alerta.categoria === 'pokemon'
-          ? `Pokémon ${alerta.pokemon.resumo} a ${fmtN(alerta.preco)} · valor de mercado ${fmtN(alerta.referencia)} · lucro estimado ${fmtN(alerta.lucroTotal)}${auto ? ' · compra automática agendada' : ''}`
-          : `${fmtN(alerta.preco)} × ${fmtN(auto ? auto.qtd : alerta.qtd)} · lucro estimado ${fmtN(auto ? auto.lucro : alerta.lucroTotal)}${marcas.length ? ` · ${marcas.join(', ')}` : ''}${auto ? ' · compra automática agendada' : ''}`,
-      });
-    }
     publicarEstado();
   }
 
@@ -885,7 +870,6 @@
     const decisao = Pk.decidirAuto({ avaliacao: av, anuncio: a, config: configDoAutomatico(), gastoHoje: Auto.gastoDeHoje(s.gastoDia, Date.now()) + reservado((x) => x.auto), saldo: saldoLivre() });
     const auto = decisao.comprar ? { qtd: 1, lucro: av.lucro } : null;
     await publicarAviso({ ...registroPokemon(a, av), tipo: 'aviso', automatica: Boolean(auto), motivoAuto: s.config.compraAutomaticaPokemon && !auto ? decisao.motivo : null }, auto);
-    if (decisao.motivo === 'teto do dia atingido') avisarTeto();
   }
 
   async function registrarQuasePokemon(a, av) {
@@ -1195,23 +1179,10 @@
       const a = c.alerta;
       paraExtrato([{ id: `r:${a.anuncioId}`, em: c.estado.concluidoEm || Date.now(), tipo: 'gasto', fonte: 'mercado', origem: c.auto ? 'radar' : 'voce-radar', nome: a.nome, qtd: c.estado.qtd, valor: c.estado.qtd * a.preco, itemId: a.itemId ?? null, speciesId: a.speciesId ?? null, shiny: !!(a.pokemon && a.pokemon.shiny) }]);
     }
-    if (c.auto && enviada) notificarResultado(c);
     if (C.comprou(r)) { s.revenda.registroEm = 0; s.revenda.historicoEm = 0; }
     s.compras.delete(c.alerta.anuncioId);
     agendarFila();
     publicarEstado();
-  }
-
-  function notificarResultado(c) {
-    const r = c.estado.resultado;
-    if (!s.config.notificacoes) return;
-    const nome = c.alerta.nome;
-    if (C.comprou(r)) {
-      if (s.config.som) bipe();
-      sw({ tipo: 'notificar', titulo: `Comprado sozinho: ${nome}`, mensagem: `${fmtN(c.estado.qtd)} × ${fmtN(c.alerta.preco)} = ${fmtN(c.estado.qtd * c.alerta.preco)} de ouro${r === 'confirmado' ? ' (confirmado no histórico)' : ''}` });
-    } else {
-      sw({ tipo: 'notificar', titulo: `${C.rotulo(c.estado)}: ${nome}`, mensagem: 'Compra automática. Nada foi pago.' });
-    }
   }
 
   // 1.2.1: falhas seguidas PAUSAM a compra automática por 15 min e ela volta sozinha. Antes ela
@@ -1222,7 +1193,6 @@
     const st = ponte.storage();
     if (st) await st.set({ [CHAVE_AUTO_DESLIGADA]: { em: Date.now(), ate: s.autoPausadaAte, motivo } });
     diarioPiloto(`compra automática em pausa por 15 min: ${motivo}`, 'erro');
-    sw({ tipo: 'notificar', titulo: 'Compra automática em pausa (15 min)', mensagem: `${motivo}. Volta sozinha.` });
   }
   const autoEmPausa = () => typeof s.autoPausadaAte === 'number' && Date.now() < s.autoPausadaAte;
   function configDoAutomatico() {
@@ -1265,14 +1235,6 @@
       ultimoDiario.set(chave, Date.now());
     }
     document.dispatchEvent(new CustomEvent('piloto:radar-diario', { detail: JSON.stringify({ t: Date.now(), txt, tipo }) }));
-  }
-
-  function avisarTeto() {
-    const dia = Auto.diaLocal(Date.now());
-    if (s.tetoAvisado === dia) return;
-    s.tetoAvisado = dia;
-    if (!s.config.notificacoes) return;
-    sw({ tipo: 'notificar', titulo: 'Compra automática: teto do dia', mensagem: `Gastou ${fmtN(Auto.gastoDeHoje(s.gastoDia, Date.now()))} de ${fmtN(s.config.gastoMaximoDia)} hoje. Volta à meia-noite; os avisos continuam.` });
   }
 
   function cancelarCompra(anuncioId) {
@@ -1395,7 +1357,6 @@
           const texto = tipo === 'criar' ? `Anunciei ${fmtN(alvo.qtdCartao)} × ${fmtN(alvo.preco)}` : `${subiu ? 'Subi' : 'Baixei'} o preço para ${fmtN(alvo.preco)}`;
           // Vai para "Últimas ações" no Resumo do Piloto.
           document.dispatchEvent(new CustomEvent('piloto:radar-diario', { detail: JSON.stringify({ t: Date.now(), txt: `revenda: ${alvo.nome}: ${texto}`, tipo: 'ok' }) }));
-          if (s.config.notificacoes) sw({ tipo: 'notificar', titulo: `Revenda: ${alvo.nome}`, mensagem: `${texto} · lucro estimado ${fmtN(alvo.lucro)}` });
           // Item editado só muda de novo em 30 min.
           if (tipo === 'editar') segurar(alvo.itemId, 30 * 60000);
         } else if (!s.revenda.esperaAte.has(alvo.itemId)) {
@@ -1670,7 +1631,6 @@
         if (res && res.fase === 'ok') {
           const texto = alvo.grupo === 'mudar' ? `baixei o preço para ${fmtN(d.preco)}` : `anunciei por ${fmtN(d.preco)} (1 dia)`;
           diarioPiloto(`revenda: ${nome}: ${texto} · líquido ${fmtN(d.conta.liquido)}`, 'ok');
-          if (s.config.notificacoes) sw({ tipo: 'notificar', titulo: `Revenda: ${nome}`, mensagem: `${texto} · líquido estimado ${fmtN(d.conta.liquido)}` });
           segurarPk(alvo.pokemonId, 30 * 60000);
         } else {
           diarioPiloto(`revenda: ${nome}: não anunciei — ${res ? res.texto : 'sem resposta'}`, 'aviso', `pk:${alvo.pokemonId}`);

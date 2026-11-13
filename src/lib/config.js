@@ -24,7 +24,6 @@
     margemEnvioMs: 300,
     gastoMaximoPorCompra: 0, // 0: sem teto além do saldo
     som: true,
-    notificacoes: true,
     alertarIliquidos: false,
     alertarPoucoConfiaveis: false,
     abrirPainelNoAviso: false, // 1.6: o aviso vira notificação curta; abrir o painel é opcional
@@ -130,7 +129,7 @@
   function validar(parcial) {
     const p = parcial && typeof parcial === 'object' ? parcial : {};
     const c = { ...PADRAO };
-    for (const chave of ['radarLigado', 'pausarOculta', 'som', 'notificacoes', 'alertarIliquidos', 'alertarPoucoConfiaveis', 'abrirPainelNoAviso', 'compraAutomatica', 'pokemon', 'compraAutomaticaPokemon', 'pokemonGemas', 'revendaAutomatica', 'revendaSoDoRadar', 'ajusteAutomatico', 'vigiaContinua']) {
+    for (const chave of ['radarLigado', 'pausarOculta', 'som', 'alertarIliquidos', 'alertarPoucoConfiaveis', 'abrirPainelNoAviso', 'compraAutomatica', 'pokemon', 'compraAutomaticaPokemon', 'pokemonGemas', 'revendaAutomatica', 'revendaSoDoRadar', 'ajusteAutomatico', 'vigiaContinua']) {
       if (typeof p[chave] === 'boolean') c[chave] = p[chave];
     }
     for (const [chave, limite] of Object.entries(LIMITES)) c[chave] = prender(p[chave], limite, PADRAO[chave]);
@@ -195,7 +194,7 @@
   const PERFIS = Object.freeze({
     desligado: { radarLigado: false, compraAutomatica: false, compraAutomaticaPokemon: false, revendaAutomatica: false },
     manual: { radarLigado: true, compraAutomatica: false, compraAutomaticaPokemon: false, ajusteAutomatico: true }, // a revenda fica como está
-    automatico: { radarLigado: true, compraAutomatica: true, compraAutomaticaPokemon: true, revendaAutomatica: true, revendaSoDoRadar: false, ajusteAutomatico: true, pokemon: true, vigiaContinua: true, abrirPainelNoAviso: false, intervaloS: 30, pausarOculta: false, som: true, notificacoes: true },
+    automatico: { radarLigado: true, compraAutomatica: true, compraAutomaticaPokemon: true, revendaAutomatica: true, revendaSoDoRadar: false, ajusteAutomatico: true, pokemon: true, vigiaContinua: true, abrirPainelNoAviso: false, intervaloS: 30, pausarOculta: false, som: true },
   });
 
   // item: { id, categoria } do catálogo do welcome.

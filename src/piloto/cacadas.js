@@ -269,7 +269,6 @@
     somCaptura();
     const aVista = document.visibilityState === 'visible' && (typeof document.hasFocus !== 'function' || document.hasFocus());
     if (aVista) { try { PIH.emit('piloto.achado', { titulo, linha, categoria: 'pokemon', speciesId: p.speciesId, nome: p.nome, tag: `melhor:${p.id}` }); } catch { /* sem cartão */ } }
-    else { try { document.dispatchEvent(new CustomEvent('piloto:notificar', { detail: JSON.stringify({ titulo: `Netrix PokeIdle Aux · ${titulo}`, mensagem: linha }) })); } catch { /* sem ponte */ } }
   }
   function guardarNaColecao(p) {
     const colecao = (eu && eu.automation && Array.isArray(eu.automation.pokemonTravado)) ? eu.automation.pokemonTravado : [];

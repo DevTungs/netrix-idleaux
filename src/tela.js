@@ -885,8 +885,8 @@
     const auto = encaixado && s.modoPiloto !== 'manual';
     p.faixa.hidden = !auto;
     if (!auto) return;
-    // No Auto a aba Ajustes não existe: "Notificar o Chrome" também fica aqui, no topo.
-    const html = linhasPrincipais(s.base) + linhaR({ nome: 'Notificar o Chrome', k: 'notificacoes', on: s.base.notificacoes, dica: 'Desligado, nenhum aviso do Netrix Hub vira notificação do sistema (ofertas, compras, achados, queda e volta). O som e o cartão no jogo continuam. É o mesmo interruptor das Configurações.' });
+    // No Auto a aba Ajustes não existe: as linhas principais ficam aqui, no topo.
+    const html = linhasPrincipais(s.base);
     if (p.faixa._html !== html) { p.faixa._html = html; p.faixa.innerHTML = html; }
   }
   function aplicarModoTela() {
@@ -966,7 +966,6 @@
       ${linhaR({ nome: 'Vigia contínua', k: 'vigiaContinua', on: b.vigiaContinua, dica: 'Uma varredura atrás da outra, sem intervalo. O freio é só o limite de leituras do servidor; se ele reclamar, o radar espaça sozinho até normalizar.' })}
       ${linhaR({ nome: 'Calcular os limites sozinho', k: 'ajusteAutomatico', on: b.ajusteAutomatico, dica: 'Pelo seu ouro/h e pelo cofre do Netrix Hub. O motivo de não comprar aparece no Resumo.', ajustes: lims })}
       ${linhaR({ nome: 'O que vigiar', dica: 'As categorias de itens que o radar olha. Pokémon em ouro: os anúncios de pokémon, não shiny.', ajustes: `${cats}${miniR('pokemon', b.pokemon, 'Pokémon em ouro')}${miniR('revendaSoDoRadar', !b.revendaSoDoRadar, 'Revender também os seus drops', true)}` })}
-      ${linhaR({ nome: 'Notificar o Chrome', k: 'notificacoes', on: b.notificacoes, dica: 'Desligado, nenhum aviso do Netrix Hub vira notificação do sistema (ofertas, compras, achados, queda e volta). O som e o cartão no jogo continuam. É o mesmo interruptor das Configurações.' })}
       ${linhaR({ nome: 'Como avisar', ajustes: `${miniR('som', b.som, 'Som')}${miniR('abrirPainelNoAviso', b.abrirPainelNoAviso, 'Abrir o painel no aviso')}` })}
     </div>`;
     if (alvo._html !== html) { alvo._html = html; alvo.innerHTML = html; }

@@ -25,7 +25,6 @@ const PREFIXO = '[radar-mercado]';
 const CHAVE_GRAVANDO = 'radar:gravando';
 const CHAVE_NAO_VISTOS = 'radar:naoVistos';
 const CHAVE_PODA = 'radar:ultimaPoda';
-const CHAVE_NOTIFICACOES = 'radar:notificacoes';
 const DB_NOME = 'radar-mercado';
 const DB_VERSAO = 3; // 2: vendasPokemon (0.6.2); 3: minhasVendas e diariasPokemon (0.9.0)
 const VENDAS_VALEM_MS = 45 * 24 * 3600000; // a Tabela de preços do jogo mostra 30 dias
@@ -164,18 +163,9 @@ async function registrarAlerta(alerta) {
   return chave;
 }
 
-// O aviso já não dá para comprar: sai do selo e a notificação dele some da central.
+// O aviso já não dá para comprar: sai do selo.
 async function resolverAviso(anuncioId) {
   await mudarNaoVistos((l) => l.filter((id) => id !== anuncioId));
-  const s = await chrome.storage.session.get(CHAVE_NOTIFICACOES);
-  const mapa = s[CHAVE_NOTIFICACOES] || {};
-  const ids = Object.keys(mapa).filter((id) => mapa[id].anuncioId === anuncioId);
-  if (!ids.length) return;
-  for (const id of ids) {
-    await chrome.notifications.clear(id);
-    delete mapa[id];
-  }
-  await chrome.storage.session.set({ [CHAVE_NOTIFICACOES]: mapa });
 }
 
 async function atualizarAlerta(chave, campos) {
@@ -384,14 +374,8 @@ async function limparHistorico() {
 // não entra no jogo: o ícone fica com "!" e o clique nele pede a permissão de volta.
 const ORIGENS = { origins: ['https://pokeidle.io/*'] };
 let semPermissao = false;
-let avisouPermissao = false;
 async function conferirPermissao() {
   try { semPermissao = !(await chrome.permissions.contains(ORIGENS)); } catch { semPermissao = false; }
-  if (semPermissao && !avisouPermissao) {
-    avisouPermissao = true;
-    try { await chrome.notifications.create('piloto-permissao', { type: 'basic', iconUrl: chrome.runtime.getURL('icons/icon-128.png'), title: 'Netrix PokeIdle Aux sem acesso ao jogo', message: 'O navegador tirou a permissão do Netrix Hub no pokeidle.io. Clique no ícone do Netrix Hub para permitir de novo.' }); } catch (e) { erro(e); }
-  }
-  if (!semPermissao) avisouPermissao = false;
   await atualizarSelo();
   return !semPermissao;
 }
@@ -425,52 +409,6 @@ async function atualizarSelo() {
     erro(e);
   }
 }
-
-// O mapa notificação → aba fica pequeno: muda em fila (sem perder entrada) e cada uma sai ao
-// clicar ou fechar; acima de 50, as mais antigas saem.
-let filaMapa = Promise.resolve();
-function mudarMapa(fn) {
-  filaMapa = filaMapa.then(async () => {
-    const s = await chrome.storage.session.get(CHAVE_NOTIFICACOES);
-    const mapa = fn(s[CHAVE_NOTIFICACOES] || {});
-    const chaves = Object.keys(mapa);
-    for (const k of chaves.slice(0, Math.max(0, chaves.length - 50))) delete mapa[k];
-    await chrome.storage.session.set({ [CHAVE_NOTIFICACOES]: mapa });
-  }).catch(erro);
-  return filaMapa;
-}
-chrome.notifications.onClosed.addListener((id) => { mudarMapa((m) => { delete m[id]; return m; }); });
-
-async function notificar({ titulo, mensagem, anuncioId }, remetente) {
-  // "Notificar o Chrome" desligado (Mercado ou Configurações): nenhum aviso vira notificação do sistema.
-  const cfg = (await chrome.storage.local.get('radar:config'))['radar:config'];
-  if (cfg && cfg.notificacoes === false) return null;
-  const id = await chrome.notifications.create('', {
-    type: 'basic',
-    iconUrl: chrome.runtime.getURL('icons/icon-128.png'),
-    title: String(titulo).slice(0, 120),
-    message: String(mensagem).slice(0, 300),
-    priority: 2,
-  });
-  const aba = remetente && remetente.tab ? { tabId: remetente.tab.id, windowId: remetente.tab.windowId } : {};
-  await mudarMapa((mapa) => { mapa[id] = { ...aba, anuncioId: anuncioId ?? null }; return mapa; });
-  return id;
-}
-
-chrome.notifications.onClicked.addListener(async (id) => {
-  try {
-    const s = await chrome.storage.session.get(CHAVE_NOTIFICACOES);
-    const alvo = (s[CHAVE_NOTIFICACOES] || {})[id];
-    if (alvo && alvo.tabId !== undefined) {
-      await chrome.tabs.update(alvo.tabId, { active: true });
-      await chrome.windows.update(alvo.windowId, { focused: true });
-    }
-    await chrome.notifications.clear(id);
-    mudarMapa((m) => { delete m[id]; return m; });
-  } catch (e) {
-    erro(e);
-  }
-});
 
 // ---- mensagens ----------------------------------------------------------------------------------
 
@@ -698,7 +636,6 @@ const ACOES = {
   'vendasPokemon:csv': async () => Csv.paraCsv(await listarVendasPokemon(), COLUNAS_VENDAS_CSV),
   'avisos:vistos': () => mudarNaoVistos(() => []),
   'aviso:resolvido': (m) => resolverAviso(m.anuncioId),
-  notificar: (m, remetente) => notificar(m, remetente),
   acordado: (m, remetente) => pulsoAcordado(m, remetente),
   // Voto no TopIdle (1.9): uma aba de fundo, fechada quando o jogo confirma ou em 30 s.
   'voto:abrir': async (m) => {
@@ -826,10 +763,7 @@ if (chrome.commands && chrome.commands.onCommand) {
     if (cmd !== 'parar-tudo') return;
     try {
       const abas = await chrome.tabs.query({ url: 'https://pokeidle.io/*' });
-      let avisadas = 0;
-      for (const a of abas) { try { await chrome.tabs.sendMessage(a.id, { tipo: 'piloto:emergencia' }); avisadas++; } catch { /* aba sem a ponte */ } }
-      await chrome.notifications.create('piloto-emergencia', { type: 'basic', iconUrl: chrome.runtime.getURL('icons/icon-128.png'), title: 'Netrix PokeIdle Aux',
-        message: avisadas ? 'Parada de emergência: o Netrix Hub foi para Off.' : 'Parada de emergência: nenhuma aba do jogo aberta.' });
+      for (const a of abas) { try { await chrome.tabs.sendMessage(a.id, { tipo: 'piloto:emergencia' }); } catch { /* aba sem a ponte */ } }
     } catch (e) { erro(e); }
   });
 }

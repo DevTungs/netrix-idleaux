@@ -355,35 +355,6 @@
       if (!s2 || !Object.keys(limpo).length) return;
       s2.get(CHAVE_GUIA).then((r) => s2.set({ [CHAVE_GUIA]: { ...(r[CHAVE_GUIA] || {}), ...limpo } })).catch(() => {});
     });
-    // 1.39.0: os avisos de achados (shiny, drop raro) com a aba do jogo escondida: notificação do
-    // sistema. No máximo uma a cada 5 s (a página não consegue encher a tela de notificações).
-    let notificadaEm = 0;
-    document.addEventListener('piloto:notificar', (ev) => {
-      let d = {};
-      try { d = JSON.parse(ev.detail) || {}; } catch { return; }
-      const titulo = String(d.titulo || '').slice(0, 120);
-      const mensagem = String(d.mensagem || '').slice(0, 300);
-      if (!titulo || !mensagem || Date.now() - notificadaEm < 5000) return;
-      notificadaEm = Date.now();
-      chrome.runtime.sendMessage({ tipo: 'notificar', titulo, mensagem }).catch(() => {});
-    });
-    // "Notificar o Chrome": um só interruptor (radar:config.notificacoes), lido e gravado aqui para a linha
-    // das Configurações do Piloto; a do Mercado usa a mesma chave. O fundo (sw.js) respeita em todo aviso.
-    const CHAVE_RADAR = 'radar:config';
-    const mandarNotif = (cfg) => { try { document.dispatchEvent(new CustomEvent('piloto:notif-estado', { detail: JSON.stringify({ ligado: !(cfg && cfg.notificacoes === false) }) })); } catch (e) { erro(e); } };
-    document.addEventListener('piloto:notif-ler', () => {
-      const s2 = storage();
-      if (!s2) return mandarNotif(null);
-      s2.get(CHAVE_RADAR).then((r) => mandarNotif(r[CHAVE_RADAR])).catch(() => mandarNotif(null));
-    });
-    document.addEventListener('piloto:notif-gravar', (ev) => {
-      let d = {};
-      try { d = JSON.parse(ev.detail) || {}; } catch { return; }
-      const s2 = storage();
-      if (!s2 || typeof d.ligado !== 'boolean') return;
-      s2.get(CHAVE_RADAR).then((r) => s2.set({ [CHAVE_RADAR]: { ...(r[CHAVE_RADAR] || {}), notificacoes: d.ligado } })).catch(() => {});
-    });
-    chrome.storage.onChanged.addListener((m, area) => { if (area === 'local' && m[CHAVE_RADAR]) mandarNotif(m[CHAVE_RADAR].newValue); });
     // 1.40.0: manter o PC acordado (o fundo pede ao navegador; a resposta volta para a linha da aba Caçar)
     document.addEventListener('piloto:acordado', (ev) => {
       let d = {};

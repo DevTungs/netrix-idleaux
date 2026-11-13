@@ -33,16 +33,12 @@
   const ler = () => { try { const c = JSON.parse(localStorage.getItem(CHAVE) || 'null') || {}; return { ligado: c.ligado !== false, shiny: c.shiny !== false, especial: c.especial !== false, drop: c.drop !== false }; } catch { return { ligado: true, shiny: true, especial: true, drop: true }; } };
   const cfg = ler();
   const gravar = () => { try { localStorage.setItem(CHAVE, JSON.stringify(cfg)); } catch { /* sem armazenamento */ } };
-  // "Notificar o Chrome": o estado mora no chrome.storage (a ponte lê e grava; é o mesmo interruptor do Mercado).
-  let chromeLigado = true;
-  document.addEventListener('piloto:notif-estado', (ev) => { try { chromeLigado = JSON.parse(ev.detail).ligado !== false; } catch { /* ignora */ } });
-  try { document.dispatchEvent(new CustomEvent('piloto:notif-ler', { detail: '{}' })); } catch { /* sem ponte */ }
   const hojeBr = () => new Date(Date.now() - 3 * 3_600_000).toISOString().slice(0, 10);
   let dia =(() => { try { const d = JSON.parse(localStorage.getItem(CHAVE_DIA) || 'null'); return d && d.dia === hojeBr() ? d : null; } catch { return null; } })() || { dia: hojeBr(), shiny: 0, especial: 0, drops: {} };
   const gravarDia = () => { try { localStorage.setItem(CHAVE_DIA, JSON.stringify(dia)); } catch { /* sem armazenamento */ } };
   const virarDia = () => { if (dia.dia !== hojeBr()) dia = { dia: hojeBr(), shiny: 0, especial: 0, drops: {} }; };
 
-  // ---- textos (a notificação do sistema sai já no idioma da pessoa) ---------------------------
+  // ---- textos ---------------------------
   const L = () => { try { const l = PIH.idioma && PIH.idioma.atual ? PIH.idioma.atual() : 'pt'; return ['pt', 'en', 'es'].includes(l) ? l : 'pt'; } catch { return 'pt'; } };
   const T = {
     shinyPego: { pt: 'Shiny capturado!', en: 'Shiny caught!', es: '¡Shiny capturado!' },
@@ -58,13 +54,9 @@
   // ---- o que está acontecendo -------------------------------------------------------------------
   const aVista = () => document.visibilityState === 'visible' && (typeof document.hasFocus !== 'function' || document.hasFocus());
 
-  function sistema(titulo, mensagem) {
-    try { document.dispatchEvent(new CustomEvent('piloto:notificar', { detail: JSON.stringify({ titulo: String(titulo).slice(0, 120), mensagem: String(mensagem).slice(0, 300) }) })); } catch { /* sem ponte */ }
-  }
   function avisar({ titulo, linha, categoria, speciesId = null, itemId = null, nome, tag }) {
     PIH.cofre?.diario?.(`${tx('prefixo')}: ${titulo} ${linha}`, 'ok');
     if (aVista()) PIH.emit('piloto.achado', { titulo, linha, categoria, speciesId, itemId, nome, tag });
-    else sistema(`PokeIdle · ${titulo}`, linha);
     ultimo = { em: Date.now(), titulo, linha };
   }
   let ultimo = null;
@@ -132,24 +124,17 @@
     for (const [nome, q] of Object.entries(dia.drops)) partes.push(`${q}× ${nome}`);
     return partes.length ? `${W[2]}${partes.join(' · ')}` : W[3];
   }
-  const linhaChrome = () => K.linha({ id: 'avisos-chrome', icone: 'sino', nome: 'Notificar o Chrome', alvo: 'avisos:chrome', on: chromeLigado,
-    dica: 'Desligado, nenhum aviso do Netrix Hub vira notificação do sistema (ofertas, compras, achados, queda e volta). O cartão no jogo continua. É o mesmo interruptor da aba Mercado.' });
   function linha(modo) {
     const ajustes = [
       K.mini('avisos:shiny', cfg.shiny, 'Shiny', 'Shiny capturado'),
       K.mini('avisos:especial', cfg.especial, 'Captura P5', 'Pokémon capturado com Potência P5'),
       K.mini('avisos:drop', cfg.drop, 'Drop raro', 'Boss Token, fragmentos (Chave, Shiny Stone, Bicicleta, Mega, Ovo Shiny), peças de TM e tickets. O que cair em 1 min vira um aviso só, no máximo um a cada 10 min.'),
     ].join('');
-    return `${K.grupo('Avisos')}${linhaChrome()}${K.linha({ id: 'avisos', icone: 'sino', nome: 'Avisos de achados', alvo: 'avisos:ligado', on: cfg.ligado, status: `<span data-sem-traducao="1">${esc(resumoHoje())}</span>`,
-      dica: 'Avisa quando acontece algo raro: shiny capturado, captura P5 e drop raro. Com a aba do jogo à vista, um cartãozinho no canto; com ela escondida, a notificação do sistema. Só lê o que o jogo já mostra: não envia nada. Funciona em qualquer modo, até no Off.',
+    return `${K.grupo('Avisos')}${K.linha({ id: 'avisos', icone: 'sino', nome: 'Avisos de achados', alvo: 'avisos:ligado', on: cfg.ligado, status: `<span data-sem-traducao="1">${esc(resumoHoje())}</span>`,
+      dica: 'Avisa quando acontece algo raro: shiny capturado, captura P5 e drop raro. Com a aba do jogo à vista, um cartãozinho no canto; com ela escondida, só fica no diário. Só lê o que o jogo já mostra: não envia nada. Funciona em qualquer modo, até no Off.',
       ajustes })}`;
   }
   function definir(caminho, v) {
-    if (caminho === 'chrome') {
-      chromeLigado = !!v;
-      try { document.dispatchEvent(new CustomEvent('piloto:notif-gravar', { detail: JSON.stringify({ ligado: chromeLigado }) })); } catch { /* sem ponte */ }
-      return;
-    }
     if (!['ligado', 'shiny', 'especial', 'drop'].includes(caminho)) return;
     cfg[caminho] = !!v;
     gravar();
