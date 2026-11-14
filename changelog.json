@@ -888,6 +888,17 @@
       "es": [
         "Cazar: además del XP/h estimado, aparece el XP/h real medido con el pokémon en esta hunt (desde 10 min). Mientras cazas allí, un punto verde parpadeante indica que está en vivo."
       ]
+    },
+    "2.0.27": {
+      "pt": [
+        "Troca de hunt: se o XP/h real da sessão ficar abaixo de 60% do estimado (poção acabando, bônus que venceu, desmaios), o Diário avisa. No máximo um aviso a cada 30 min; a troca de hunt continua seguindo o ranking."
+      ],
+      "en": [
+        "Hunt switching: if the session's real XP/h falls below 60% of the estimate (potions running out, an expired bonus, faints), the Diary warns you. At most one warning every 30 min; hunt switching still follows the ranking."
+      ],
+      "es": [
+        "Cambio de hunt: si el XP/h real de la sesión cae por debajo del 60% del estimado (pociones agotándose, bonus vencido, desmayos), el Diario avisa. Como máximo un aviso cada 30 min; el cambio de hunt sigue el ranking."
+      ]
     }
   }
 }

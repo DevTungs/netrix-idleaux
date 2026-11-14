@@ -187,6 +187,8 @@
         kph: seg >= 600 ? ((r?.abates ?? 0) + (s?.abates ?? 0)) * 3600 / seg : null,
         xpH: xpSeg >= 600 ? ((r?.xp ?? 0) + (s?.xp ?? 0)) * 3600 / xpSeg : null,
         ao_vivo: !!s,
+        // só a sessão em curso (condições de agora: bônus, poções), com 10+ min
+        sessaoXpH: s && agora - s.inicio >= 600_000 ? (s.xp * 3_600_000) / (agora - s.inicio) : null,
       };
     },
     /** Há uma caçada medindo agora (a aba Caçar repinta a cada poucos segundos só nesse caso). */

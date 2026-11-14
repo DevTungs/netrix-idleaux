@@ -315,6 +315,7 @@
   let candidato = null;
   let pkDaAnalise = null;
   let topAnterior = null;
+  let ultimoAvisoXp = 0;
   async function avaliarHuntAgora(c, forcar) {
     const criterio = criterioDaLista();
     const r = await ranking(criterio);
@@ -328,6 +329,14 @@
     const fmt = (v) => new Intl.NumberFormat('pt-BR', { notation: 'compact', maximumFractionDigits: 1 }).format(v);
     const estavaNoTop = topAnterior !== null && topAnterior === eu.huntSlug;
     topAnterior = melhor.slug;
+    // vigia do XP/h real: a sessão atual rendendo bem menos que o estimado (poção acabando, bônus
+    // que venceu, desmaios). Só avisa no Diário, no máximo a cada 30 min; a troca de hunt segue o modelo.
+    const aqui = r.linhas.find((l) => l.slug === eu.huntSlug && !l.inviavel);
+    const real = aqui ? PIH.geo?.ritmoVivo?.(aqui.slug, PIH.geo.chaveDoPokemon(pkAtivo()))?.sessaoXpH : null;
+    if (real != null && aqui.xpPokemonH > 0 && real < aqui.xpPokemonH * 0.6 && Date.now() - ultimoAvisoXp > 30 * 60_000) {
+      ultimoAvisoXp = Date.now();
+      anotar(`XP/h real em ${aqui.nome}: ${fmt(real)}, só ${Math.round((real / aqui.xpPokemonH) * 100)}% dos ${fmt(aqui.xpPokemonH)} estimados — confira poções, bônus e desmaios`, 'aviso');
+    }
     if (melhor.slug === eu.huntSlug) {
       candidato = null;
       ultimoResultado = `no top 1: ${melhor.nome}`;
