@@ -877,6 +877,17 @@
       "es": [
         "Sin notificaciones de Chrome: la extensión ya no envía avisos del sistema (ofertas, compras, reventa, pausas, parada de emergencia). Los avisos siguen en el juego y en el diario."
       ]
+    },
+    "2.0.26": {
+      "pt": [
+        "Caçar: além do XP/h estimado, aparece o XP/h real medido com o pokémon nesta hunt (a partir de 10 min). Enquanto você caça ali, uma bolinha verde piscando mostra que está ao vivo."
+      ],
+      "en": [
+        "Hunt: besides the estimated XP/h, the real XP/h measured with the Pokémon in this hunt shows up (after 10 min). While you hunt there, a blinking green dot shows it is live."
+      ],
+      "es": [
+        "Cazar: además del XP/h estimado, aparece el XP/h real medido con el pokémon en esta hunt (desde 10 min). Mientras cazas allí, un punto verde parpadeante indica que está en vivo."
+      ]
     }
   }
 }

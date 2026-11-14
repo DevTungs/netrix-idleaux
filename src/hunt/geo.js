@@ -79,6 +79,8 @@
       const r = ((h.ritmo ??= {})[sessao.pkId ?? '?'] ??= { abates: 0, seg: 0 });
       r.abates += sessao.abates;
       r.seg += seg;
+      r.xp = (r.xp ?? 0) + sessao.xp; // XP que o pokémon ganhou nesta hunt
+      r.xpSeg = (r.xpSeg ?? 0) + seg; // tempo com XP contado (o registro antigo não tem XP)
       gravar();
     }
     sessao = null;
@@ -113,19 +115,25 @@
     return `${pk.id}${aoe === true || aoe === 'true' || aoe === 1 ? ':aoe' : ''}`;
   };
   let pkAtivoId = null;
+  let pkPx = null; // XP total do pokémon ativo na última leitura (ele só sobe; a diferença é o ganho)
   PIH.on?.('estado', (eu) => {
-    const chave = chaveDoPokemon(eu?.pokemons?.find((p) => p.id === eu.activeId));
+    const pk = eu?.pokemons?.find((p) => p.id === eu.activeId);
+    const chave = chaveDoPokemon(pk);
     if (chave !== pkAtivoId) {
       fecharSessao();
       pkAtivoId = chave;
+      pkPx = null;
     }
+    if (pk?.xp == null) return;
+    if (sessao && pkPx != null && pk.xp > pkPx) sessao.xp += pk.xp - pkPx;
+    pkPx = pk.xp;
   });
 
   PIH.on?.('campo.init', (m) => {
     fecharSessao();
     if (!m?.slug || m.centro || m.pvp || m.casa != null) return;
     // A entrada NÃO é medida: o herói está na porta do mapa e a onda pode estar pela metade.
-    sessao = { slug: m.slug, pkId: pkAtivoId, inicio: Date.now(), abates: 0, slots: new Map(), heroi: null, onda: null };
+    sessao = { slug: m.slug, pkId: pkAtivoId, inicio: Date.now(), abates: 0, xp: 0, slots: new Map(), heroi: null, onda: null };
     if (m.heroi?.c != null) sessao.heroi = { c: m.heroi.c, r: m.heroi.r };
     for (const x of m.mobs ?? []) if (!naoSelvagem(x)) sessao.slots.set(x.s, !x.x);
   });
@@ -164,6 +172,25 @@
       const r = banco.hunts[slug]?.ritmo?.[chave];
       return r && r.seg >= 600 ? r.abates * 3600 / r.seg : null;
     },
+    /**
+     * XP/h e abates/h com este pokémon nesta hunt, AO VIVO: o gravado + a sessão em curso. `ao_vivo`
+     * é true quando você está caçando isso agora. Cada valor só aparece com 10+ min contados.
+     */
+    ritmoVivo(slug, chave) {
+      if (!chave) return null;
+      const r = banco.hunts[slug]?.ritmo?.[chave];
+      const s = sessao && sessao.slug === slug && sessao.pkId === chave ? sessao : null;
+      const agora = Date.now();
+      const seg = (r?.seg ?? 0) + (s ? (agora - s.inicio) / 1000 : 0);
+      const xpSeg = (r?.xpSeg ?? 0) + (s ? (agora - s.inicio) / 1000 : 0);
+      return {
+        kph: seg >= 600 ? ((r?.abates ?? 0) + (s?.abates ?? 0)) * 3600 / seg : null,
+        xpH: xpSeg >= 600 ? ((r?.xp ?? 0) + (s?.xp ?? 0)) * 3600 / xpSeg : null,
+        ao_vivo: !!s,
+      };
+    },
+    /** Há uma caçada medindo agora (a aba Caçar repinta a cada poucos segundos só nesse caso). */
+    aoVivo: () => !!sessao,
     huntsMedidas: () => Object.values(banco.hunts).filter((h) => h.amostras?.length).length,
   };
 })(globalThis);

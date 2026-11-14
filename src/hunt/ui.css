@@ -327,6 +327,9 @@ html[data-piloto-tema="claro"] .plt-conteudo .plt-card-cab b { color: #3a1d22; t
 .pih-alerta { color: var(--p-laranja); }
 .pih-perigo { color: var(--p-vermelho-luz); }
 .pih-medido { color: var(--p-verde); cursor: help; margin-right: 2px; }
+.pih-real { display: block; color: var(--p-verde); font-size: .85em; white-space: nowrap; cursor: help; }
+.pih-live { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--p-verde); margin-right: 4px; vertical-align: middle; animation: pih-piscar 1.2s ease-in-out infinite; }
+@keyframes pih-piscar { 50% { opacity: .15; } }
 .pih-aprox { color: var(--p-dim); cursor: help; }
 .pih-stats { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px 10px; }
 .pih-stat b { display: block; font: 700 10px/1.3 var(--p-tahoma); color: var(--p-dim); }

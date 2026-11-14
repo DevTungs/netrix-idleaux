@@ -350,6 +350,8 @@
     document.dispatchEvent(new CustomEvent('piloto:contexto', { detail: d }));
   }
   setInterval(publicarContexto, 5_000);
+  // o XP/h real da caçada em curso anda ao vivo: repinta a aba Caçar a cada 3 s, só enquanto mede
+  setInterval(() => { if (painel && prefs.aba === 'hunts' && PIH.geo?.aoVivo?.() && !digitando()) desenhar(); }, 3_000);
   setTimeout(() => {
     // 1.31: instalação nova (nenhum modo salvo) começa no Off — você escolhe Manual ou Auto.
     // (a chave de desenvolvimento 'piloto:dev:manual' dos testes automáticos mantém o começo antigo)
@@ -979,8 +981,14 @@
   }
   const cfgAuto = () => { try { return PIH.auto?._interno?.cfg?.(); } catch { return null; } };
   let topSlug = null;
+  // XP/h estimado + o real medido com o pokémon atual nesta hunt (bolinha verde piscando = caçando agora)
+  function celulaXp(estimado, l) {
+    const vivo = PIH.geo?.ritmoVivo?.(l.slug, PIH.geo.chaveDoPokemon(pkAtivo()));
+    const real = vivo?.xpH != null ? `<small class="pih-real${vivo.ao_vivo ? ' pih-vivo' : ''}" title="XP/h medido aqui com este pokémon${vivo.ao_vivo ? ' (ao vivo)' : ''}">${vivo.ao_vivo ? '<i class="pih-live"></i>' : ''}${curto(vivo.xpH)} real</small>` : '';
+    return `${curto(estimado)}${real}`;
+  }
   function linhaHtml(l, i) {
-    const medido = l.kphMedido != null ? ` · você fez ${num(l.kphMedido)} abates/h aqui com este pokémon (referência; não muda o ranking)` : '';
+    const medido =l.kphMedido != null ? ` · você fez ${num(l.kphMedido)} abates/h aqui com este pokémon (referência; não muda o ranking)` : '';
     const aprox = l.aoe
       ? `<span class="pih-aprox" title="Estimativa com o TM AoE: ${l.engajados.toFixed(1).replace('.', ',')} selvagens em você ao mesmo tempo${l.geoMedida ? '' : '; geometria padrão'}${medido}">≈AoE</span>`
       : l.geoMedida
@@ -996,11 +1004,11 @@
     return `<tr class="${cls}" title="${esc(golpe)}">
       <td class="pih-pos">${i + 1}</td>
       <td class="pih-hunt">${retratoHunt(l)}<span class="pih-hunt-txt"><b>${esc(l.nome)}${l.slug === eu?.huntSlug && !eu?.noCentro ? ' <i class="pih-aqui">você está aqui</i>' : ''}</b><small>${regiao(l.regiao)} · Nv ${num(l.nivel)}${l.liberada ? '' : ' · 🔒'}</small></span></td>
-      <td>${curto(prefs.ordem === 'ouro' ? l.ouroH : l.xpPokemonH)}</td>
+      <td>${prefs.ordem === 'ouro' ? curto(l.ouroH) : celulaXp(l.xpPokemonH, l)}</td>
       <td>${aprox}${num(l.kph)}</td>
       <td>${segundos(l.ttk)}</td>
       <td>${risco(l)}</td>
-      <td>${curto(prefs.ordem === 'ouro' ? l.xpPokemonH : l.ouroH)}</td>
+      <td>${prefs.ordem === 'ouro' ? celulaXp(l.xpPokemonH, l) : curto(l.ouroH)}</td>
       <td class="pih-ir">${botaoIr(l)}</td>
     </tr>`;
   }
