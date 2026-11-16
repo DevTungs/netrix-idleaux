@@ -625,7 +625,7 @@
     'shop.buy': (p) => (['ball', 'item'].includes(p.kind) && int(p.id, 1, 1e9) && int(p.qty, 1, 9999) ? { t: 'shop.buy', kind: p.kind, id: p.id, qty: p.qty } : null),
     'passe.resgatar': () => ({ t: 'passe.resgatar' }),
     'xpshare.escolher': (p) => (int(p.casaId, 1, ID) && int(p.slot, 0, 9) && (p.pokemonId === null || int(p.pokemonId, 1, ID)) ? { t: 'xpshare.escolher', casaId: p.casaId, slot: p.slot, pokemonId: p.pokemonId } : null),
-    'outland.tier': (p) => (int(p.tier, 1, 8) ? { t: 'outland.tier', tier: p.tier } : null),
+    'outland.tier': (p) => (int(p.tier, 1, 199) ? { t: 'outland.tier', tier: p.tier } : null),
     'team.active': (p) => (int(p.pokemonId, 1, ID) ? { t: 'team.active', pokemonId: p.pokemonId } : null),
     'pokemon.evoluir': (p) => (int(p.pokemonId, 1, ID) && int(p.alvoId, 1, 1e7) ? { t: 'pokemon.evoluir', pokemonId: p.pokemonId, alvoId: p.alvoId } : null),
     'chocadeira.colocar': (p) => {

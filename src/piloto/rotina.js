@@ -8,7 +8,7 @@
 //  Tarefa             Comando                  Custo                Reversível?
 //  Passe diário       passe.resgatar           zero                 sim
 //  XP Share           xpshare.escolher         zero                 sim
-//  Tier da Outland    outland.tier             zero                 sim (mesmo XP, drops ×1 a ×8)
+//  Tier da Outland    outland.tier             zero                 sim (mesmo XP, drops ×1 a ×20)
 //  Rodízio de treino  team.active              zero                 sim
 //  Evoluir            pokemon.evoluir          1 pedra              NÃO
 //  Chocadeira         chocadeira.colocar       o ovo que você tem   NÃO (compra de ovo: categoria "ovos" do cofre)
@@ -242,16 +242,20 @@
     return false;
   }
 
+  // o número que o jogo mostra ("Outland 30"), tanto do id novo (130) quanto do degrau antigo (8)
+  const numTier = (t) => { try { return mods?.outland?.numeroOutlandTier?.(t) ?? t; } catch { return t; } };
   async function tarefaOutland() {
     if (!cfg.outland.ligado || !naHunt() || !venceu('outland', 30_000)) return false;
     const h = huntAtual();
     if (!h || (h.area !== 'outland' && h.regiao !== 'outland')) return false;
     const m = await modulos();
-    const alvo = m.outland.tierOutlandValido(8, eu.level || 0);
+    // jogo 1.426: 40 tiers com id 101..140 (os 8 antigos, 1..8, ainda valem); o alvo é o último da lista do jogo
+    const topo = m.outland.OUTLAND_TIERS?.at(-1)?.tier ?? 8;
+    const alvo = m.outland.tierOutlandValido(topo, eu.level || 0);
     const atual = Number(eu.outlandTier) || 1;
-    if (alvo <= atual) return false;
+    if (numTier(alvo) <= numTier(atual)) return false;
     marcar('outland');
-    return pedir({ t: 'outland.tier', tier: alvo }, `Outland ${atual} → Outland ${alvo} (mesmo XP e ouro, drops raros ×${m.outland.multOutlandTier(alvo)})`);
+    return pedir({ t: 'outland.tier', tier: alvo }, `Outland ${numTier(atual)} → Outland ${numTier(alvo)} (mesmo XP e ouro, drops raros ×${m.outland.multOutlandTier(alvo)})`);
   }
 
   // 1.28 (o André viu o rodízio pôr o 2º para lutar na hunt do Charizard, ele cair e o jogo voltar
@@ -1024,7 +1028,7 @@
       ${L({ icone: 'nivel', nome: 'Rodízio do time', alvo: 'rotina:rodizio.ligado', on: r.ligado, dica: 'Cada pokémon do time luta um turno (60 min, ou o que você escolher no Manual) e entra quem está há mais tempo sem lutar, para todos ganharem XP. Com a Troca de hunt ligada, a troca é feita no Centro e o novo vai direto para a melhor hunt dele; sem ela, só entra quem mata com segurança na hunt atual. Se o ativo desmaiar, o turno dele acaba em 2 min.',
         status: r.ligado ? `um de cada vez · turno de ${r.intervaloMin} min` : '',
         ajustes: `${K.fcampo('Turno de cada um (min)', K.numero('rotina:rodizio.intervaloMin', r.intervaloMin, 10, 240, 5, trava))}` })}
-      ${L({ icone: 'outland', nome: 'Tier da Outland', alvo: 'rotina:outland.ligado', on: cfg.outland.ligado, dica: 'Na Outland, sobe para o maior tier liberado: mesmo XP e ouro, drops raros ×1 a ×8.', status: eu && eu.outlandTier ? `tier ${eu.outlandTier}` : '' })}
+      ${L({ icone: 'outland', nome: 'Tier da Outland', alvo: 'rotina:outland.ligado', on: cfg.outland.ligado, dica: 'Na Outland, sobe para o maior tier liberado: mesmo XP e ouro, drops raros ×1 a ×20.', status: eu && eu.outlandTier ? `tier ${numTier(eu.outlandTier)}` : '' })}
 `;
   }
 

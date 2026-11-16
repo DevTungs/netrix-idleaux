@@ -899,6 +899,20 @@
       "es": [
         "Cambio de hunt: si el XP/h real de la sesión cae por debajo del 60% del estimado (pociones agotándose, bonus vencido, desmayos), el Diario avisa. Como máximo un aviso cada 30 min; el cambio de hunt sigue el ranking."
       ]
+    },
+    "2.0.28": {
+      "pt": [
+        "Acompanha o jogo 1.426: a tarefa Tier da Outland volta a subir de tier com os 40 tiers novos (antes eram 8) e vai até o maior liberado.",
+        "As formas regionais e alternativas (Alolan, Galarian, Hisuian, Paldean, Rotom...) entram no cálculo do Caçar: hunts com elas deixam de sair com XP/h errado."
+      ],
+      "en": [
+        "Follows game 1.426: the Outland Tier task moves up tiers again with the 40 new tiers (there were 8) and goes up to the highest unlocked one.",
+        "Regional and alternate forms (Alolan, Galarian, Hisuian, Paldean, Rotom...) now count in the Hunt calculation: hunts with them no longer show a wrong XP/h."
+      ],
+      "es": [
+        "Sigue el juego 1.426: la tarea Tier de la Outland vuelve a subir de tier con los 40 tiers nuevos (antes eran 8) y llega hasta el mayor desbloqueado.",
+        "Las formas regionales y alternativas (Alolan, Galarian, Hisuian, Paldean, Rotom...) entran en el cálculo de Cazar: las hunts con ellas dejan de salir con XP/h equivocado."
+      ]
     }
   }
 }

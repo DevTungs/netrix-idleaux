@@ -43,6 +43,7 @@
     cr: 'assets/creatures.json',
     novos: 'assets/creatures-novos.json',
     outlandNovos: 'assets/creatures-outland-novos.json',
+    formas: 'assets/creatures-formas.json', // formas regionais (Alolan, Galarian...) e alternativas
     overrides: 'assets/creatures-audit-overrides.json',
     itens: 'assets/items.json',
   };
@@ -59,10 +60,11 @@
    * stats-base, tipos e golpes. Evolução, teto de captura e valor de mercado ficam de fora.
    */
   function montarCatalogo(mod, fontes) {
-    const { cr, novos, outlandNovos, overrides } = fontes;
+    const { cr, novos, outlandNovos, formas, overrides } = fontes;
     const lista = [...(cr?.creatures ?? [])];
     if (novos?.creatures?.length) lista.push(...novos.creatures);
     if (outlandNovos?.creatures?.length) lista.push(...outlandNovos.creatures);
+    if (formas?.creatures?.length) lista.push(...formas.creatures);
     mod.outland.aplicarRemapOutlandLista(lista);
 
     for (const o of overrides?.overrides ?? []) {
@@ -109,15 +111,16 @@
   /** Carrega uma vez por página; as chamadas seguintes recebem o mesmo resultado. */
   PIH.carregarJogo = () => (promessa ??= (async () => {
     const inicio = performance.now();
-    const [mod, cr, novos, outlandNovos, overrides, itens] = await Promise.all([
+    const [mod, cr, novos, outlandNovos, formas, overrides, itens] = await Promise.all([
       carregarModulos(),
       json(CATALOGOS.cr),
       json(CATALOGOS.novos, true),
       json(CATALOGOS.outlandNovos, true),
+      json(CATALOGOS.formas, true),
       json(CATALOGOS.overrides, true),
       json(CATALOGOS.itens, true),
     ]);
-    const especies = montarCatalogo(mod, { cr, novos, outlandNovos, overrides });
+    const especies = montarCatalogo(mod, { cr, novos, outlandNovos, formas, overrides });
     const precoItem = precosDeItem(itens);
     const itensPorId = new Map((itens?.items ?? itens ?? []).filter((i) => i?.id != null).map((i) => [Number(i.id), i]));
     return {
