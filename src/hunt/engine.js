@@ -344,7 +344,7 @@
     const gapS = cdPeloIv(REGRAS.gapJogadorMs, pk.ivs?.speed) / 1000;
     const cdInvS = cdPeloIv(REGRAS.investidaCdMs, pk.ivs?.speed) / 1000;
 
-    let ttk = 0, dps = 0, hitMax = 0, hitMedio = 0, xpKill = 0, ouroKill = 0, lootKill = 0, efMedia = 0;
+    let ttk = 0, dps = 0, hitMax = 0, hitMedio = 0, xpKill = 0, ouroKill = 0, lootKill = 0, efMedia = 0, quad = 0;
     let melhorGolpe = null, melhorDano = -1;
     const alvos = [];
     const sazonal = sazonalDa(h, ctx);
@@ -362,6 +362,8 @@
         if (g.d * w > melhorDano) { melhorDano = g.d * w; melhorGolpe = g.g; }
       }
       const tipoInv = tipoDaInvestida(pk.tipos, ef, tiposAlvo);
+      // ×4: o alvo tem os DOIS tipos fracos ao tipo de um mesmo golpe (≥ 4 vale cru ou ampliado: ×2 ampliado é 2,5)
+      if ([tipoInv, ...golpesPk.map((g) => g.type)].some((t) => ef(t, tiposAlvo[0], tiposAlvo[1]) >= 4)) quad += w;
       const investida = {
         d: comSazonal(sazonal, dano(pk.level, REGRAS.investidaPower, pk.stats.atk, st.def, true, ef(tipoInv, tiposAlvo[0], tiposAlvo[1])), pk.tipos, tiposAlvo),
         cdS: cdInvS,
@@ -401,6 +403,7 @@
       geoMedida: !!medida?.dists?.length,
       melhorGolpe: melhorGolpe ? { nome: melhorGolpe.name, tipo: melhorGolpe.type } : null,
       efetividade: efMedia,
+      quad, // fração dos selvagens que levam ×4 de algum golpe seu
     };
     if (!Number.isFinite(ttk)) return { ...base, inviavel: true, motivo: 'não mata', xpPokemonH: 0, xpTreinadorH: 0, ouroH: 0, kph: 0 };
 

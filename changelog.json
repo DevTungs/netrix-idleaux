@@ -913,6 +913,17 @@
         "Sigue el juego 1.426: la tarea Tier de la Outland vuelve a subir de tier con los 40 tiers nuevos (antes eran 8) y llega hasta el mayor desbloqueado.",
         "Las formas regionales y alternativas (Alolan, Galarian, Hisuian, Paldean, Rotom...) entran en el cálculo de Cazar: las hunts con ellas dejan de salir con XP/h equivocado."
       ]
+    },
+    "2.0.29": {
+      "pt": [
+        "Caçar: novo filtro \"Só onde bato ×4\" mostra as hunts com selvagem que leva ×4 de um golpe seu. A Troca de hunt já contava o ×4 (na hunt vale ×5,5) e continua escolhendo pelo ranking inteiro."
+      ],
+      "en": [
+        "Hunt: new \"Only where I hit ×4\" filter shows the hunts with a wild that takes ×4 from one of your moves. Hunt switching already counted the ×4 (worth ×5.5 in hunts) and still picks from the whole ranking."
+      ],
+      "es": [
+        "Cazar: nuevo filtro \"Solo donde pego ×4\" muestra las hunts con salvaje que recibe ×4 de un golpe tuyo. El cambio de hunt ya contaba el ×4 (en la hunt vale ×5,5) y sigue eligiendo por el ranking entero."
+      ]
     }
   }
 }

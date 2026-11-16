@@ -34,7 +34,7 @@
   }
 
   let prefs = {
-    ordem: 'xp', soLiberadas: true, comPocao: true,
+    ordem: 'xp', soLiberadas: true, comPocao: true, soQuad: false,
     aba: 'resumo', fonte: 'auto', metaTr: null, metaPk: null, horasDia: 24,
     ...lerJson(CHAVE_PREFS, {}),
   };
@@ -937,6 +937,7 @@
     return `<div class="plt-caixa plt-ajustes plt-ajustes-solto">
       ${K.fcampo('Ordenar por', K.escala('ui:ordem', prefs.ordem, [['xp', 'XP/h'], ['ouro', 'Ouro/h']]))}
       ${K.mini('ui:soLiberadas', prefs.soLiberadas, 'Só hunts liberadas')}
+      ${K.mini('ui:soQuad', prefs.soQuad, 'Só onde bato ×4', 'Hunts com selvagem que leva ×4 de um golpe seu (os dois tipos dele fracos ao tipo do golpe). Só filtra a lista: a Troca de hunt segue o ranking inteiro')}
       ${K.mini('ui:comPocao', prefs.comPocao, 'Poção automática', 'Com a automação de poção ligada, só morre quem leva um golpe maior que o HP inteiro')}
     </div>`;
   }
@@ -995,7 +996,7 @@
         ? (medido ? `<span class="pih-medido" title="Geometria medida em ondas cheias${medido}">●</span>` : '')
         : `<span class="pih-aprox" title="Geometria padrão (sem onda cheia medida nesta hunt)${medido}">≈</span>`;
     const cls = [l.slug === topSlug && !l.inviavel ? 'pih-top' : '', l.liberada ? '' : 'pih-bloq'].filter(Boolean).join(' ');
-    const golpe = l.melhorGolpe ? `${esc(l.melhorGolpe.nome)} ×${l.efetividade.toFixed(2).replace('.', ',')}` : '';
+    const golpe = l.melhorGolpe ? `${esc(l.melhorGolpe.nome)} ×${l.efetividade.toFixed(2).replace('.', ',')}${l.quad > 0 ? ` · ×4 em ${Math.round(l.quad * 100)}% dos selvagens` : ''}` : '';
     if (l.inviavel) {
       return `<tr class="${cls}"><td class="pih-pos">${i + 1}</td>
         <td class="pih-hunt"><b>${esc(l.nome)}</b><small>${regiao(l.regiao)} · Nv ${num(l.nivel)}</small></td>
@@ -1027,6 +1028,7 @@
     topSlug = top ? top.slug : null;
     const outro = prefs.ordem === 'ouro' ? 'XP/h' : 'Ouro/h';
     const limite = manual ? mostrando : 5;
+    const visiveis = prefs.soQuad ? linhas.filter((l) => l.quad > 0) : linhas; // o 👑 acima sai do ranking inteiro
     const melhor = top ? `<div class="plt-caixa pih-melhor">
         <span class="pih-coroa">👑</span>
         <div><strong>${esc(top.nome)}</strong> <span class="pih-dim">${regiao(top.regiao)} · Nv ${num(top.nivel)}</span><br>
@@ -1035,9 +1037,9 @@
     return `${melhor}
       <div class="plt-caixa pih-lista"><table class="plt-tab pih-tab">
         <thead><tr><th>#</th><th>Hunt</th><th>${prefs.ordem === 'ouro' ? 'Ouro/h' : 'XP/h'}</th><th>Abates/h</th><th>Mata em</th><th>Risco</th><th>${outro}</th><th></th></tr></thead>
-        <tbody>${linhas.slice(0, limite).map(linhaHtml).join('')}</tbody>
+        <tbody>${visiveis.slice(0, limite).map(linhaHtml).join('') || '<tr><td colspan="8">Nenhuma hunt onde este pokémon bate ×4.</td></tr>'}</tbody>
       </table>
-      ${manual && linhas.length > mostrando ? `<button type="button" class="cfg-escala-bt plt-mais" data-acao="mais">mostrar mais (${linhas.length - mostrando})</button>` : ''}
+      ${manual && visiveis.length > mostrando ? `<button type="button" class="cfg-escala-bt plt-mais" data-acao="mais">mostrar mais (${visiveis.length - mostrando})</button>` : ''}
       </div>
       ${manual ? `<div class="pih-rodape">Dados do jogo ${jogo.versao ? `v${esc(jogo.versao)}` : 'no ar'} · ${r.linhas.length}/${r.total} hunts · cálculo em ${r.ms} ms · ranking com ondas cheias · geometria medida em ${PIH.geo?.huntsMedidas?.() ?? 0} hunts (≈ = padrão · ● = você já caçou aqui, passe o mouse)${r.aoe ? ` · TM AoE: ${r.aoe.alvosPorGolpe.toFixed(1).replace('.', ',')} alvos/golpe` : ''}</div>` : ''}`;
   }
