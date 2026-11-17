@@ -935,6 +935,17 @@
       "es": [
         "Cazar: el XP/h real salía unas mil veces menor que el del juego. Ahora viene del panel Sesión del propio PokeIdle (el XP de cada baja). Las mediciones antiguas de XP se descartan; el número vuelve tras 10 min de caza."
       ]
+    },
+    "2.0.31": {
+      "pt": [
+        "Caçar: o XP/h real não mistura mais o histórico (que ainda trazia o evento de XP que acabou). Agora mostra só a sessão em curso, lendo o XP/h do painel Sessão do jogo; o Reset do jogo zera o número também."
+      ],
+      "en": [
+        "Hunt: the real XP/h no longer mixes in history (which still carried the XP event that ended). It now shows only the current session, reading the XP/h from the game's Session panel; the game's Reset zeroes it too."
+      ],
+      "es": [
+        "Cazar: el XP/h real ya no mezcla el historial (que aún traía el evento de XP que terminó). Ahora muestra solo la sesión en curso, leyendo el XP/h del panel Sesión del juego; el Reset del juego también lo pone a cero."
+      ]
     }
   }
 }

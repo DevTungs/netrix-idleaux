@@ -80,10 +80,8 @@
       const r = ((h.ritmo ??= {})[sessao.pkId ?? '?'] ??= { abates: 0, seg: 0 });
       r.abates += sessao.abates;
       r.seg += seg;
-      // xpJ/xpJSeg: o XP contado pelo jogo. Os antigos `xp`/`xpSeg` (2.0.26–2.0.29) vinham do
-      // `pk.xp` do estado e saíam ~1000× menores; ficam para trás, sem uso.
-      r.xpJ = (r.xpJ ?? 0) + sessao.xp;
-      r.xpJSeg = (r.xpJSeg ?? 0) + seg;
+      // O XP/h não é mais guardado: uma média histórica engole bônus que já acabaram (evento de XP,
+      // poção) e mostra um número que não vale mais. O XP/h real é só o da sessão em curso.
       gravar();
     }
     sessao = null;
@@ -129,6 +127,16 @@
     if (!Number.isFinite(px)) return;
     if (sessao && pkPx != null && px > pkPx) sessao.xp += px - pkPx;
     pkPx = px;
+  }
+  // XP/h do painel "Sessão" do jogo (#sessao-xp-pokemon-h, "75.217.853"), com o tempo dele (#sessao-tempo,
+  // "1:26:21") em 10+ min. null se o painel não está na tela ou o formato mudou.
+  function xpHDoJogo() {
+    const t = document.getElementById('sessao-tempo')?.textContent?.trim().match(/^(\d+):(\d{2})(?::(\d{2}))?$/);
+    const h = document.getElementById('sessao-xp-pokemon-h')?.textContent;
+    if (!t || h == null) return null;
+    const seg = t[3] === undefined ? +t[1] * 60 + +t[2] : +t[1] * 3600 + +t[2] * 60 + +t[3];
+    const v = Number(h.replace(/\./g, '').replace(',', '.'));
+    return seg >= 600 && Number.isFinite(v) ? v : null;
   }
   PIH.on?.('estado', (eu) => {
     const pk = eu?.pokemons?.find((p) => p.id === eu.activeId);
@@ -196,13 +204,12 @@
       const s = sessao && sessao.slug === slug && sessao.pkId === chave ? sessao : null;
       const agora = Date.now();
       const seg = (r?.seg ?? 0) + (s ? (agora - s.inicio) / 1000 : 0);
-      const xpSeg = (r?.xpJSeg ?? 0) + (s ? (agora - s.inicio) / 1000 : 0);
       return {
         kph: seg >= 600 ? ((r?.abates ?? 0) + (s?.abates ?? 0)) * 3600 / seg : null,
-        xpH: xpSeg >= 600 ? ((r?.xpJ ?? 0) + (s?.xp ?? 0)) * 3600 / xpSeg : null,
         ao_vivo: !!s,
-        // só a sessão em curso (condições de agora: bônus, poções), com 10+ min
-        sessaoXpH: s && agora - s.inicio >= 600_000 ? (s.xp * 3_600_000) / (agora - s.inicio) : null,
+        // só a sessão em curso (condições de agora: bônus, poções), com 10+ min. Prefere o número do
+        // painel "Sessão" do jogo (já com o Reset dele); sem o painel na tela, mede por conta própria.
+        sessaoXpH: !s ? null : xpHDoJogo() ?? (agora - s.inicio >= 600_000 ? (s.xp * 3_600_000) / (agora - s.inicio) : null),
       };
     },
     /** Há uma caçada medindo agora (a aba Caçar repinta a cada poucos segundos só nesse caso). */

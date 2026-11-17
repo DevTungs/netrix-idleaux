@@ -982,10 +982,10 @@
   }
   const cfgAuto = () => { try { return PIH.auto?._interno?.cfg?.(); } catch { return null; } };
   let topSlug = null;
-  // XP/h estimado + o real medido com o pokémon atual nesta hunt (bolinha verde piscando = caçando agora)
+  // XP/h estimado + o real da sessão em curso (bolinha verde piscando = caçando agora)
   function celulaXp(estimado, l) {
     const vivo = PIH.geo?.ritmoVivo?.(l.slug, PIH.geo.chaveDoPokemon(pkAtivo()));
-    const real = vivo?.xpH != null ? `<small class="pih-real${vivo.ao_vivo ? ' pih-vivo' : ''}" title="XP/h medido aqui com este pokémon${vivo.ao_vivo ? ' (ao vivo)' : ''}">${vivo.ao_vivo ? '<i class="pih-live"></i>' : ''}${curto(vivo.xpH)} real</small>` : '';
+    const real = vivo?.ao_vivo && vivo.sessaoXpH != null ? `<small class="pih-real pih-vivo" title="XP/h da sessão em curso (o painel Sessão do jogo; zera no Reset dele)"><i class="pih-live"></i>${curto(vivo.sessaoXpH)} real</small>` : '';
     return `${curto(estimado)}${real}`;
   }
   function linhaHtml(l, i) {
