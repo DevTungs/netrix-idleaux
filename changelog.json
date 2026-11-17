@@ -924,6 +924,17 @@
       "es": [
         "Cazar: nuevo filtro \"Solo donde pego ×4\" muestra las hunts con salvaje que recibe ×4 de un golpe tuyo. El cambio de hunt ya contaba el ×4 (en la hunt vale ×5,5) y sigue eligiendo por el ranking entero."
       ]
+    },
+    "2.0.30": {
+      "pt": [
+        "Caçar: o XP/h real saía cerca de mil vezes menor que o do jogo. Agora ele vem do painel Sessão do próprio PokeIdle (o XP de cada abate). As medições antigas de XP são descartadas; o número volta depois de 10 min de caçada."
+      ],
+      "en": [
+        "Hunt: the real XP/h came out about a thousand times lower than the game's. It now comes from PokeIdle's own Session panel (the XP of each kill). Old XP measurements are discarded; the number comes back after 10 min of hunting."
+      ],
+      "es": [
+        "Cazar: el XP/h real salía unas mil veces menor que el del juego. Ahora viene del panel Sesión del propio PokeIdle (el XP de cada baja). Las mediciones antiguas de XP se descartan; el número vuelve tras 10 min de caza."
+      ]
     }
   }
 }

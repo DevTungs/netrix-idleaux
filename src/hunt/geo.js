@@ -72,6 +72,7 @@
 
   function fecharSessao() {
     if (!sessao) return;
+    contarXp(); // o que o jogo somou desde a última leitura ainda é desta sessão
     clearTimeout(sessao.onda?.timer);
     const seg = (Date.now() - sessao.inicio) / 1000;
     if (seg >= 60 && sessao.abates > 0) {
@@ -79,8 +80,10 @@
       const r = ((h.ritmo ??= {})[sessao.pkId ?? '?'] ??= { abates: 0, seg: 0 });
       r.abates += sessao.abates;
       r.seg += seg;
-      r.xp = (r.xp ?? 0) + sessao.xp; // XP que o pokémon ganhou nesta hunt
-      r.xpSeg = (r.xpSeg ?? 0) + seg; // tempo com XP contado (o registro antigo não tem XP)
+      // xpJ/xpJSeg: o XP contado pelo jogo. Os antigos `xp`/`xpSeg` (2.0.26–2.0.29) vinham do
+      // `pk.xp` do estado e saíam ~1000× menores; ficam para trás, sem uso.
+      r.xpJ = (r.xpJ ?? 0) + sessao.xp;
+      r.xpJSeg = (r.xpJSeg ?? 0) + seg;
       gravar();
     }
     sessao = null;
@@ -115,22 +118,32 @@
     return `${pk.id}${aoe === true || aoe === 'true' || aoe === 1 ? ':aoe' : ''}`;
   };
   let pkAtivoId = null;
-  let pkPx = null; // XP total do pokémon ativo na última leitura (ele só sobe; a diferença é o ganho)
+  // O XP vem do painel "Sessão" do próprio jogo: ele soma o XP do pokémon a cada abate e guarda o
+  // total em `sessao-hunt:<nick>` (no máximo a cada 2 s). A diferença entre duas leituras é o ganho;
+  // se o total cair, você zerou a sessão no jogo e a leitura vira a nova base.
+  let nick = null;
+  let pkPx = null;
+  function contarXp() {
+    let px = NaN;
+    try { px = Number(JSON.parse(localStorage.getItem(`sessao-hunt:${String(nick ?? '').toLowerCase()}`))?.xpPokemon); } catch { /* sem leitura */ }
+    if (!Number.isFinite(px)) return;
+    if (sessao && pkPx != null && px > pkPx) sessao.xp += px - pkPx;
+    pkPx = px;
+  }
   PIH.on?.('estado', (eu) => {
     const pk = eu?.pokemons?.find((p) => p.id === eu.activeId);
     const chave = chaveDoPokemon(pk);
+    if (eu?.nick) nick = eu.nick;
     if (chave !== pkAtivoId) {
       fecharSessao();
       pkAtivoId = chave;
-      pkPx = null;
     }
-    if (pk?.xp == null) return;
-    if (sessao && pkPx != null && pk.xp > pkPx) sessao.xp += pk.xp - pkPx;
-    pkPx = pk.xp;
+    contarXp();
   });
 
   PIH.on?.('campo.init', (m) => {
     fecharSessao();
+    contarXp(); // base nova: o XP ganho fora de hunt não entra na próxima
     if (!m?.slug || m.centro || m.pvp || m.casa != null) return;
     // A entrada NÃO é medida: o herói está na porta do mapa e a onda pode estar pela metade.
     sessao = { slug: m.slug, pkId: pkAtivoId, inicio: Date.now(), abates: 0, xp: 0, slots: new Map(), heroi: null, onda: null };
@@ -178,14 +191,15 @@
      */
     ritmoVivo(slug, chave) {
       if (!chave) return null;
+      contarXp();
       const r = banco.hunts[slug]?.ritmo?.[chave];
       const s = sessao && sessao.slug === slug && sessao.pkId === chave ? sessao : null;
       const agora = Date.now();
       const seg = (r?.seg ?? 0) + (s ? (agora - s.inicio) / 1000 : 0);
-      const xpSeg = (r?.xpSeg ?? 0) + (s ? (agora - s.inicio) / 1000 : 0);
+      const xpSeg = (r?.xpJSeg ?? 0) + (s ? (agora - s.inicio) / 1000 : 0);
       return {
         kph: seg >= 600 ? ((r?.abates ?? 0) + (s?.abates ?? 0)) * 3600 / seg : null,
-        xpH: xpSeg >= 600 ? ((r?.xp ?? 0) + (s?.xp ?? 0)) * 3600 / xpSeg : null,
+        xpH: xpSeg >= 600 ? ((r?.xpJ ?? 0) + (s?.xp ?? 0)) * 3600 / xpSeg : null,
         ao_vivo: !!s,
         // só a sessão em curso (condições de agora: bônus, poções), com 10+ min
         sessaoXpH: s && agora - s.inicio >= 600_000 ? (s.xp * 3_600_000) / (agora - s.inicio) : null,
