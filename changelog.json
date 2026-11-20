@@ -946,6 +946,17 @@
       "es": [
         "Cazar: el XP/h real ya no mezcla el historial (que aún traía el evento de XP que terminó). Ahora muestra solo la sesión en curso, leyendo el XP/h del panel Sesión del juego; el Reset del juego también lo pone a cero."
       ]
+    },
+    "2.0.32": {
+      "pt": [
+        "Mercado: Pedras e Boss Tokens comprados agora ficam presos à conta (Soulbound) e não podem ser revendidos. O radar deixou de comprá-los para revender; fragmentos, TMs, tickets, megas e pokémon seguem como antes. A pedra que o time precisa para evoluir continua sendo comprada, e os seus drops continuam livres para vender."
+      ],
+      "en": [
+        "Market: Stones and Boss Tokens you buy are now bound to your account (Soulbound) and can't be resold. The radar no longer buys them to resell; fragments, TMs, tickets, megas and Pokémon work as before. The stone your team needs to evolve is still bought, and your drops stay free to sell."
+      ],
+      "es": [
+        "Mercado: las Piedras y Boss Tokens que compras ahora quedan ligados a tu cuenta (Soulbound) y no se pueden revender. El radar ya no los compra para revender; fragmentos, TMs, tickets, megas y pokémon siguen igual. La piedra que el equipo necesita para evolucionar se sigue comprando y tus drops siguen libres para vender."
+      ]
     }
   }
 }

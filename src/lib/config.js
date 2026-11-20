@@ -11,6 +11,8 @@
 
   // Peças numeradas: cada uma é única, então "preço normal" não existe.
   const CATEGORIAS_PROIBIDAS = Object.freeze(['box', 'casa', 'bicicleta']);
+  // 2.0.32: pedra e boss token comprados no Mercado ficam presos à conta (Soulbound) e não revendem: o radar não os compra para revender.
+  const SEM_COMPRA_AUTO = Object.freeze(['stone', 'boss']);
 
   const PADRAO = Object.freeze({
     radarLigado: false,
@@ -206,5 +208,5 @@
     return config.categorias.includes(item.categoria);
   }
 
-  return { CHAVE, TAXA_VENDA, CATEGORIAS_PROIBIDAS, PADRAO, LIMITES, AUTO, PERFIS, MAX_ALVOS, validar, itemLiberado, calibrar, descontoAutoPara, qtdPeloVolume };
+  return { CHAVE, TAXA_VENDA, CATEGORIAS_PROIBIDAS, SEM_COMPRA_AUTO, PADRAO, LIMITES, AUTO, PERFIS, MAX_ALVOS, validar, itemLiberado, calibrar, descontoAutoPara, qtdPeloVolume };
 });
