@@ -406,7 +406,7 @@
   }
 
   function liberados() {
-    return [...s.catalogo.values()].filter((item) => Config.itemLiberado(s.config, item));
+    return [...s.catalogo.values()].filter((item) => Config.itemLiberado(s.config, item) && !Config.SEM_COMPRA_AUTO.includes(item.categoria));
   }
 
   // ---- 1.34: Alvos de compra (só no Manual) ----------------------------------------------------
