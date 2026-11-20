@@ -957,6 +957,17 @@
       "es": [
         "Mercado: las Piedras y Boss Tokens que compras ahora quedan ligados a tu cuenta (Soulbound) y no se pueden revender. El radar ya no los compra para revender; fragmentos, TMs, tickets, megas y pokémon siguen igual. La piedra que el equipo necesita para evolucionar se sigue comprando y tus drops siguen libres para vender."
       ]
+    },
+    "2.0.33": {
+      "pt": [
+        "Atualização automática: a cada versão nova, se o Chrome tiver tirado a permissão da pasta, a extensão abre a página para autorizar de novo (no máximo uma vez por hora, reaproveitando a aba aberta). Com a permissão, atualiza sozinha."
+      ],
+      "en": [
+        "Auto-update: on every new version, if Chrome has dropped the folder permission, the extension opens the page to grant it again (at most once an hour, reusing the open tab). With the permission, it updates by itself."
+      ],
+      "es": [
+        "Actualización automática: en cada versión nueva, si Chrome quitó el permiso de la carpeta, la extensión abre la página para autorizar de nuevo (como máximo una vez por hora, reutilizando la pestaña abierta). Con el permiso, se actualiza sola."
+      ]
     }
   }
 }

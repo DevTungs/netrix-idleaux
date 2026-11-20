@@ -499,9 +499,14 @@ async function autoAplicar(upd, manual) {
     if (r.ok) { await gravarUpd({ autoErro: null, progresso: { fase: 'pronto', pct: 100, em: Date.now() } }); setTimeout(() => chrome.runtime.reload(), 1500); return { modo: 'pasta', status: 'aplicando' }; }
     if (r.motivo === 'sem-pasta' || r.motivo === 'permissao') {
       await gravarUpd({ progresso: null });
-      if (manual || upd.pastaPediuVersao !== upd.ultima) {
-        await gravarUpd({ pastaPediuVersao: upd.ultima });
-        await chrome.tabs.create({ url: chrome.runtime.getURL('src/pasta.html'), active: true });
+      // 2.0.33: a cada checagem com versão nova e sem permissão, pede de novo (no máx. 1 vez por hora no
+      // automático, e reaproveita a aba já aberta em vez de abrir outra)
+      if (manual || Date.now() - (upd.pastaPediuEm || 0) > 3600000) {
+        await gravarUpd({ pastaPediuEm: Date.now() });
+        const url = chrome.runtime.getURL('src/pasta.html');
+        const [aba] = await chrome.tabs.query({ url });
+        if (aba) { await chrome.tabs.update(aba.id, { active: true }); await chrome.windows.update(aba.windowId, { focused: true }).catch(() => {}); }
+        else await chrome.tabs.create({ url, active: true });
       }
       return { modo: 'pasta', status: 'precisa-pasta' };
     }
