@@ -37,17 +37,17 @@
     try {
       const c = JSON.parse(localStorage.getItem(CHAVE) || 'null') || {};
       return {
-        modo: c.modo === 'melhorar' || c.modo === 'dex' ? c.modo : null,
+        modo: c.modo === 'melhorar' || c.modo === 'dex' || c.modo === 'outland' ? c.modo : null,
         alvos: Array.isArray(c.alvos) ? c.alvos : [], escolhidos: Array.isArray(c.escolhidos) ? c.escolhidos : null, soFinal: c.soFinal !== false, avisar: c.avisar !== false, i: Number(c.i) || 0, vistos: Array.isArray(c.vistos) ? c.vistos : [],
         promessas: Array.isArray(c.promessas) ? c.promessas : [], dexFrio: c.dexFrio && typeof c.dexFrio === 'object' ? c.dexFrio : {},
-        dexPegos: Array.isArray(c.dexPegos) ? c.dexPegos : [], huntDepois: c.huntDepois === true, rodizioDepois: c.rodizioDepois === true,
+        dexPegos: Array.isArray(c.dexPegos) ? c.dexPegos : [], outDrops: c.outDrops && typeof c.outDrops === 'object' ? c.outDrops : {}, huntDepois: c.huntDepois === true, rodizioDepois: c.rodizioDepois === true,
         desde: Number(c.desde) || 0, fim: c.fim || null,
       };
-    } catch { return { modo: null, alvos: [], escolhidos: null, soFinal: true, avisar: true, i: 0, vistos: [], promessas: [], dexFrio: {}, dexPegos: [], huntDepois: false, rodizioDepois: false, desde: 0, fim: null }; }
+    } catch { return { modo: null, alvos: [], escolhidos: null, soFinal: true, avisar: true, i: 0, vistos: [], promessas: [], dexFrio: {}, dexPegos: [], outDrops: {}, huntDepois: false, rodizioDepois: false, desde: 0, fim: null }; }
   };
   let cfg = ler();
   const gravar = () => { try { localStorage.setItem(CHAVE, JSON.stringify(cfg)); } catch { /* sem armazenamento */ } };
-  const diario = (txt, tipo, modo = cfg.modo) => PIH.cofre?.diario?.(`${modo === 'dex' ? 'Pokédex' : t3('melhorar o time', 'improve the team', 'mejorar el equipo')}: ${txt}`, tipo);
+  const diario = (txt, tipo, modo = cfg.modo) => PIH.cofre?.diario?.(`${modo === 'dex' ? 'Pokédex' : modo === 'outland' ? 'FARM Outland' : t3('melhorar o time', 'improve the team', 'mejorar el equipo')}: ${txt}`, tipo);
 
   let eu = null;
   let welcome = null;
@@ -124,6 +124,17 @@
       }
     }
   });
+  // FARM Outland: conta os Boss Tokens e fragmentos que caem enquanto o modo está ligado
+  PIH.on('batalha.achados', (d) => {
+    if (cfg.modo !== 'outland') return;
+    for (const e of (d && d.ev) || []) {
+      if (!e || (e.k !== 'morte' && e.k !== 'bossMorto')) continue;
+      for (const x of e.drops || []) {
+        if (!x || !/token|fragment/i.test(String(x.nome))) continue;
+        cfg.outDrops[x.nome] = (cfg.outDrops[x.nome] || 0) + Math.max(1, Math.round(Number(x.qtd) || 1)); gravar();
+      }
+    }
+  });
   function faltamNaDex() {
     const out = new Map();
     for (const h of (welcome && welcome.hunts) || []) {
@@ -142,7 +153,7 @@
   async function ligar(modo) {
     if (!eu || !welcome) return { ok: false, motivo: t3('o jogo ainda não carregou', "the game hasn't loaded yet", 'el juego aún no cargó') };
     if (!F() || !(await F().pronta())) return { ok: false, motivo: t3('o catálogo do jogo ainda não carregou', "the game catalog hasn't loaded yet", 'el catálogo del juego aún no cargó') };
-    const nomeModo = modo === 'dex' ? t3('Completar a Pokédex', 'Complete the Pokédex', 'Completar la Pokédex') : t3('Melhorar o time', 'Improve the team', 'Mejorar el equipo');
+    const nomeModo = modo === 'dex' ? t3('Completar a Pokédex', 'Complete the Pokédex', 'Completar la Pokédex') : modo === 'outland' ? 'FARM Outland' : t3('Melhorar o time', 'Improve the team', 'Mejorar el equipo');
     if (cfg.modo && cfg.modo !== modo) desligar(t3(`ligou ${nomeModo}`, `turned on ${nomeModo}`, `encendió ${nomeModo}`));
     // 1.47.0: um modo de cada vez — o Modo farm desliga (e devolve o rodízio e a Troca de hunt antes)
     try { if (PIH.farm && PIH.farm.ativo()) PIH.farm.desligar(t3(`ligou ${nomeModo}`, `turned on ${nomeModo}`, `encendió ${nomeModo}`)); } catch { /* sem farm */ }
@@ -165,11 +176,13 @@
         }
         alvos.push({ pkId: p.id, nome: p.nome, speciesId: p.speciesId, raiz: raizId, membros, base: await potencial(p), melhorId: null, melhorPot: 0, naHuntMs: 0, espera: null, semHunt: false, feito: false });
       }
+    } else if (modo === 'outland') {
+      if (!(welcome.hunts || []).some(huntOutland)) return { ok: false, motivo: t3('nenhuma hunt da Outland liberada', 'no Outland hunt unlocked', 'ninguna hunt de la Outland desbloqueada') };
     } else {
       if (!temPokedex()) return { ok: false, motivo: t3('o jogo ainda não mandou a Pokédex', "the game hasn't sent the Pokédex yet", 'el juego aún no envió la Pokédex') };
       if (!faltamNaDex().length) return { ok: false, motivo: t3('você já capturou todas as espécies que aparecem em hunt', "you've already caught every species that spawns in a hunt", 'ya capturaste todas las especies que aparecen en hunt') };
     }
-    cfg = { ...cfg, modo, alvos, i: 0, vistos: meus().map((p) => p.id), desde: Date.now(), fim: null, dexFrio: {}, huntDepois: false, rodizioDepois: false };
+    cfg = { ...cfg, modo, alvos, i: 0, vistos: meus().map((p) => p.id), desde: Date.now(), fim: null, dexFrio: {}, outDrops: {}, huntDepois: false, rodizioDepois: false };
     if (cfg.modo !== modo) cfg.modo = modo;
     // os modos de caça não andam juntos com a Troca de hunt nem com o Caçar o meta
     // o Caçar o meta tinha desligado a Troca de hunt e o rodízio: eles ficam para voltar no fim deste
@@ -179,7 +192,7 @@
     try { if (PIH.auto && PIH.auto._interno.cfg().hunt.ligado) { cfg.huntDepois = true; gravar(); PIH.auto.definir('hunt.ligado', false); } } catch { /* sem auto */ }
     try { if (PIH.rotina && PIH.rotina._interno.cfg().rodizio.ligado) { cfg.rodizioDepois = true; PIH.rotina.definir('rodizio.ligado', false); } } catch { /* sem rotina */ }
     gravar();
-    diario(modo === 'dex' ? t3(`ligado — faltam ${faltamNaDex().length} espécies que aparecem em hunt`, `on — ${faltamNaDex().length} species that spawn in a hunt are missing`, `encendido — faltan ${faltamNaDex().length} especies que aparecen en hunt`) : t3(`ligado — vai caçar um melhor de: ${alvos.map((a) => a.nome).join(', ')}`, `on — will hunt a better one of: ${alvos.map((a) => a.nome).join(', ')}`, `encendido — va a cazar uno mejor de: ${alvos.map((a) => a.nome).join(', ')}`), 'ok');
+    diario(modo === 'outland' ? t3('ligado — farmando Boss Token e fragmentos na Outland', 'on — farming Boss Tokens and fragments in the Outland', 'encendido — farmeando Boss Tokens y fragmentos en la Outland') : modo === 'dex' ? t3(`ligado — faltam ${faltamNaDex().length} espécies que aparecem em hunt`, `on — ${faltamNaDex().length} species that spawn in a hunt are missing`, `encendido — faltan ${faltamNaDex().length} especies que aparecen en hunt`) : t3(`ligado — vai caçar um melhor de: ${alvos.map((a) => a.nome).join(', ')}`, `on — will hunt a better one of: ${alvos.map((a) => a.nome).join(', ')}`, `encendido — va a cazar uno mejor de: ${alvos.map((a) => a.nome).join(', ')}`), 'ok');
     st.escolha = null; st.indo = false; st.motivo = t3('começando…', 'starting…', 'empezando…');
     return { ok: true };
   }
@@ -285,8 +298,8 @@
   // ---- onde caçar -----------------------------------------------------------------------------
   const cacadores = () => meus().filter((p) => p.slot != null && p.stats && podeUsar(p) && !(p.hp != null && Number(p.hp) <= 0)).sort((a, b) => poderDe(b) - poderDe(a));
   // nota de cada hunt: encontros por hora com o que se procura (a fatia dos spawns × abates/h)
-  async function escolherHunt(querId, slugsFrios = {}) {
-    const hunts = ((welcome && welcome.hunts) || []).filter((h) => !huntOutland(h) && !(slugsFrios[h.slug] > Date.now()) && (h.especies || []).some((e) => querId(Number(e.pokeId))));
+  async function escolherHunt(querId, slugsFrios = {}, daOutland = false) {
+    const hunts = ((welcome && welcome.hunts) || []).filter((h) => (daOutland ? huntOutland(h) : !huntOutland(h) && (h.especies || []).some((e) => querId(Number(e.pokeId)))) && !(slugsFrios[h.slug] > Date.now()));
     if (!hunts.length) return { semHunt: true };
     const jogo = await PIH.carregarJogo();
     const ctx = {
@@ -302,6 +315,8 @@
         if (!l || l.inviavel || PIH.engine.arriscada(l)) continue;
         const h = hunts.find((x) => x.slug === l.slug);
         if (!h) continue;
+        // Outland: os drops saem por abate, então vale a hunt com mais abates por hora
+        if (daOutland) { const nota = Number(l.kph) || 0; if (nota > 0 && (!melhor || nota > melhor.nota)) melhor = { slug: h.slug, nome: h.nome, nota, quais: [], pkId: pk.id, pkNome: pk.nome }; continue; }
         const total = (h.especies || []).reduce((s, e) => s + (Number(e.pontos) || 0), 0) || 1;
         let nota = 0;
         const quais = [];
@@ -343,17 +358,18 @@
           st.escolha = null;
         }
       }
-      const chaveAlvo = cfg.modo === 'melhorar' ? `m${cfg.i}` : 'dex';
-      if (!st.escolha || st.escolha.chave !== chaveAlvo || (cfg.modo === 'melhorar' && agora - st.escolha.em > ESCOLHA_VALE_MS)) {
-        const h = await escolherHunt(querId, cfg.modo === 'dex' ? cfg.dexFrio : {});
+      const chaveAlvo = cfg.modo === 'melhorar' ? `m${cfg.i}` : cfg.modo;
+      if (!st.escolha || st.escolha.chave !== chaveAlvo || (cfg.modo !== 'dex' && agora - st.escolha.em > ESCOLHA_VALE_MS)) {
+        const h = await escolherHunt(querId, cfg.modo === 'dex' ? cfg.dexFrio : {}, cfg.modo === 'outland');
         if (h.semHunt) {
           if (cfg.modo === 'melhorar') { alvoAtual.semHunt = true; alvoAtual.feito = true; gravar(); diario(t3(`${alvoAtual.nome}: a família não aparece em nenhuma hunt (vem de boss ou ovo) — pula`, `${alvoAtual.nome}: the family doesn't spawn in any hunt (comes from bosses or eggs) — skipped`, `${alvoAtual.nome}: la familia no aparece en ninguna hunt (viene de boss o huevo) — se salta`), 'aviso'); return; }
+          if (cfg.modo === 'outland') return desligar(t3('nenhuma hunt da Outland liberada', 'no Outland hunt unlocked', 'ninguna hunt de la Outland desbloqueada'));
           cfg.dexFrio = {}; gravar(); st.motivo = t3('nenhuma hunt com espécie faltando', 'no hunt with a missing species', 'ninguna hunt con especie faltante'); return;
         }
         if (h.semSegura) {
           if (cfg.modo === 'melhorar') { alvoAtual.espera = { em: agora, nivel: Number(eu.level) || 0 }; gravar(); diario(t3(`${alvoAtual.nome}: nenhuma hunt segura onde a família aparece — tento de novo quando o treinador subir de nível ou em 30 min`, `${alvoAtual.nome}: no safe hunt where the family spawns — trying again when the trainer levels up or in 30 min`, `${alvoAtual.nome}: ninguna hunt segura donde aparece la familia — lo intento de nuevo cuando el entrenador suba de nivel o en 30 min`), 'aviso'); }
           st.escolha = null;
-          return farmarEsperando(cfg.modo === 'dex' ? t3('as espécies que faltam', 'the missing species', 'las especies que faltan') : alvoAtual.nome);
+          return farmarEsperando(cfg.modo === 'dex' ? t3('as espécies que faltam', 'the missing species', 'las especies que faltan') : cfg.modo === 'outland' ? 'a Outland' : alvoAtual.nome);
         }
         st.escolha = { ...h, chave: chaveAlvo, em: agora, novidadeEm: st.escolha && st.escolha.slug === h.slug ? st.escolha.novidadeEm : agora };
       }
@@ -361,7 +377,7 @@
       const pk = porId(e.pkId) || cacadores()[0];
       if (eu.activeId !== pk.id && agora - st.ultimaTroca > 60_000) { st.ultimaTroca = agora; PIH.pedir({ t: 'team.active', pokemonId: pk.id }, 'cacadas'); diario(t3(`${pk.nome} (⚔ ${nf.format(poderDe(pk))}) entra para caçar em ${e.nome}`, `${pk.nome} (⚔ ${nf.format(poderDe(pk))}) steps in to hunt in ${e.nome}`, `${pk.nome} (⚔ ${nf.format(poderDe(pk))}) entra a cazar en ${e.nome}`)); }
       const nQ = e.quais.filter((id) => querId(id)).length;
-      const alvoTxt = cfg.modo === 'melhorar' ? t3(`um ${alvoAtual.nome} melhor`, `a better ${alvoAtual.nome}`, `un ${alvoAtual.nome} mejor`) : t3(`${nQ} espécie(s) que faltam`, `${nQ} missing species`, `${nQ} especie(s) que faltan`);
+      const alvoTxt = cfg.modo === 'outland' ? t3('Boss Token e fragmentos', 'Boss Tokens and fragments', 'Boss Tokens y fragmentos') : cfg.modo === 'melhorar' ? t3(`um ${alvoAtual.nome} melhor`, `a better ${alvoAtual.nome}`, `un ${alvoAtual.nome} mejor`) : t3(`${nQ} espécie(s) que faltam`, `${nQ} missing species`, `${nQ} especie(s) que faltan`);
       if (eu.huntSlug !== e.slug || eu.noCentro) {
         if (PIH.auto && !PIH.auto.rotinaAtual() && agora - st.irEm > IR_A_CADA_MS) {
           st.irEm = agora;
@@ -434,6 +450,8 @@
     const sDex = cfg.modo === 'dex' ? `${t3('faltam', 'missing', 'faltan')} ${faltam ?? '?'} · ${esc(st.motivo || t3('começando…', 'starting…', 'empezando…'))}`
       : !temPokedex() ? t3('esperando a Pokédex do jogo', "waiting for the game's Pokédex", 'esperando la Pokédex del juego')
         : faltam != null ? t3(`faltam ${faltam} espécies que aparecem em hunt`, `${faltam} species that spawn in a hunt are missing`, `faltan ${faltam} especies que aparecen en hunt`) : t3('desligado', 'off', 'apagado');
+    const dOut = Object.entries(cfg.outDrops || {}).map(([n, q]) => `${q}× ${n}`).join(', ');
+    const sOut = cfg.modo === 'outland' ? `${dOut || t3('nada caiu ainda', 'nothing yet', 'nada aún')} · ${esc(st.motivo || t3('começando…', 'starting…', 'empezando…'))}` : t3('desligado', 'off', 'apagado');
     const semTr = (x) => `<span data-sem-traducao="1">${x}</span>`;
     const lista = cfg.modo === 'melhorar' && cfg.alvos.length ? `<div class="plt-an">${cfg.alvos.map((a, k) => {
       const m = a.melhorId ? porId(a.melhorId) : null;
@@ -448,7 +466,8 @@
     const escolha = `${K.mini('cacadas:avisar', cfg.avisar, t3('Avisar com som quando achar um melhor', 'Sound alert when a better one is found', 'Avisar con sonido al encontrar uno mejor'), '', false)}${K.mini('cacadas:final', cfg.soFinal, t3('Só a forma final', 'Final form only', 'Solo la forma final'), t3('Caça só a evolução final (ex.: Charizard). Se ela não aparece em hunt, caça a família toda.', 'Hunts only the final evolution (e.g. Charizard). If it does not spawn in any hunt, hunts the whole family.', 'Caza solo la evolución final (p. ej. Charizard). Si no aparece en hunt, caza toda la familia.'), rodando)}${K.mini('cacadas:auto', auto, t3('Automático (o time todo)', 'Automatic (whole team)', 'Automático (todo el equipo)'), '', rodando)}${auto ? '' : timeCampo().map((p) => K.mini(`cacadas:pk:${p.id}`, cfg.escolhidos.includes(p.id), `<span data-sem-traducao="1">${esc(p.nome)} ${t3('Nv', 'Lv', 'Nv')} ${nf.format(p.level || 0)}</span>`, '', rodando)).join('')}`;
     return `${K.grupo('Caçadas')}${K.linha({ id: 'cacadas-melhorar', ajustes: escolha, icone: 'cacar', nome: 'Melhorar o time', alvo: 'cacadas:melhorar', on: cfg.modo === 'melhorar', trava, status: semTr(sMel),
       dica: 'Para cada pokémon do time de campo, caça a família dele (até 1 h por pokémon) atrás de um exemplar com mais Poder no nível máximo que você pode usar — qualidade, IV e Potência, a fórmula do ⚔ do jogo. O melhor vai para a Coleção (nunca vendido) e treina no XP Share; quando passar o do time em Poder, entra no lugar. Ligar desliga a Troca de hunt, o rodízio, o Caçar o meta e o Completar a Pokédex; no fim, a Troca de hunt e o rodízio voltam. Precisa de bola: VIP ou a Pokébola automática em "Todo corpo".' })}${lista}${K.linha({ id: 'cacadas-dex', icone: 'bola', nome: 'Completar a Pokédex', alvo: 'cacadas:dex', on: cfg.modo === 'dex', trava, status: semTr(sDex),
-      dica: 'Caça as espécies que você nunca capturou (pela Pokédex do próprio jogo). Vai à hunt segura com mais espécies faltando por hora e fica até capturar todas de lá, ou até 45 min sem novidade (aí troca de hunt). Capturou, a espécie entra na Pokédex e o pokémon segue o caminho normal (Coleção ou venda). A Outland fica de fora (não conta na Pokédex). Ligar desliga a Troca de hunt, o rodízio, o Caçar o meta e o Melhorar o time; no fim, voltam. Precisa de bola: VIP ou a Pokébola automática em "Todo corpo".' })}`;
+      dica: 'Caça as espécies que você nunca capturou (pela Pokédex do próprio jogo). Vai à hunt segura com mais espécies faltando por hora e fica até capturar todas de lá, ou até 45 min sem novidade (aí troca de hunt). Capturou, a espécie entra na Pokédex e o pokémon segue o caminho normal (Coleção ou venda). A Outland fica de fora (não conta na Pokédex). Ligar desliga a Troca de hunt, o rodízio, o Caçar o meta e o Melhorar o time; no fim, voltam. Precisa de bola: VIP ou a Pokébola automática em "Todo corpo".' })}${K.linha({ id: 'cacadas-outland', icone: 'outland', nome: 'FARM Outland', alvo: 'cacadas:outland', on: cfg.modo === 'outland', trava, status: semTr(sOut),
+      dica: 'Fica na Outland, na hunt onde o pokémon do time mais abate por hora, atrás de Boss Token e fragmentos (o tier mais alto aumenta a chance: deixe o "Tier da Outland" da Rotina ligado). Conta o que caiu desde que ligou. Ligar desliga a Troca de hunt, o rodízio, o Caçar o meta e os outros modos de caça; no fim, voltam. Precisa de bola: VIP ou a Pokébola automática em "Todo corpo".' })}`;
   }
   async function definir(caminho, v) {
     if (caminho === 'avisar') { cfg.avisar = !!v; gravar(); return null; }
@@ -465,7 +484,7 @@
       gravar();
       return null;
     }
-    if (caminho !== 'melhorar' && caminho !== 'dex') return null;
+    if (caminho !== 'melhorar' && caminho !== 'dex' && caminho !== 'outland') return null;
     if (v) { const r = await ligar(caminho); if (!r.ok) { st.motivo = r.motivo; diario(`${t3('não liguei', "didn't turn on", 'no encendí')}: ${r.motivo}`, 'aviso', caminho); } return r; }
     if (cfg.modo === caminho) desligar(t3('você desligou', 'you turned it off', 'lo apagaste'));
     return null;

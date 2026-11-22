@@ -979,6 +979,20 @@
       "es": [
         "Reventa: corregido el bug de la 2.0.32 por el que Piedras y Boss Tokens salieron de la vigilancia de precios y la reventa perdía su referencia (media de 7 días). Vuelven a vigilarse y revenderse; el radar sigue sin comprarlos."
       ]
+    },
+    "2.0.35": {
+      "pt": [
+        "Caçar: novo modo FARM Outland. O Netrix Hub vai para a hunt da Outland onde seu pokémon mais abate por hora e fica farmando Boss Token e fragmentos, contando o que caiu desde que você ligou. Deixe o \"Tier da Outland\" da Rotina ligado para usar o maior tier.",
+        "Avisos: pedras de evolução dropadas agora também são anunciadas como drop raro."
+      ],
+      "en": [
+        "Hunt: new FARM Outland mode. The Netrix Hub goes to the Outland hunt where your Pokémon kills the most per hour and keeps farming Boss Tokens and fragments, counting what dropped since you turned it on. Keep the Routine's \"Outland tier\" on to use the highest tier.",
+        "Alerts: evolution stones that drop are now announced as rare drops too."
+      ],
+      "es": [
+        "Cazar: nuevo modo FARM Outland. El Netrix Hub va a la hunt de la Outland donde tu pokémon más mata por hora y sigue farmeando Boss Tokens y fragmentos, contando lo que cayó desde que lo encendiste. Deja encendido el \"Tier de la Outland\" de la Rutina para usar el mayor tier.",
+        "Avisos: las piedras de evolución que caen ahora también se anuncian como drop raro."
+      ]
     }
   }
 }

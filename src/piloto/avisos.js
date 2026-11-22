@@ -8,7 +8,7 @@
 // - `morte` (selvagem) e `bossMorto` { drops: [{ itemId, nome, qtd }] }
 //
 // Avisa: shiny capturado, captura P5 e drop raro (os 11 da prancheta do jogo:
-// Boss Token, fragmentos, peças de TM, tickets). Com a aba do jogo à vista, um cartãozinho no canto;
+// Boss Token, fragmentos, pedras de evolução, peças de TM, tickets). Com a aba do jogo à vista, um cartãozinho no canto;
 // com ela escondida (outra aba, outra janela, PC bloqueado), a notificação do sistema. Drop raro
 // junta o que cair em 1 min num aviso só, e no máximo um aviso de drop a cada 10 min. Tudo entra
 // no Diário, e a linha da aba Rotina mostra o que caiu hoje.
@@ -27,6 +27,11 @@
     [70014, 'Mega Stone Fragment'], [70015, 'Mega Shiny Stone Fragment'], [59194, 'TM Disk Piece'], [40530, 'AoE TM Disk Piece'],
   ]);
   const NOMES_RAROS = new Set([...RAROS.values(), 'Mystic Ticket', 'Safari Ticket', 'Shiny Egg Fragment']);
+  // 2.0.35: pedras de evolução também são drop raro — pela categoria do catálogo do jogo (o nome termina em "Stone" se o catálogo falhar)
+  let catalogo = null;
+  try { Promise.resolve(PIH.carregarJogo && PIH.carregarJogo()).then((j) => { catalogo = j && j.itensPorId; }).catch(() => {}); } catch { /* sem catálogo */ }
+  const ehPedra = (d) => { const it = catalogo && catalogo.get(Number(d.itemId)); return it ? it.category === 'stone' : /\sStone$/.test(String(d.nome)); };
+  const idDoDrop = new Map();
   const JUNTAR_MS = 60_000;
   const ESPACO_DROP_MS = 10 * 60_000;
 
@@ -76,14 +81,15 @@
     ultimoDrop = Date.now();
     const linha = itens.map(([nome, q]) => `${q}× ${nome}`).join(', ');
     const [primeiro] = itens[0];
-    const itemId = [...RAROS].find(([, n]) => n === primeiro)?.[0] ?? null;
+    const itemId = [...RAROS].find(([, n]) => n === primeiro)?.[0] ?? idDoDrop.get(primeiro) ?? null;
     avisar({ titulo: tx('drop'), linha, categoria: 'item', itemId, nome: primeiro, tag: 'Drop' });
   }
   function anotarDrops(drops) {
     for (const d of Array.isArray(drops) ? drops : []) {
       if (!d) continue;
-      const nome = RAROS.get(Number(d.itemId)) || (NOMES_RAROS.has(String(d.nome)) ? String(d.nome) : null);
+      const nome = RAROS.get(Number(d.itemId)) || (NOMES_RAROS.has(String(d.nome)) ? String(d.nome) : null) || (ehPedra(d) ? String(d.nome) : null);
       if (!nome) continue;
+      if (d.itemId) idDoDrop.set(nome, Number(d.itemId));
       const q = Math.max(1, Math.round(Number(d.qtd) || 1));
       virarDia(); dia.drops[nome] = (dia.drops[nome] || 0) + q; gravarDia();
       if (!cfg.ligado || !cfg.drop) continue;
