@@ -968,6 +968,17 @@
       "es": [
         "Actualización automática: en cada versión nueva, si Chrome quitó el permiso de la carpeta, la extensión abre la página para autorizar de nuevo (como máximo una vez por hora, reutilizando la pestaña abierta). Con el permiso, se actualiza sola."
       ]
+    },
+    "2.0.34": {
+      "pt": [
+        "Revenda: corrigido o bug da 2.0.32 em que Pedras e Boss Tokens saíram da vigia de preços e a revenda perdia a referência (média de 7 dias). Eles voltam a ser vigiados e revendidos; o radar continua sem comprá-los."
+      ],
+      "en": [
+        "Resale: fixed a 2.0.32 bug where Stones and Boss Tokens dropped out of price tracking and resale lost its reference (7-day average). They are tracked and resold again; the radar still doesn't buy them."
+      ],
+      "es": [
+        "Reventa: corregido el bug de la 2.0.32 por el que Piedras y Boss Tokens salieron de la vigilancia de precios y la reventa perdía su referencia (media de 7 días). Vuelven a vigilarse y revenderse; el radar sigue sin comprarlos."
+      ]
     }
   }
 }

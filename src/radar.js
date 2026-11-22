@@ -406,7 +406,7 @@
   }
 
   function liberados() {
-    return [...s.catalogo.values()].filter((item) => Config.itemLiberado(s.config, item) && !Config.SEM_COMPRA_AUTO.includes(item.categoria));
+    return [...s.catalogo.values()].filter((item) => Config.itemLiberado(s.config, item));
   }
 
   // ---- 1.34: Alvos de compra (só no Manual) ----------------------------------------------------
@@ -466,6 +466,9 @@
         const ult = s.conferidos.get(a.itemId);
         if (!(ult && ult.alvo && ult.assinatura === asn && agora - ult.em < 60_000)) { candidatos.push({ a, hist: historico[a.itemId] || null, assinatura: asn, prioridade: 9, alvo: al }); continue; }
       }
+      // 2.0.34: stone/boss seguem na vigia de preços (a revenda usa a média 7d); só não viram compra/aviso
+      const cat = (s.catalogo.get(Number(a.itemId)) || {}).categoria;
+      if (Config.SEM_COMPRA_AUTO.includes(cat)) continue;
       const hist = historico[a.itemId] || null;
       const pf = P.preFiltro({ minGold: a.minGold, media7d: a.mediaGold, mediana24h: hist && hist.mediana24h, volume7d: a.volume7d, config: s.config });
       const dica = s.dicas.has(a.itemId);
