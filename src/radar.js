@@ -1302,7 +1302,10 @@
     if (!(sg.acao === 'anunciar' || sg.acao === 'mudar-preco')) return false;
     if (emEspera(sg.itemId)) return false;
     if (!(typeof sg.preco === 'number' && sg.preco >= sg.piso)) return false;
-    if (s.config.revendaSoDoRadar && !(sg.custo && sg.custo.doRadar)) return false;
+    // pedra e boss token comprados ficam presos à conta (Soulbound): só o DROP se revende, então a regra "só do radar" não vale para eles
+    const item = s.catalogo.get(sg.itemId);
+    if (item && Config.SEM_COMPRA_AUTO.includes(item.categoria)) { if (!(sg.custo && sg.custo.deDrop > 0)) return false; }
+    else if (s.config.revendaSoDoRadar && !(sg.custo && sg.custo.doRadar)) return false;
     // Anunciar não custa nada (item não paga diária) e o piso já garante custo + 15%: basta ter
     // lucro. Só com as vagas apertando (15 de 20 abertas) o lucro mínimo da revenda entra, para os
     // últimos anúncios irem para o que rende mais. Mudar o preço: o piso basta.

@@ -993,6 +993,17 @@
         "Cazar: nuevo modo FARM Outland. El Netrix Hub va a la hunt de la Outland donde tu pokémon más mata por hora y sigue farmeando Boss Tokens y fragmentos, contando lo que cayó desde que lo encendiste. Deja encendido el \"Tier de la Outland\" de la Rutina para usar el mayor tier.",
         "Avisos: las piedras de evolución que caen ahora también se anuncian como drop raro."
       ]
+    },
+    "2.0.36": {
+      "pt": [
+        "Revenda: as pedras e Boss Tokens que você dropa agora são anunciados na revenda automática. Antes, com \"só o que o radar comprou\" ligado, o drop era barrado; as compradas no Mercado (Soulbound) seguem fora."
+      ],
+      "en": [
+        "Resale: Stones and Boss Tokens you drop are now listed by automatic resale. Before, with \"only what the radar bought\" on, drops were blocked; ones bought on the Market (Soulbound) stay out."
+      ],
+      "es": [
+        "Reventa: las Piedras y Boss Tokens que dropeas ahora se anuncian en la reventa automática. Antes, con \"solo lo que compró el radar\" activado, el drop quedaba bloqueado; las compradas en el Mercado (Soulbound) siguen fuera."
+      ]
     }
   }
 }
