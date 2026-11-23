@@ -1004,6 +1004,17 @@
       "es": [
         "Reventa: las Piedras y Boss Tokens que dropeas ahora se anuncian en la reventa automática. Antes, con \"solo lo que compró el radar\" activado, el drop quedaba bloqueado; las compradas en el Mercado (Soulbound) siguen fuera."
       ]
+    },
+    "2.0.37": {
+      "pt": [
+        "Revenda: agora a extensão lê do jogo quantas unidades de cada item estão presas à conta (as pedras e Boss Tokens comprados no Mercado) e anuncia só o resto, que é drop. Corrige as pedras dropadas que não eram anunciadas quando você também tinha comprado a mesma pedra."
+      ],
+      "en": [
+        "Resale: the extension now reads from the game how many units of each item are bound to your account (Stones and Boss Tokens bought on the Market) and lists only the rest, which is drops. Fixes dropped stones not being listed when you had also bought the same stone."
+      ],
+      "es": [
+        "Reventa: la extensión ahora lee del juego cuántas unidades de cada ítem están ligadas a tu cuenta (Piedras y Boss Tokens comprados en el Mercado) y anuncia solo el resto, que es drop. Corrige las piedras dropeadas que no se anunciaban cuando también habías comprado la misma piedra."
+      ]
     }
   }
 }

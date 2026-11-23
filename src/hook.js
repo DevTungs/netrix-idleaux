@@ -194,6 +194,13 @@
       }
       conta.itens = itens;
     }
+    // 2.0.36: o que veio do Mercado (pedra, boss token) fica preso à conta e não se anuncia: o jogo guarda a parte presa por item
+    const pr = estado.automation && estado.automation.itensPresos;
+    if (pr && typeof pr === 'object' && !Array.isArray(pr)) {
+      const presos = {};
+      for (const [id, q] of Object.entries(pr)) { const n = Math.floor(Number(q)); if (/^\d{1,9}$/.test(id) && n > 0) presos[id] = n; }
+      conta.presos = presos;
+    }
     return Object.keys(conta).length ? conta : null;
   }
 
@@ -1009,10 +1016,10 @@
         if (aplicarPokemons(est, Boolean(est && est.cheio))) agendarPokemons();
       }
       // O ouro e os itens vêm no delta só quando mudam; o id, no quadro cheio (reconexão).
-      if (st.radar && (texto.includes('"gold"') || texto.includes('"cheio"') || texto.includes('"items"'))) {
+      if (st.radar && (texto.includes('"gold"') || texto.includes('"cheio"') || texto.includes('"items"') || texto.includes('"itensPresos"'))) {
         const conta = lerConta(doc().estado);
         const antes = st.ultimaConta || {};
-        if (conta && ((conta.gold !== undefined && conta.gold !== antes.gold) || (conta.id !== undefined && conta.id !== antes.id) || (conta.itens !== undefined && !mesmosItens(conta.itens, antes.itens)))) {
+        if (conta && ((conta.gold !== undefined && conta.gold !== antes.gold) || (conta.id !== undefined && conta.id !== antes.id) || (conta.itens !== undefined && !mesmosItens(conta.itens, antes.itens)) || (conta.presos !== undefined && !mesmosItens(conta.presos, antes.presos)))) {
           st.ultimaConta = { ...(st.ultimaConta || {}), ...conta };
           emitir({ tipo: 'conta', em: quando, ...st.ultimaConta });
         }
