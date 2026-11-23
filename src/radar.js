@@ -1264,9 +1264,14 @@
     const resumo = {};
     for (const a of (v && v.amostras) || []) resumo[a.itemId] = { media7d: a.mediaGold, volume7d: a.volume7d };
     const meus = Pessoal.normalizarMeus((s.revenda.meus && s.revenda.meus.linhas) || [], agoraServidor());
-    const compras = Rv.juntarCompras(s.revenda.registro || [], (s.revenda.historico && s.revenda.historico.linhas) || []);
+    // pedra e boss token: o que foi comprado fica preso (fora do inventário revendável) e o custo dessas compras não vale para o que sobra (drop)
+    const presos = s.conta.presos || {};
+    const semCusto = (n) => { for (const it of s.catalogo.values()) if (it.nome === n) return Config.SEM_COMPRA_AUTO.includes(it.categoria); return false; };
+    const compras = Rv.juntarCompras(s.revenda.registro || [], (s.revenda.historico && s.revenda.historico.linhas) || []).filter((c) => !semCusto(c.nome));
+    const livres = {};
+    for (const [id, q] of Object.entries(s.conta.itens || {})) livres[id] = Math.max(0, q - (Number(presos[id]) || 0));
     // 1.27: a pedra comprada para o time evoluir não entra na revenda
-    const inventario = auto ? Rv.inventarioRevendavel(s.conta.itens || {}, s.catalogo, { manuais: s.revenda.manuais, pedrasDoTime: pedrasDoTimeAgora() }) : (s.conta.itens || {});
+    const inventario = auto ? Rv.inventarioRevendavel(livres, s.catalogo, { manuais: s.revenda.manuais, pedrasDoTime: pedrasDoTimeAgora() }) : livres;
     const sugestoes = Rv.montarSugestoes({ inventario, catalogo: s.catalogo, config: s.config, livros: s.livros, meus, compras, resumo, meuId: s.conta.id, ocultos: s.revenda.ocultos, agora: agoraServidor() }).filter((sg) => !pedraGuardada(sg.itemId));
     return { meus, sugestoes };
   }
@@ -1302,10 +1307,9 @@
     if (!(sg.acao === 'anunciar' || sg.acao === 'mudar-preco')) return false;
     if (emEspera(sg.itemId)) return false;
     if (!(typeof sg.preco === 'number' && sg.preco >= sg.piso)) return false;
-    // pedra e boss token comprados ficam presos à conta (Soulbound): só o DROP se revende, então a regra "só do radar" não vale para eles
+    // pedra e boss token: o comprado já saiu do inventário (preso, Soulbound); o que sobra é drop e se revende, então "só do radar" não vale para eles
     const item = s.catalogo.get(sg.itemId);
-    if (item && Config.SEM_COMPRA_AUTO.includes(item.categoria)) { if (!(sg.custo && sg.custo.deDrop > 0)) return false; }
-    else if (s.config.revendaSoDoRadar && !(sg.custo && sg.custo.doRadar)) return false;
+    if (s.config.revendaSoDoRadar && !(item && Config.SEM_COMPRA_AUTO.includes(item.categoria)) && !(sg.custo && sg.custo.doRadar)) return false;
     // Anunciar não custa nada (item não paga diária) e o piso já garante custo + 15%: basta ter
     // lucro. Só com as vagas apertando (15 de 20 abertas) o lucro mínimo da revenda entra, para os
     // últimos anúncios irem para o que rende mais. Mudar o preço: o piso basta.
@@ -2232,6 +2236,7 @@
     bus.on('conta', (c) => {
       if (c.id !== undefined && c.id !== null) s.conta.id = c.id;
       if (typeof c.gold === 'number') s.conta.gold = c.gold;
+      if (c.presos && typeof c.presos === 'object') { s.conta.presos = c.presos; emitirRevenda(); }
       if (c.itens && typeof c.itens === 'object') { s.conta.itens = c.itens; emitirRevenda(); }
     });
     // Pulso do gancho: o jogo está recebendo mensagens.
