@@ -1309,6 +1309,7 @@
     if (!(typeof sg.preco === 'number' && sg.preco >= sg.piso)) return false;
     // pedra e boss token: o comprado já saiu do inventário (preso, Soulbound); o que sobra é drop e se revende, então "só do radar" não vale para eles
     const item = s.catalogo.get(sg.itemId);
+    if (item && item.categoria === 'boss' && !s.config.revendaBoss) return false; // 2.0.38: o usuário pode guardar o drop de boss
     if (s.config.revendaSoDoRadar && !(item && Config.SEM_COMPRA_AUTO.includes(item.categoria)) && !(sg.custo && sg.custo.doRadar)) return false;
     // Anunciar não custa nada (item não paga diária) e o piso já garante custo + 15%: basta ter
     // lucro. Só com as vagas apertando (15 de 20 abertas) o lucro mínimo da revenda entra, para os

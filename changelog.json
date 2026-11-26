@@ -1015,6 +1015,17 @@
       "es": [
         "Reventa: la extensión ahora lee del juego cuántas unidades de cada ítem están ligadas a tu cuenta (Piedras y Boss Tokens comprados en el Mercado) y anuncia solo el resto, que es drop. Corrige las piedras dropeadas que no se anunciaban cuando también habías comprado la misma piedra."
       ]
+    },
+    "2.0.38": {
+      "pt": [
+        "Ajustes > Revenda sozinho: novo interruptor \"Anunciar Boss Tokens de drop\". Desligado, o Boss Token que você dropa fica na conta e não é anunciado sozinho; a venda manual na aba Revenda continua igual."
+      ],
+      "en": [
+        "Settings > Resell automatically: new switch \"List dropped Boss Tokens\". When off, the Boss Tokens you drop stay in your account and are not listed automatically; manual selling in the Resale tab works as before."
+      ],
+      "es": [
+        "Ajustes > Reventa automática: nuevo interruptor \"Anunciar Boss Tokens dropeados\". Desactivado, el Boss Token que dropeas queda en tu cuenta y no se anuncia solo; la venta manual en la pestaña Reventa sigue igual."
+      ]
     }
   }
 }

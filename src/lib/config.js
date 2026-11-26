@@ -50,6 +50,7 @@
     // de outro jogador e nunca abaixo do custo + 15%. Item não paga diária. Pokémon segue no clique.
     revendaAutomatica: false,
     revendaSoDoRadar: true, // só o que o radar comprou (desligado: também os seus drops vigiados)
+    revendaBoss: true, // Boss Token de drop entra na revenda automática (desligado: fica na conta, sem anunciar sozinho)
     lucroMinimoRevenda: 20000,
     // Limites calculados sozinhos (Piloto 1.1): lucro mínimo pelo ouro/h, gasto pelo teto do cofre,
     // desconto do automático pela volatilidade de cada item. Desligado, valem os números acima.
@@ -131,7 +132,7 @@
   function validar(parcial) {
     const p = parcial && typeof parcial === 'object' ? parcial : {};
     const c = { ...PADRAO };
-    for (const chave of ['radarLigado', 'pausarOculta', 'som', 'alertarIliquidos', 'alertarPoucoConfiaveis', 'abrirPainelNoAviso', 'compraAutomatica', 'pokemon', 'compraAutomaticaPokemon', 'pokemonGemas', 'revendaAutomatica', 'revendaSoDoRadar', 'ajusteAutomatico', 'vigiaContinua']) {
+    for (const chave of ['radarLigado', 'pausarOculta', 'som', 'alertarIliquidos', 'alertarPoucoConfiaveis', 'abrirPainelNoAviso', 'compraAutomatica', 'pokemon', 'compraAutomaticaPokemon', 'pokemonGemas', 'revendaAutomatica', 'revendaSoDoRadar', 'revendaBoss', 'ajusteAutomatico', 'vigiaContinua']) {
       if (typeof p[chave] === 'boolean') c[chave] = p[chave];
     }
     for (const [chave, limite] of Object.entries(LIMITES)) c[chave] = prender(p[chave], limite, PADRAO[chave]);
